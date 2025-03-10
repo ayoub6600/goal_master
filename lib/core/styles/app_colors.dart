@@ -7,7 +7,7 @@ abstract class AppColors {
   static const Color errorRed = Color(0xFFD72F5A);
   static Color bg = HexColor('#081B2B');
   static Color primary = HexColor('#418946');
-  static Color primaryBlueLight = HexColor('#DFF2FB');
+  static Color primaryBlueLight = HexColor('#96DE9B');
   static Color primaryBlueLight2 = HexColor('#F0F9FC');
   static Color inactive = HexColor('#E7EBEE');
   static Color inactive2 = HexColor('#F1F1F1');
