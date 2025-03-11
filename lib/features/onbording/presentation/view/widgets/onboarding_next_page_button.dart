@@ -7,7 +7,7 @@ import 'package:goal_master/core/routing/routes_keys.dart';
 import 'package:goal_master/core/styles/app_colors.dart';
 import 'package:goal_master/core/styles/app_text_styles.dart';
 import 'package:goal_master/features/onbording/data/datasource/onboarding_pages.dart';
-import 'package:goal_master/features/onbording/manager/onboarding_cubit.dart';
+import 'package:goal_master/features/onbording/presentation/manager/onboarding_cubit.dart';
 
 class OnboardingSkipPageButton extends StatelessWidget {
   const OnboardingSkipPageButton({

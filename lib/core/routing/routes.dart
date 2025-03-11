@@ -8,8 +8,8 @@ import 'package:goal_master/features/auth/presentation/view/new_password_view.da
 import 'package:goal_master/features/auth/presentation/view/otp_view.dart';
 import 'package:goal_master/features/auth/presentation/view/register_view.dart';
 import 'package:goal_master/features/auth/presentation/view/login_view.dart';
-import 'package:goal_master/features/onbording/manager/onboarding_cubit.dart';
-import 'package:goal_master/features/onbording/presentation/onboarding_view.dart';
+import 'package:goal_master/features/onbording/presentation/manager/onboarding_cubit.dart';
+import 'package:goal_master/features/onbording/presentation/view/onboarding_view.dart';
 import 'package:goal_master/features/splach/presentation/view/splash_view.dart';
 
 import 'app_router.dart';

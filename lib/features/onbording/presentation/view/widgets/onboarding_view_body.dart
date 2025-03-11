@@ -4,12 +4,12 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:goal_master/core/styles/app_text_styles.dart';
 import 'package:goal_master/core/styles/spaces.dart';
 import 'package:goal_master/features/onbording/data/datasource/onboarding_pages.dart';
-import 'package:goal_master/features/onbording/manager/onboarding_cubit.dart';
-import 'package:goal_master/features/onbording/presentation/widgets/bottom_curve_clipper.dart';
-import 'package:goal_master/features/onbording/presentation/widgets/button_onbording.dart';
-import 'package:goal_master/features/onbording/presentation/widgets/onboarding_dots.dart';
-import 'package:goal_master/features/onbording/presentation/widgets/onboarding_next_page_button.dart';
-import 'package:goal_master/features/onbording/presentation/widgets/onboarding_previous_page_button.dart';
+import 'package:goal_master/features/onbording/presentation/manager/onboarding_cubit.dart';
+import 'package:goal_master/features/onbording/presentation/view/widgets/bottom_curve_clipper.dart';
+import 'package:goal_master/features/onbording/presentation/view/widgets/button_onbording.dart';
+import 'package:goal_master/features/onbording/presentation/view/widgets/onboarding_dots.dart';
+import 'package:goal_master/features/onbording/presentation/view/widgets/onboarding_next_page_button.dart';
+import 'package:goal_master/features/onbording/presentation/view/widgets/onboarding_previous_page_button.dart';
 
 class OnboardingViewBody extends StatelessWidget {
   const OnboardingViewBody({super.key});
