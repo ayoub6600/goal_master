@@ -22,6 +22,10 @@ class Assets {
   /// assets/images/png_image/call-calling.png
   static const String imagesPngImageCallCalling = "assets/images/png_image/call-calling.png";
 
+  /// Assets for imagesPngImageGlobalRefresh
+  /// assets/images/png_image/global-refresh.png
+  static const String imagesPngImageGlobalRefresh = "assets/images/png_image/global-refresh.png";
+
   /// Assets for imagesPngImageInactive
   /// assets/images/png_image/inactive.png
   static const String imagesPngImageInactive = "assets/images/png_image/inactive.png";
@@ -29,6 +33,10 @@ class Assets {
   /// Assets for imagesPngImageKey
   /// assets/images/png_image/key.png
   static const String imagesPngImageKey = "assets/images/png_image/key.png";
+
+  /// Assets for imagesPngImageLocation
+  /// assets/images/png_image/location.png
+  static const String imagesPngImageLocation = "assets/images/png_image/location.png";
 
   /// Assets for imagesPngImageLogout
   /// assets/images/png_image/logout.png
@@ -57,6 +65,10 @@ class Assets {
   /// Assets for imagesPngImageSetting2
   /// assets/images/png_image/setting-2.png
   static const String imagesPngImageSetting2 = "assets/images/png_image/setting-2.png";
+
+  /// Assets for imagesPngImageSms
+  /// assets/images/png_image/sms.png
+  static const String imagesPngImageSms = "assets/images/png_image/sms.png";
 
   /// Assets for imagesSvgImageEyeSlash
   /// assets/images/svg_image/eye-slash.svg

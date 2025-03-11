@@ -1,7 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:goal_master/core/components/build_page_with_default_transition.dart';
-import 'package:goal_master/core/routing/routes_branches.dart';
 import 'package:goal_master/core/routing/routes_keys.dart';
 import 'package:goal_master/features/auth/presentation/view/forgot_password_view.dart';
 import 'package:goal_master/features/auth/presentation/view/new_password_view.dart';
@@ -10,7 +9,10 @@ import 'package:goal_master/features/auth/presentation/view/register_view.dart';
 import 'package:goal_master/features/auth/presentation/view/login_view.dart';
 import 'package:goal_master/features/onbording/presentation/manager/onboarding_cubit.dart';
 import 'package:goal_master/features/onbording/presentation/view/onboarding_view.dart';
+import 'package:goal_master/features/profail/presentation/view/change_password_view.dart';
+import 'package:goal_master/features/profail/presentation/view/contact_view.dart';
 import 'package:goal_master/features/profail/presentation/view/profile_view.dart';
+import 'package:goal_master/features/profail/presentation/view/update_profile_view.dart';
 import 'package:goal_master/features/splach/presentation/view/splash_view.dart';
 
 import 'app_router.dart';
@@ -101,6 +103,36 @@ List<RouteBase> appRoutes = [
       context: context,
       state: state,
       child: const ProfileView(),
+    ),
+  ),
+  //UpdateProfileView
+  GoRoute(
+    parentNavigatorKey: parentKey,
+    path: RoutesKeys.kUpdateProfile,
+    pageBuilder: (context, state) => buildPageWithDefaultTransition<void>(
+      context: context,
+      state: state,
+      child: const UpdateProfileView(),
+    ),
+  ),
+  //ChangePasswordView
+  GoRoute(
+    parentNavigatorKey: parentKey,
+    path: RoutesKeys.kChangePassword,
+    pageBuilder: (context, state) => buildPageWithDefaultTransition<void>(
+      context: context,
+      state: state,
+      child: const ChangePasswordView(),
+    ),
+  ),
+  //ContactView
+  GoRoute(
+    parentNavigatorKey: parentKey,
+    path: RoutesKeys.kContact,
+    pageBuilder: (context, state) => buildPageWithDefaultTransition<void>(
+      context: context,
+      state: state,
+      child: const ContactView(),
     ),
   ),
 ];
