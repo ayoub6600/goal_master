@@ -11,8 +11,12 @@ class Assets {
   static const String imagesPngImageArrowSquareRight = "assets/images/png_image/arrow-square-right.png";
 
   /// Assets for imagesPngImageBackgroundLogin
-  /// assets/images/png_image/background_login.png
-  static const String imagesPngImageBackgroundLogin = "assets/images/png_image/background_login.png";
+  /// assets/images/png_image/BackgroundLogin.png
+  static const String imagesPngImageBackgroundLogin = "assets/images/png_image/BackgroundLogin.png";
+
+  /// Assets for imagesPngImageInactive
+  /// assets/images/png_image/inactive.png
+  static const String imagesPngImageInactive = "assets/images/png_image/inactive.png";
 
   /// Assets for imagesPngImageOn2
   /// assets/images/png_image/on2.png
@@ -37,6 +41,10 @@ class Assets {
   /// Assets for imagesSvgImageOnbording3
   /// assets/images/svg_image/onbording_3.svg
   static const String imagesSvgImageOnbording3 = "assets/images/svg_image/onbording_3.svg";
+
+  /// Assets for imagesSvgImageSendotp
+  /// assets/images/svg_image/sendotp.svg
+  static const String imagesSvgImageSendotp = "assets/images/svg_image/sendotp.svg";
 
   /// Assets for imagesSvgImageSplash
   /// assets/images/svg_image/splash.svg

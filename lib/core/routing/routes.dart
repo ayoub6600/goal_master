@@ -3,6 +3,8 @@ import 'package:go_router/go_router.dart';
 import 'package:goal_master/core/components/build_page_with_default_transition.dart';
 import 'package:goal_master/core/routing/routes_branches.dart';
 import 'package:goal_master/core/routing/routes_keys.dart';
+import 'package:goal_master/features/auth/presentation/view/forgot_password_view.dart';
+import 'package:goal_master/features/auth/presentation/view/otp_view.dart';
 import 'package:goal_master/features/auth/presentation/view/register_view.dart';
 import 'package:goal_master/features/auth/presentation/view/login_view.dart';
 import 'package:goal_master/features/onbording/manager/onboarding_cubit.dart';
@@ -57,6 +59,26 @@ List<RouteBase> appRoutes = [
       context: context,
       state: state,
       child: const RegisterView(),
+    ),
+  ),
+  //ForgotPasswordView
+  GoRoute(
+    parentNavigatorKey: parentKey,
+    path: RoutesKeys.kForgotPassword,
+    pageBuilder: (context, state) => buildPageWithDefaultTransition<void>(
+      context: context,
+      state: state,
+      child: const ForgotPasswordView(),
+    ),
+  ),
+  //OtpView
+  GoRoute(
+    parentNavigatorKey: parentKey,
+    path: RoutesKeys.kOtp,
+    pageBuilder: (context, state) => buildPageWithDefaultTransition<void>(
+      context: context,
+      state: state,
+      child: const OtpView(),
     ),
   ),
 ];

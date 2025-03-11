@@ -9,7 +9,7 @@ abstract class AppColors {
   static Color primary = HexColor('#418946');
   static Color primaryBlueLight = HexColor('#96DE9B');
   static Color primaryBlueLight2 = HexColor('#F0F9FC');
-  static Color inactive = HexColor('#E7EBEE');
+  static Color inactive = HexColor('#418946');
   static Color inactive2 = HexColor('#F1F1F1');
   static Color inactive3 = HexColor('#F8F8F8');
   static Color inactive4 = HexColor('#DDDDDD');
