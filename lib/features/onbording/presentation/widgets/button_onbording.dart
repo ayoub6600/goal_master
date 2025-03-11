@@ -6,7 +6,6 @@ import 'package:goal_master/core/routing/route_utils.dart';
 import 'package:goal_master/core/routing/routes_keys.dart';
 import 'package:goal_master/core/styles/app_colors.dart';
 import 'package:goal_master/core/styles/app_text_styles.dart';
-import 'package:goal_master/core/styles/assets.dart';
 import 'package:goal_master/features/onbording/data/datasource/onboarding_pages.dart';
 import 'package:goal_master/features/onbording/manager/onboarding_cubit.dart';
 
