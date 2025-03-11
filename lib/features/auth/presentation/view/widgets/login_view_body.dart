@@ -105,10 +105,15 @@ class LoginViewBody extends StatelessWidget {
                   // controller: cubit.passwordController,
                 ),
                 HeightSpace(8.h),
-                Text(
-                  "هل نسيت كلمة المرور؟",
-                  style: AppTextStyles.font14SemiBold.copyWith(
-                    color: Colors.white,
+                GestureDetector(
+                  onTap: () {
+                    push(RoutesKeys.kForgotPassword, context);
+                  },
+                  child: Text(
+                    "هل نسيت كلمة المرور؟",
+                    style: AppTextStyles.font14SemiBold.copyWith(
+                      color: Colors.white,
+                    ),
                   ),
                 ),
                 HeightSpace(50.h),
