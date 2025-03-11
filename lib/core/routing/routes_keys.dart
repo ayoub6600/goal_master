@@ -6,4 +6,5 @@ class RoutesKeys {
   static const kForgotPassword = '/kForgotPassword';
   static const kOtp = '/kOtp';
   static const kNewPassword = '/kNewPassword';
+  static const kProfile = '/kProfile';
 }

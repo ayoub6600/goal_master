@@ -10,6 +10,7 @@ import 'package:goal_master/features/auth/presentation/view/register_view.dart';
 import 'package:goal_master/features/auth/presentation/view/login_view.dart';
 import 'package:goal_master/features/onbording/presentation/manager/onboarding_cubit.dart';
 import 'package:goal_master/features/onbording/presentation/view/onboarding_view.dart';
+import 'package:goal_master/features/profail/presentation/view/profile_view.dart';
 import 'package:goal_master/features/splach/presentation/view/splash_view.dart';
 
 import 'app_router.dart';
@@ -90,6 +91,16 @@ List<RouteBase> appRoutes = [
       context: context,
       state: state,
       child: const NewPasswordView(),
+    ),
+  ),
+  //ProfileView
+  GoRoute(
+    parentNavigatorKey: parentKey,
+    path: RoutesKeys.kProfile,
+    pageBuilder: (context, state) => buildPageWithDefaultTransition<void>(
+      context: context,
+      state: state,
+      child: const ProfileView(),
     ),
   ),
 ];

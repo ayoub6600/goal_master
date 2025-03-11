@@ -41,7 +41,7 @@ class AppBarContent extends StatelessWidget {
             alignment: Alignment.center,
             children: [
               Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                mainAxisAlignment: MainAxisAlignment.start,
                 children: [
                   leading ??
                       AppBarBackButton(
@@ -51,19 +51,20 @@ class AppBarContent extends StatelessWidget {
                         iconColor: backIconColor,
                         bgColor: backBgColor,
                       ),
-                  if (trailing != null) trailing!
+                  if (trailing != null) trailing!,
+                  titleWidget ??
+                      (title == null
+                          ? SizedBox()
+                          : Text(
+                              title!,
+                              textAlign: TextAlign.start,
+                              style: TextStyle(
+                                fontSize: 16.sp,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            )),
                 ],
               ),
-              titleWidget ??
-                  (title == null
-                      ? SizedBox()
-                      : Text(
-                          title!,
-                          style: TextStyle(
-                            fontSize: 16.sp,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        )),
             ],
           ),
         ],

@@ -44,7 +44,7 @@ class GlobalAppBar extends StatefulWidget {
 
 class _GlobalAppBarState extends State<GlobalAppBar> {
   var contentKey = GlobalKey();
-  double contentHeight = 0;
+  double contentHeight = 75;
   bool stopRendering = false;
 
   void _initSizes() {
@@ -52,6 +52,7 @@ class _GlobalAppBarState extends State<GlobalAppBar> {
       contentHeight = contentKey.currentContext?.size?.height ?? 0;
       if (stopRendering) return;
       if (contentHeight != 0) stopRendering = true;
+
       setState(() {});
     });
   }
@@ -74,6 +75,14 @@ class _GlobalAppBarState extends State<GlobalAppBar> {
               height: topPadding + contentHeight,
               width: double.infinity,
               decoration: BoxDecoration(
+                //  color: const Color(0xFFFDFDFD),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0x40000000), // #00000040 (Opacity 25%)
+                    offset: const Offset(0, 4),
+                    blurRadius: 4,
+                  ),
+                ],
                 color: widget.allowBgColors ? widget.bgColor : null,
                 gradient: widget.bgColor != null || !widget.allowBgColors
                     ? null

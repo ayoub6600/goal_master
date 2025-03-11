@@ -6,6 +6,10 @@ class Assets {
   /// assets/images/png_image/1.png
   static const String imagesPngImage1 = "assets/images/png_image/1.png";
 
+  /// Assets for imagesPngImageArrowLeft
+  /// assets/images/png_image/Arrow_Left.png
+  static const String imagesPngImageArrowLeft = "assets/images/png_image/Arrow_Left.png";
+
   /// Assets for imagesPngImageArrowSquareRight
   /// assets/images/png_image/arrow-square-right.png
   static const String imagesPngImageArrowSquareRight = "assets/images/png_image/arrow-square-right.png";
@@ -14,9 +18,29 @@ class Assets {
   /// assets/images/png_image/BackgroundLogin.png
   static const String imagesPngImageBackgroundLogin = "assets/images/png_image/BackgroundLogin.png";
 
+  /// Assets for imagesPngImageCallCalling
+  /// assets/images/png_image/call-calling.png
+  static const String imagesPngImageCallCalling = "assets/images/png_image/call-calling.png";
+
   /// Assets for imagesPngImageInactive
   /// assets/images/png_image/inactive.png
   static const String imagesPngImageInactive = "assets/images/png_image/inactive.png";
+
+  /// Assets for imagesPngImageKey
+  /// assets/images/png_image/key.png
+  static const String imagesPngImageKey = "assets/images/png_image/key.png";
+
+  /// Assets for imagesPngImageLogout
+  /// assets/images/png_image/logout.png
+  static const String imagesPngImageLogout = "assets/images/png_image/logout.png";
+
+  /// Assets for imagesPngImageMagicpen
+  /// assets/images/png_image/magicpen.png
+  static const String imagesPngImageMagicpen = "assets/images/png_image/magicpen.png";
+
+  /// Assets for imagesPngImageNotification
+  /// assets/images/png_image/notification.png
+  static const String imagesPngImageNotification = "assets/images/png_image/notification.png";
 
   /// Assets for imagesPngImageOn2
   /// assets/images/png_image/on2.png
@@ -25,6 +49,14 @@ class Assets {
   /// Assets for imagesPngImageOn3
   /// assets/images/png_image/on3.png
   static const String imagesPngImageOn3 = "assets/images/png_image/on3.png";
+
+  /// Assets for imagesPngImageProfailIcon
+  /// assets/images/png_image/profailIcon.png
+  static const String imagesPngImageProfailIcon = "assets/images/png_image/profailIcon.png";
+
+  /// Assets for imagesPngImageSetting2
+  /// assets/images/png_image/setting-2.png
+  static const String imagesPngImageSetting2 = "assets/images/png_image/setting-2.png";
 
   /// Assets for imagesSvgImageEyeSlash
   /// assets/images/svg_image/eye-slash.svg
