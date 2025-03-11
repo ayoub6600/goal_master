@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:goal_master/core/components/custom_text_field/custom_app_form_text_field.dart';
+import 'package:goal_master/core/routing/route_utils.dart';
+import 'package:goal_master/core/routing/routes_keys.dart';
 import 'package:goal_master/core/styles/app_colors.dart';
 import 'package:goal_master/core/styles/app_text_styles.dart';
 import 'package:goal_master/core/styles/assets.dart';
 import 'package:goal_master/core/styles/spaces.dart';
-import 'package:goal_master/features/auth/presentation/view/widgets/button_app.dart';
+import 'package:goal_master/core/components/button_app.dart';
 
 class LoginViewBody extends StatelessWidget {
   const LoginViewBody({
@@ -127,10 +129,15 @@ class LoginViewBody extends StatelessWidget {
                       ),
                     ),
                     WidthSpace(5.w),
-                    Text(
-                      "انشئ حساب",
-                      style: AppTextStyles.font14SemiBold.copyWith(
-                        color: AppColors.primaryBlueLight,
+                    InkWell(
+                      onTap: () {
+                        push(RoutesKeys.kRegister, context);
+                      },
+                      child: Text(
+                        "انشئ حساب",
+                        style: AppTextStyles.font14SemiBold.copyWith(
+                          color: AppColors.primaryBlueLight,
+                        ),
                       ),
                     ),
                   ],
