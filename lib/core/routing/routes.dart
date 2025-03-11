@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:goal_master/core/components/build_page_with_default_transition.dart';
 import 'package:goal_master/core/routing/routes_branches.dart';
 import 'package:goal_master/core/routing/routes_keys.dart';
+import 'package:goal_master/features/auth/presentation/register_view.dart';
 import 'package:goal_master/features/auth/presentation/view/login_view.dart';
 import 'package:goal_master/features/onbording/manager/onboarding_cubit.dart';
 import 'package:goal_master/features/onbording/presentation/onboarding_view.dart';
@@ -46,6 +47,16 @@ List<RouteBase> appRoutes = [
       context: context,
       state: state,
       child: const LoginView(),
+    ),
+  ),
+  //RegisterView
+  GoRoute(
+    parentNavigatorKey: parentKey,
+    path: RoutesKeys.kRegister,
+    pageBuilder: (context, state) => buildPageWithDefaultTransition<void>(
+      context: context,
+      state: state,
+      child: const RegisterView(),
     ),
   ),
 ];

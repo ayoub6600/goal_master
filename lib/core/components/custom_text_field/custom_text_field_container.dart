@@ -39,6 +39,18 @@ class CustomTextFieldContainer extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(8.r), // تقليل الزوايا
+        border: Border.all(
+          width: 1,
+          color: focusNode.hasFocus ? AppColors.primary : AppColors.mainGrey,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: focusNode.hasFocus ? Color(0xFFEAF7FC) : Colors.white,
+            blurRadius: 0,
+            offset: Offset(0, 0),
+            spreadRadius: 3, // تقليل الظل
+          )
+        ],
       ),
       child: child,
     );
