@@ -47,6 +47,7 @@ dependencies:
   flutter_svg: ^2.0.17
   flutter_bloc: ^9.1.0
   bloc: ^9.0.0
+  flutter_otp_text_field: ^1.5.1+1
   
   
 
@@ -80,6 +81,7 @@ flutter:
   assets:
     - assets/images/svg_image/
     - assets/images/png_image/
+    - assets/images/svg_image/sendotp.svg
    
 
   
