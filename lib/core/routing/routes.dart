@@ -3,7 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:goal_master/core/components/build_page_with_default_transition.dart';
 import 'package:goal_master/core/routing/routes_branches.dart';
 import 'package:goal_master/core/routing/routes_keys.dart';
-import 'package:goal_master/features/auth/presentation/register_view.dart';
+import 'package:goal_master/features/auth/presentation/view/register_view.dart';
 import 'package:goal_master/features/auth/presentation/view/login_view.dart';
 import 'package:goal_master/features/onbording/manager/onboarding_cubit.dart';
 import 'package:goal_master/features/onbording/presentation/onboarding_view.dart';
