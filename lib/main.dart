@@ -4,6 +4,8 @@ import 'package:goal_master/core/routing/app_router.dart';
 import 'package:goal_master/core/styles/app_colors.dart';
 import 'package:goal_master/features/splach/presentation/view/splash_view.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+
 
 void main() {
   runApp(const GoalMaster());
@@ -34,9 +36,15 @@ class GoalMaster extends StatelessWidget {
           ),
           debugShowCheckedModeBanner: false,
           locale: const Locale('ar'),
-          //supportedLocales: const [Locale('ar')],
+          supportedLocales: const [
+            Locale('ar'), // دعم اللغة العربية
+          ],
+          localizationsDelegates: const [
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
           routerConfig: AppRouter.router,
-          //  home: SplashView(),
         ),
       ),
     );
