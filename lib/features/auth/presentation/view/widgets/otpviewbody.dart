@@ -3,6 +3,8 @@ import 'package:flutter_otp_text_field/flutter_otp_text_field.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:goal_master/core/components/button_app.dart';
 import 'package:goal_master/core/components/page_wrapper.dart';
+import 'package:goal_master/core/routing/route_utils.dart';
+import 'package:goal_master/core/routing/routes_keys.dart';
 import 'package:goal_master/core/styles/app_colors.dart';
 import 'package:goal_master/core/styles/app_text_styles.dart';
 import 'package:goal_master/core/styles/assets.dart';
@@ -73,7 +75,13 @@ class Otpviewbody extends StatelessWidget {
                 ],
               ),
               HeightSpace(20.h),
-              ButtonApp(text: 'تأكيد', backGround: AppColors.primary),
+              ButtonApp(
+                text: 'تأكيد',
+                backGround: AppColors.primary,
+                onTap: () {
+                  push(RoutesKeys.kNewPassword, context);
+                },
+              ),
             ],
           ),
         ),

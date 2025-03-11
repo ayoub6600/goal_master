@@ -5,4 +5,5 @@ class RoutesKeys {
   static const kRegister = '/kRegister';
   static const kForgotPassword = '/kForgotPassword';
   static const kOtp = '/kOtp';
+  static const kNewPassword = '/kNewPassword';
 }
