@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:goal_master/core/components/page_wrapper.dart';
+import 'package:goal_master/core/routing/route_utils.dart';
+import 'package:goal_master/core/routing/routes_keys.dart';
 import 'package:goal_master/core/styles/app_colors.dart';
 import 'package:goal_master/core/styles/app_text_styles.dart';
 import 'package:goal_master/core/styles/assets.dart';
 import 'package:goal_master/core/styles/spaces.dart';
-import 'package:goal_master/features/profail/presentation/view/update_profile_view.dart';
 import 'package:goal_master/features/profail/presentation/view/widgets/profile_header.dart';
 import 'package:goal_master/features/profail/presentation/view/widgets/profile_item.dart';
 
@@ -47,11 +48,7 @@ class ProfileView extends StatelessWidget {
                     title: "تغيير معلوماتك الشخصية",
                     icon: Assets.imagesPngImageMagicpen,
                     onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => UpdateProfileView()),
-                      );
+                      push(RoutesKeys.kUpdateProfile, context);
                     },
                   ),
                   Container(
@@ -75,11 +72,7 @@ class ProfileView extends StatelessWidget {
                     title: "تغيير كلمة المرور",
                     icon: Assets.imagesPngImageKey,
                     onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => UpdateProfileView()),
-                      );
+                      push(RoutesKeys.kChangePassword, context);
                     },
                   ),
                   Container(
@@ -91,7 +84,9 @@ class ProfileView extends StatelessWidget {
                   ProfileItem(
                     title: "اتصل بنا",
                     icon: Assets.imagesPngImageCallCalling,
-                    onTap: () {},
+                    onTap: () {
+                      push(RoutesKeys.kContact, context);
+                    },
                   ),
                   Container(
                     width: double.infinity,

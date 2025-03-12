@@ -36,6 +36,7 @@ class ProfileItem extends StatelessWidget {
             Expanded(
               child: Text(
                 title,
+                //  textDirection: TextDirection.rtl,
                 style: AppTextStyles.font16Bold.copyWith(
                   color: AppColors.fontColor,
                 ),
