@@ -1,11 +1,7 @@
 // ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables, library_private_types_in_public_api
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:goal_master/core/components/custom_text_field/custom_text_field_upper_hint.dart';
-import 'package:goal_master/core/styles/app_colors.dart';
-import 'package:goal_master/core/styles/spaces.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class CustomTextFieldActualField extends StatelessWidget {

@@ -6,6 +6,10 @@ class Assets {
   /// assets/images/png_image/1.png
   static const String imagesPngImage1 = "assets/images/png_image/1.png";
 
+  /// Assets for imagesPngImageArrow
+  /// assets/images/png_image/arrow.png
+  static const String imagesPngImageArrow = "assets/images/png_image/arrow.png";
+
   /// Assets for imagesPngImageArrowLeft
   /// assets/images/png_image/Arrow_Left.png
   static const String imagesPngImageArrowLeft = "assets/images/png_image/Arrow_Left.png";
@@ -18,9 +22,17 @@ class Assets {
   /// assets/images/png_image/BackgroundLogin.png
   static const String imagesPngImageBackgroundLogin = "assets/images/png_image/BackgroundLogin.png";
 
+  /// Assets for imagesPngImageCalendar
+  /// assets/images/png_image/calendar.png
+  static const String imagesPngImageCalendar = "assets/images/png_image/calendar.png";
+
   /// Assets for imagesPngImageCallCalling
   /// assets/images/png_image/call-calling.png
   static const String imagesPngImageCallCalling = "assets/images/png_image/call-calling.png";
+
+  /// Assets for imagesPngImageClock
+  /// assets/images/png_image/clock.png
+  static const String imagesPngImageClock = "assets/images/png_image/clock.png";
 
   /// Assets for imagesPngImageGlobalRefresh
   /// assets/images/png_image/global-refresh.png
@@ -37,6 +49,10 @@ class Assets {
   /// Assets for imagesPngImageLocation
   /// assets/images/png_image/location.png
   static const String imagesPngImageLocation = "assets/images/png_image/location.png";
+
+  /// Assets for imagesPngImageLockersSvgrepoCom
+  /// assets/images/png_image/lockers-svgrepo-com.png
+  static const String imagesPngImageLockersSvgrepoCom = "assets/images/png_image/lockers-svgrepo-com.png";
 
   /// Assets for imagesPngImageLogout
   /// assets/images/png_image/logout.png
@@ -69,6 +85,10 @@ class Assets {
   /// Assets for imagesPngImageSms
   /// assets/images/png_image/sms.png
   static const String imagesPngImageSms = "assets/images/png_image/sms.png";
+
+  /// Assets for imagesPngImageStar
+  /// assets/images/png_image/star.png
+  static const String imagesPngImageStar = "assets/images/png_image/star.png";
 
   /// Assets for imagesSvgImageEyeSlash
   /// assets/images/svg_image/eye-slash.svg

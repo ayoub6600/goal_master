@@ -10,4 +10,5 @@ class RoutesKeys {
   static const kChangePassword = '/kChangePassword';
   static const kContact = '/kContact';
   static const kUpdateProfile = '/kUpdateProfile';
+  static const kBooking = '/kBooking';
 }

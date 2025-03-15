@@ -29,6 +29,6 @@ abstract class AppRouter {
     observers: [ChuckerFlutter.navigatorObserver],
     navigatorKey: parentKey,
     routes: appRoutes,
-    initialLocation: RoutesKeys.kProfile,
+    initialLocation: RoutesKeys.kBooking,
   );
 }
