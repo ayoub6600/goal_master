@@ -11,4 +11,5 @@ class RoutesKeys {
   static const kContact = '/kContact';
   static const kUpdateProfile = '/kUpdateProfile';
   static const kBooking = '/kBooking';
+  static const kHome = '/kHome';
 }

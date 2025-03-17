@@ -8,6 +8,7 @@ import 'package:goal_master/features/auth/presentation/view/otp_view.dart';
 import 'package:goal_master/features/auth/presentation/view/register_view.dart';
 import 'package:goal_master/features/auth/presentation/view/login_view.dart';
 import 'package:goal_master/features/booking/presentation/view/booking_view.dart';
+import 'package:goal_master/features/layout/presentation/view/home_layout_view.dart';
 import 'package:goal_master/features/onbording/presentation/manager/onboarding_cubit.dart';
 import 'package:goal_master/features/onbording/presentation/view/onboarding_view.dart';
 import 'package:goal_master/features/profail/presentation/view/change_password_view.dart';
@@ -144,6 +145,15 @@ List<RouteBase> appRoutes = [
       context: context,
       state: state,
       child: const BookingView(),
+    ),
+  ),
+  GoRoute(
+    parentNavigatorKey: parentKey,
+    path: RoutesKeys.kHome,
+    pageBuilder: (context, state) => buildPageWithDefaultTransition<void>(
+      context: context,
+      state: state,
+      child: const HomeLayoutView(),
     ),
   ),
 ];

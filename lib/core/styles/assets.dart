@@ -6,9 +6,21 @@ class Assets {
   /// assets/images/png_image/1.png
   static const String imagesPngImage1 = "assets/images/png_image/1.png";
 
+  /// Assets for imagesPngImageActionOnProfessional
+  /// assets/images/png_image/action_on_professional.png
+  static const String imagesPngImageActionOnProfessional = "assets/images/png_image/action_on_professional.png";
+
+  /// Assets for imagesPngImageAlbums
+  /// assets/images/png_image/Albums.png
+  static const String imagesPngImageAlbums = "assets/images/png_image/Albums.png";
+
   /// Assets for imagesPngImageArrow
   /// assets/images/png_image/arrow.png
   static const String imagesPngImageArrow = "assets/images/png_image/arrow.png";
+
+  /// Assets for imagesPngImageArrowDown
+  /// assets/images/png_image/arrowDown.png
+  static const String imagesPngImageArrowDown = "assets/images/png_image/arrowDown.png";
 
   /// Assets for imagesPngImageArrowLeft
   /// assets/images/png_image/Arrow_Left.png
@@ -34,9 +46,25 @@ class Assets {
   /// assets/images/png_image/clock.png
   static const String imagesPngImageClock = "assets/images/png_image/clock.png";
 
+  /// Assets for imagesPngImageDanger
+  /// assets/images/png_image/danger.png
+  static const String imagesPngImageDanger = "assets/images/png_image/danger.png";
+
   /// Assets for imagesPngImageGlobalRefresh
   /// assets/images/png_image/global-refresh.png
   static const String imagesPngImageGlobalRefresh = "assets/images/png_image/global-refresh.png";
+
+  /// Assets for imagesPngImageHome
+  /// assets/images/png_image/home.png
+  static const String imagesPngImageHome = "assets/images/png_image/home.png";
+
+  /// Assets for imagesPngImageHomeTest
+  /// assets/images/png_image/homeTest.png
+  static const String imagesPngImageHomeTest = "assets/images/png_image/homeTest.png";
+
+  /// Assets for imagesPngImageImageSta
+  /// assets/images/png_image/Image_sta.png
+  static const String imagesPngImageImageSta = "assets/images/png_image/Image_sta.png";
 
   /// Assets for imagesPngImageInactive
   /// assets/images/png_image/inactive.png
@@ -77,6 +105,18 @@ class Assets {
   /// Assets for imagesPngImageProfailIcon
   /// assets/images/png_image/profailIcon.png
   static const String imagesPngImageProfailIcon = "assets/images/png_image/profailIcon.png";
+
+  /// Assets for imagesPngImageProfile
+  /// assets/images/png_image/profile.png
+  static const String imagesPngImageProfile = "assets/images/png_image/profile.png";
+
+  /// Assets for imagesPngImageReceiptEdit
+  /// assets/images/png_image/receipt-edit.png
+  static const String imagesPngImageReceiptEdit = "assets/images/png_image/receipt-edit.png";
+
+  /// Assets for imagesPngImageSend2
+  /// assets/images/png_image/send-2.png
+  static const String imagesPngImageSend2 = "assets/images/png_image/send-2.png";
 
   /// Assets for imagesPngImageSetting2
   /// assets/images/png_image/setting-2.png
