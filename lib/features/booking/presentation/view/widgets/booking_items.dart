@@ -5,6 +5,7 @@ import 'package:goal_master/core/styles/app_colors.dart';
 import 'package:goal_master/core/styles/app_text_styles.dart';
 import 'package:goal_master/core/styles/assets.dart';
 import 'package:goal_master/core/styles/spaces.dart';
+import 'package:goal_master/features/booking/presentation/view/booking_details.dart';
 import 'package:goal_master/features/booking/presentation/view/booking_items_details.dart.dart';
 
 class BookingItems extends StatelessWidget {
@@ -166,6 +167,14 @@ class BookingItems extends StatelessWidget {
                       text: "تعديل الحجز",
                       textColor: Colors.white,
                       backGround: AppColors.primary,
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => BookingDetails(),
+                          ),
+                        );
+                      },
                     ),
                   ),
                   Expanded(

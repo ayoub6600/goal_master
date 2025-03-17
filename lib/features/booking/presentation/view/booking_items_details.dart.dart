@@ -20,55 +20,70 @@ class BookingItemsDetails extends StatelessWidget {
           children: [
             BuildHeaderImage(),
             Expanded(child: BuildDetailsSection()),
-            Container(
-              padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 26.h),
-              decoration: BoxDecoration(
-                color: Color(0xffF4F6F9),
-                boxShadow: [
-                  BoxShadow(
-                    color: Color(0x40000000), // #00000040 in ARGB format
-                    offset: Offset(0, 4),
-                    blurRadius: 4,
-                  ),
-                ],
-              ),
-              child: Row(
-                children: [
-                  Expanded(
-                    flex: 2,
-                    child: ButtonApp(
-                      text: "حجز الملعب",
-                      textColor: Colors.white,
-                      backGround: AppColors.primary,
-                    ),
-                  ),
-                  WidthSpace(2.w),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          "السعر ",
-                          style: AppTextStyles.font16Bold.copyWith(
-                            color: AppColors.fontColor,
-                          ),
-                        ),
-                        HeightSpace(8.h),
-                        Text(
-                          "دينار60.00",
-                          style: AppTextStyles.font16Bold.copyWith(
-                            color: AppColors.primary,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
+            CustomBookingButton(
+              text: "حجز الملعب",
+              onTap: () {},
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class CustomBookingButton extends StatelessWidget {
+  const CustomBookingButton({super.key, required this.text, this.onTap});
+  final String text;
+  final Function()? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 26.h),
+      decoration: BoxDecoration(
+        color: Color(0xffF4F6F9),
+        boxShadow: [
+          BoxShadow(
+            color: Color(0x40000000), // #00000040 in ARGB format
+            offset: Offset(0, 4),
+            blurRadius: 4,
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            flex: 2,
+            child: ButtonApp(
+              text: text,
+              textColor: Colors.white,
+              backGround: AppColors.primary,
+              onTap: onTap,
+            ),
+          ),
+          WidthSpace(2.w),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  "السعر ",
+                  style: AppTextStyles.font16Bold.copyWith(
+                    color: AppColors.fontColor,
+                  ),
+                ),
+                HeightSpace(8.h),
+                Text(
+                  "دينار60.00",
+                  style: AppTextStyles.font16Bold.copyWith(
+                    color: AppColors.primary,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

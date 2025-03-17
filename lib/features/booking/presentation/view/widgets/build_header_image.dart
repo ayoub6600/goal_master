@@ -25,9 +25,14 @@ class BuildHeaderImage extends StatelessWidget {
         Positioned(
           top: 20.h,
           right: 20.w,
-          child: Image.asset(
-            Assets.imagesPngImageArrowSquareRight,
-            fit: BoxFit.cover,
+          child: GestureDetector(
+            onTap: () {
+              Navigator.pop(context);
+            },
+            child: Image.asset(
+              Assets.imagesPngImageArrowSquareRight,
+              fit: BoxFit.cover,
+            ),
           ),
         ),
       ],
