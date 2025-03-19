@@ -126,6 +126,10 @@ class Assets {
   /// assets/images/png_image/sms.png
   static const String imagesPngImageSms = "assets/images/png_image/sms.png";
 
+  /// Assets for imagesPngImageSoccerBall
+  /// assets/images/png_image/Soccer_Ball.png
+  static const String imagesPngImageSoccerBall = "assets/images/png_image/Soccer_Ball.png";
+
   /// Assets for imagesPngImageStar
   /// assets/images/png_image/star.png
   static const String imagesPngImageStar = "assets/images/png_image/star.png";
