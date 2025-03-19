@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:goal_master/core/components/button_wrapper.dart';
+import 'package:goal_master/core/components/keys_values.dart';
+import 'package:goal_master/core/components/preference_utility.dart';
 import 'package:goal_master/core/routing/route_utils.dart';
 import 'package:goal_master/core/routing/routes_keys.dart';
 import 'package:goal_master/core/styles/app_colors.dart';
@@ -26,6 +28,9 @@ class OnboardingPreviousPageButton extends StatelessWidget {
               bool done = cubit.increment(context);
               if (!done) {
                 pushReplacement(RoutesKeys.kLogin, context);
+
+                SharedPreferenceUtil.putString(PrefKey.login, "true");
+                print("----->$done");
               }
             },
             child: Container(

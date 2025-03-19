@@ -39,29 +39,10 @@ class BuildLocationRow extends StatelessWidget {
                 final result = await Navigator.push<Map<String, dynamic>?>(
                   context,
                   MaterialPageRoute(
-                      builder: (context) => const AddAddressView()),
+                      builder: (context) => const ChangeLocationView()),
                 );
 
                 if (result != null) {
-                  final layoutCubit = context.read<LayoutCubit>();
-
-                  /// ✅ تحديث الموقع والإحداثيات
-                  layoutCubit.updateCurrentPosition(
-                    LatLng(result['latitude'], result['longitude']),
-                  );
-
-                  /// ✅ تحديث العنوان
-                  await layoutCubit.convertToAddress(
-                    result['latitude'],
-                    result['longitude'],
-                  );
-
-                  /// ✅ إعادة تحميل الموقع بالكامل وتحديث `GoogleMap`
-                  layoutCubit.initUserLocation();
-
-                  print("✅ الموقع تم تحديثه بنجاح");
-                  print(
-                      "📍 الموقع الجديد: ${result['latitude']}, ${result['longitude']}");
                   print(
                       "new address: ${context.read<LayoutCubit>().state.currentFullAddress}");
                 }

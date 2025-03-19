@@ -121,6 +121,7 @@ class LoginViewBody extends StatelessWidget {
                   text: "تسجيل الدخول",
                   backGround: AppColors.primary,
                   textColor: Colors.white,
+                  onTap: () => push(RoutesKeys.kHome, context),
                 ),
                 HeightSpace(29.h),
                 Row(

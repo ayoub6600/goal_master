@@ -4,6 +4,7 @@ import 'package:goal_master/core/styles/app_text_styles.dart';
 import 'package:goal_master/core/styles/assets.dart';
 import 'package:goal_master/features/layout/presentation/manager/layout_cubit.dart';
 import 'package:goal_master/features/more/presentation/view/more_view.dart';
+import 'package:goal_master/features/notification/presentation/view/notifaction_view.dart';
 
 class BuildHeaderHome extends StatelessWidget {
   const BuildHeaderHome({super.key, required this.layoutCubit});
@@ -38,7 +39,11 @@ class BuildHeaderHome extends StatelessWidget {
           ),
         ),
         GestureDetector(
-          onTap: () {},
+          onTap: () {
+            Navigator.push(context, MaterialPageRoute(builder: (context) {
+              return NotificationView();
+            }));
+          },
           child: Image.asset(Assets.imagesPngImageNotification),
         ),
       ],
