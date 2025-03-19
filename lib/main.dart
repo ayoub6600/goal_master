@@ -1,14 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:goal_master/core/components/preference_utility.dart';
 import 'package:goal_master/core/routing/app_router.dart';
 import 'package:goal_master/core/styles/app_colors.dart';
 import 'package:goal_master/features/layout/presentation/manager/layout_cubit.dart';
-import 'package:goal_master/features/splach/presentation/view/splash_view.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized(); // ✅ حل المشكلة
+  await SharedPreferenceUtil.getInstance(); // تأكد من انتظار التهيئة
   runApp(const GoalMaster());
 }
 
