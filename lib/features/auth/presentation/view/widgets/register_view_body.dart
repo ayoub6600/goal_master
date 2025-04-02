@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:goal_master/core/components/button_app.dart';
+import 'package:goal_master/core/components/custom_failure_toast.dart';
 import 'package:goal_master/core/components/custom_text_field/custom_app_form_text_field.dart';
 import 'package:goal_master/core/components/page_wrapper.dart';
 import 'package:goal_master/core/routing/route_utils.dart';
@@ -8,6 +10,7 @@ import 'package:goal_master/core/routing/routes_keys.dart';
 import 'package:goal_master/core/styles/app_colors.dart';
 import 'package:goal_master/core/styles/app_text_styles.dart';
 import 'package:goal_master/core/styles/spaces.dart';
+import 'package:goal_master/features/auth/presentation/manager/register_cubit/register_cubit.dart';
 import 'package:goal_master/features/auth/presentation/view/widgets/accept_terms.dart';
 
 class RegisterViewBody extends StatelessWidget {
@@ -17,6 +20,7 @@ class RegisterViewBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    var cubit = context.read<RegisterCubit>();
     return PageWrapper(
         allowBack: false,
         child: SingleChildScrollView(
@@ -60,7 +64,7 @@ class RegisterViewBody extends StatelessWidget {
                 HeightSpace(8.h),
                 CustomTextField(
                   hint: "اسم المستخدم",
-                  //   controller: cubit.emailController,
+                  controller: cubit.usernameController,
                   inputType: TextInputType.emailAddress,
                 ),
                 HeightSpace(16.h),
@@ -73,7 +77,7 @@ class RegisterViewBody extends StatelessWidget {
                 HeightSpace(8.h),
                 CustomTextField(
                   hint: "اكتب اسمك",
-                  //   controller: cubit.emailController,
+                  controller: cubit.nameController,
                   inputType: TextInputType.text,
                 ),
                 HeightSpace(16.h),
@@ -87,7 +91,7 @@ class RegisterViewBody extends StatelessWidget {
                 CustomTextField(
                   hint: "اكتب رقم هاتفك",
                   isPhone: true,
-                  //   controller: cubit.emailController,
+                  controller: cubit.phoneController,
                   inputType: TextInputType.phone,
                 ),
                 HeightSpace(16.h),
@@ -101,8 +105,7 @@ class RegisterViewBody extends StatelessWidget {
                 CustomTextField(
                   hint: "ضع كلمة السر",
                   password: true,
-
-                  //   controller: cubit.emailController,
+                  controller: cubit.passwordController,
                   inputType: TextInputType.text,
                 ),
                 HeightSpace(16.h),
@@ -117,6 +120,7 @@ class RegisterViewBody extends StatelessWidget {
                   hint: "أعد كلمة السر ",
                   password: true,
                   inputType: TextInputType.text,
+                  controller: cubit.confirmPasswordController,
                 ),
                 HeightSpace(24.h),
                 AcceptTerms(),
@@ -146,7 +150,22 @@ class RegisterViewBody extends StatelessWidget {
                   ],
                 ),
                 HeightSpace(40.h),
-                ButtonApp(text: "تسجيل", backGround: AppColors.primary),
+                BlocConsumer<RegisterCubit, RegisterState>(
+                  listener: (context, state) {
+                    if (state is RegisterSuccess) {
+                      push(RoutesKeys.kLogin, context);
+                    } else if (state is RegisterError) {
+                      showCustomFailureToast(state.errMessage);
+                    }
+                  },
+                  builder: (context, state) {
+                    return ButtonApp(
+                      text: "تسجيل",
+                      backGround: AppColors.primary,
+                      onTap: cubit.register,
+                    );
+                  },
+                ),
                 HeightSpace(29.h),
               ],
             ),

@@ -1,0 +1,15 @@
+import 'package:get_it/get_it.dart';
+import 'package:dio/dio.dart';
+import 'package:goal_master/features/auth/data/repo/auth_repo_imp.dart';
+import '../databases/api/dio_consumer.dart';
+
+final getIt = GetIt.instance;
+
+void setupServiceLocator() {
+  getIt.registerSingleton<Dio>(Dio());
+  getIt.registerSingleton<DioConsumer>(DioConsumer(dio: getIt<Dio>()));
+
+  getIt.registerSingleton<AuthRepoImpl>(
+    AuthRepoImpl(getIt.get<DioConsumer>()),
+  );
+}
