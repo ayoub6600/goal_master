@@ -4,6 +4,7 @@ import 'package:goal_master/core/components/build_page_with_default_transition.d
 import 'package:goal_master/core/routing/routes_keys.dart';
 import 'package:goal_master/core/services/service_locator.dart';
 import 'package:goal_master/features/auth/data/repo/auth_repo_imp.dart';
+import 'package:goal_master/features/auth/presentation/manager/change_password_cubit/change_password_cubit.dart';
 import 'package:goal_master/features/auth/presentation/manager/login_cubit/login_cubit.dart';
 import 'package:goal_master/features/auth/presentation/manager/register_cubit/register_cubit.dart';
 import 'package:goal_master/features/auth/presentation/manager/verify_email_cubit/verify_email_cubit.dart';
@@ -87,7 +88,14 @@ List<RouteBase> appRoutes = [
     pageBuilder: (context, state) => buildPageWithDefaultTransition<void>(
       context: context,
       state: state,
-      child: const ForgotPasswordView(),
+      child: BlocProvider(
+        create: (context) => VerifyEmailCubit(
+          getIt<AuthRepoImpl>(),
+          '',
+          forget: true,
+        ),
+        child: const ForgotPasswordView(),
+      ),
     ),
   ),
 
@@ -95,11 +103,25 @@ List<RouteBase> appRoutes = [
   GoRoute(
     parentNavigatorKey: parentKey,
     path: RoutesKeys.kOtp,
-    pageBuilder: (context, state) => buildPageWithDefaultTransition<void>(
-      context: context,
-      state: state,
-      child: const OtpView(),
-    ),
+    pageBuilder: (context, state) {
+      final Map<String, dynamic> extraData =
+          state.extra as Map<String, dynamic>;
+      final phone = extraData['phone'] as String;
+      final forget = extraData['forget'] as bool;
+
+      return buildPageWithDefaultTransition<void>(
+        context: context,
+        state: state,
+        child: BlocProvider(
+          create: (context) => VerifyEmailCubit(
+            getIt<AuthRepoImpl>(),
+            phone,
+            forget: forget,
+          ),
+          child: const OtpView(),
+        ),
+      );
+    },
   ),
   //NewPasswordView
   GoRoute(
@@ -108,7 +130,12 @@ List<RouteBase> appRoutes = [
     pageBuilder: (context, state) => buildPageWithDefaultTransition<void>(
       context: context,
       state: state,
-      child: const NewPasswordView(),
+      child: BlocProvider(
+        create: (context) => ChangePasswordCubit(
+          getIt<AuthRepoImpl>(),
+        ),
+        child: const NewPasswordView(),
+      ),
     ),
   ),
   //ProfileView
