@@ -2,6 +2,7 @@
 
 import 'dart:async';
 
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:goal_master/features/auth/data/repo/auth_repo.dart';
 
@@ -9,14 +10,19 @@ part 'verify_email_state.dart';
 
 class VerifyEmailCubit extends Cubit<VerifyEmailState> {
   VerifyEmailCubit(
-    this.repo, {
-    required this.email,
+    this.repo,
+    this.phone, {
+    required this.forget,
   }) : super(VerifyEmailInitial()) {
     _initTimer();
+    emailController.text = phone;
   }
   final AuthRepo repo;
-  final String email;
+  final bool forget; // ✅ تحديد إذا كان Forget أو Register
 
+  final String phone;
+
+  final emailController = TextEditingController();
   late Timer timer;
   int _time = 60;
   String get timeString {
@@ -57,9 +63,9 @@ class VerifyEmailCubit extends Cubit<VerifyEmailState> {
     emit(VerifyEmailLoading());
 
     var result = await repo.verifyOTP(
-      phone: email,
+      phone: phone,
       otp: otp,
-      forget: false,
+      forget: forget,
     );
     result.fold(
       (error) => emit(VerifyEmailError(error.errMessage)),
@@ -71,9 +77,9 @@ class VerifyEmailCubit extends Cubit<VerifyEmailState> {
     bool nextPage = true,
   }) async {
     emit(VerifyEmailLoading());
-
+    String phone = emailController.text.trim();
     var result = await repo.sendOTP(
-      phone: email,
+      phone: phone,
     );
     result.fold(
       (error) => emit(VerifyEmailError(error.errMessage)),
