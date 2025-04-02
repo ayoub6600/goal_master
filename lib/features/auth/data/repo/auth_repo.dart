@@ -1,10 +1,11 @@
+import 'package:bloc/bloc.dart';
 import 'package:dartz/dartz.dart';
 import 'package:goal_master/core/errors/failure.dart';
 import 'package:goal_master/features/auth/data/model/login_model/login_model.dart';
 
 abstract class AuthRepo {
   // Future<Either<Failure, UserModel>> profile();
-  // Future<Either<Failure, Unit>> logout();
+  Future<Either<Failure, Unit>> logout();
   Future<Either<Failure, LoginModel>> login({
     required String email,
     required String password,
@@ -24,4 +25,10 @@ abstract class AuthRepo {
     required String passwordConfirm,
     required String phone,
   });
+  Future<Either<Failure, String>> changePassword({
+    required String password,
+    required String passwordConfirm,
+    required String token,
+  });
+  Future<Either<Failure, String>> profile();
 }

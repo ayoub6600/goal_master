@@ -3,7 +3,9 @@ import 'package:goal_master/core/databases/api/api_consumer.dart';
 import 'package:goal_master/core/databases/api/api_consumer_extension.dart';
 import 'package:goal_master/core/databases/api/end_points.dart';
 import 'package:goal_master/core/errors/failure.dart';
+import 'package:goal_master/core/manager/user_info_cubit/user_info_cubit.dart';
 import 'package:goal_master/features/auth/data/model/login_model/login_model.dart';
+import 'package:goal_master/features/auth/data/model/login_model/user.dart';
 import 'package:goal_master/features/auth/data/repo/auth_repo.dart';
 
 class AuthRepoImpl implements AuthRepo {
@@ -22,31 +24,11 @@ class AuthRepoImpl implements AuthRepo {
       (res) async {
         var data = res['data'];
         var model = LoginModel.fromJson(data);
-        // await userInfoCubit.setUser(model.user, model.token);
+        await userInfoCubit.setUser(model.data?.user, model.data!.token);
         return model;
       },
     );
   }
-
-  // Future<Either<Failure, String>> forgetPassword({
-  //   required String email,
-  //   required String otp,
-  //   required String password,
-  //   required String passwordConfirm,
-  // }) {
-  //   return consumer.handleRequestCustom(
-  //     () => consumer.post(EndPoints.resetPassword, data: {
-  //       'email': email,
-  //       'password': password,
-  //       'password_confirmation': passwordConfirm,
-  //       'otp': otp,
-  //     }),
-  //     (res) async {
-  //       var message = res['message'];
-  //       return message;
-  //     },
-  //   );
-  // }
 
   @override
   Future<Either<Failure, String>> sendOTP({required String phone}) {
@@ -70,10 +52,7 @@ class AuthRepoImpl implements AuthRepo {
     return consumer.handleRequestCustom(
       () => consumer.post(EndPoints.verifyOTP,
           data: forget
-              ? {
-                  'phone': phone,
-                  'otp': otp,
-                }
+              ? {'phone': phone, 'otp': otp, 'forget': 1}
               : {
                   'phone': phone,
                   'otp': otp,
@@ -103,23 +82,46 @@ class AuthRepoImpl implements AuthRepo {
       (res) async {
         var data = res['data'];
         var model = LoginModel.fromJson(data);
+        await userInfoCubit.setUser(model.data?.user, model.data!.token);
         // await userInfoCubit.setUser(model.user, model.token);
         return model;
       },
     );
   }
 
-  // @override
-  // Future<Either<Failure, Unit>> logout() async {
-  //   await userInfoCubit.logout();
-  //   return right(unit);
-  // }
+  @override
+  Future<Either<Failure, String>> changePassword(
+      {required String password,
+      required String passwordConfirm,
+      required String token}) {
+    return consumer.handleRequestCustom(
+      () => consumer.post(EndPoints.changePassword, data: {
+        'password': password,
+        'password_confirmation': passwordConfirm,
+        'token': token,
+      }),
+      (res) async {
+        var message = res['message'];
+        return message;
+      },
+    );
+  }
 
-  // @override
-  // Future<Either<Failure, UserModel>> profile() {
-  //   return consumer.handleRequest(
-  //     () => consumer.get(EndPoints.profile),
-  //     (p0) => UserModel.fromJson(p0['data']),
-  //   );
-  // }
+  @override
+  Future<Either<Failure, Unit>> logout() async {
+    await userInfoCubit.logout();
+    return right(unit);
+  }
+
+  @override
+  Future<Either<Failure, String>> profile() {
+    return consumer.handleRequest(
+      () => consumer.get(EndPoints.refresh),
+      (p0) {
+        // Extract the token from the 'data' field
+        String token = p0['data']['token'];
+        return token; // Return the token as the result
+      },
+    );
+  }
 }
