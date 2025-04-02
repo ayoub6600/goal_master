@@ -1,6 +1,8 @@
 import 'package:flutter/widgets.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:goal_master/core/components/button_app.dart';
+import 'package:goal_master/core/components/custom_failure_toast.dart';
 import 'package:goal_master/core/components/custom_text_field/custom_app_form_text_field.dart';
 import 'package:goal_master/core/components/page_wrapper.dart';
 import 'package:goal_master/core/routing/route_utils.dart';
@@ -8,6 +10,7 @@ import 'package:goal_master/core/routing/routes_keys.dart';
 import 'package:goal_master/core/styles/app_colors.dart';
 import 'package:goal_master/core/styles/app_text_styles.dart';
 import 'package:goal_master/core/styles/spaces.dart';
+import 'package:goal_master/features/auth/presentation/manager/verify_email_cubit/verify_email_cubit.dart';
 
 class ForgotPasswordViewBody extends StatelessWidget {
   const ForgotPasswordViewBody({
@@ -16,6 +19,7 @@ class ForgotPasswordViewBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cubit = context.read<VerifyEmailCubit>();
     return PageWrapper(
       child: Padding(
         padding: EdgeInsets.all(20.0.w),
@@ -40,14 +44,30 @@ class ForgotPasswordViewBody extends StatelessWidget {
             HeightSpace(32.h),
             CustomTextField(
               hint: "ادخل رقم هاتف الواتس اب",
-              //  password: true,
-              // controller: cubit.passwordController,
+              controller: cubit.emailController,
             ),
             HeightSpace(50.h),
-            ButtonApp(
-              text: "ارسال الرمز",
-              onTap: () {
-                push(RoutesKeys.kOtp, context);
+            BlocConsumer<VerifyEmailCubit, VerifyEmailState>(
+              listener: (context, state) {
+                if (state is VerifyEmailSuccess) {
+                  pushReplacement(
+                    RoutesKeys.kOtp,
+                    context,
+                    extra: {
+                      'phone': cubit.emailController.text,
+                      'forget':
+                          true, // ✅ تعيين forget إلى true عند نسيان كلمة المرور
+                    },
+                  );
+                } else if (state is VerifyEmailError) {
+                  showCustomFailureToast(state.errMessage);
+                }
+              },
+              builder: (context, state) {
+                return ButtonApp(
+                  text: "ارسال الرمز",
+                  onTap: cubit.sendOTP,
+                );
               },
             ),
           ],

@@ -1,4 +1,5 @@
 import 'package:flutter/widgets.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_otp_text_field/flutter_otp_text_field.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:goal_master/core/components/button_app.dart';
@@ -9,6 +10,7 @@ import 'package:goal_master/core/styles/app_colors.dart';
 import 'package:goal_master/core/styles/app_text_styles.dart';
 import 'package:goal_master/core/styles/assets.dart';
 import 'package:goal_master/core/styles/spaces.dart';
+import 'package:goal_master/features/auth/presentation/manager/verify_email_cubit/verify_email_cubit.dart';
 
 class Otpviewbody extends StatelessWidget {
   const Otpviewbody({
@@ -17,6 +19,7 @@ class Otpviewbody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cubit = context.read<VerifyEmailCubit>();
     return PageWrapper(
       child: Padding(
         padding: EdgeInsets.all(20.0.w),
@@ -52,7 +55,7 @@ class Otpviewbody extends StatelessWidget {
                 borderColor: Color(0xFF512DA8),
                 showFieldAsBox: true,
                 onSubmit: (String verificationCode) {
-                  //    cubit.setOTP(verificationCode);
+                  cubit.setOTP(verificationCode);
                 }, // end onSubmit
               ),
               HeightSpace(20.h),
@@ -60,26 +63,43 @@ class Otpviewbody extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
-                    '00:39',
+                    '${cubit.timeString} ',
                     style: AppTextStyles.font14SemiBold.copyWith(
                       color: AppColors.primary,
                     ),
                   ),
                   WidthSpace(8.w),
-                  Text(
-                    'اعادة ارسال',
-                    style: AppTextStyles.font14SemiBold.copyWith(
-                      color: AppColors.primary,
-                    ),
+                  BlocBuilder<VerifyEmailCubit, VerifyEmailState>(
+                    builder: (context, state) {
+                      return GestureDetector(
+                        onTap: () {
+                          cubit.resend();
+                        },
+                        child: Text(
+                          'اعادة ارسال',
+                          style: AppTextStyles.font14SemiBold.copyWith(
+                            color: AppColors.primary,
+                          ),
+                        ),
+                      );
+                    },
                   ),
                 ],
               ),
               HeightSpace(20.h),
-              ButtonApp(
-                text: 'تأكيد',
-                backGround: AppColors.primary,
-                onTap: () {
-                  push(RoutesKeys.kNewPassword, context);
+              BlocConsumer<VerifyEmailCubit, VerifyEmailState>(
+                listener: (context, state) {
+                  if (state is VerifyEmailSuccess) {
+                  } else if (state is VerifyEmailError) {
+                    print(state..errMessage);
+                  }
+                },
+                builder: (context, state) {
+                  return ButtonApp(
+                    text: 'تأكيد',
+                    backGround: AppColors.primary,
+                    onTap: cubit.verifyOTP,
+                  );
                 },
               ),
             ],

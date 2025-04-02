@@ -152,11 +152,18 @@ class RegisterViewBody extends StatelessWidget {
                 HeightSpace(40.h),
                 BlocConsumer<RegisterCubit, RegisterState>(
                   listener: (context, state) {
-                    if (state is RegisterSuccess) {
-                      push(RoutesKeys.kLogin, context);
-                    } else if (state is RegisterError) {
-                      showCustomFailureToast(state.errMessage);
-                    }
+                    push(RoutesKeys.kOtp, context, extra: {
+                      'phone': cubit.phoneController.text,
+                      'forget': false,
+                    });
+                    // if (state is RegisterSuccess) {
+                    //   push(RoutesKeys.kOtp, context, extra: {
+                    //     'phone': cubit.phoneController.text,
+                    //     'forget': false,
+                    //   });
+                    // } else if (state is RegisterError) {
+                    //   showCustomFailureToast(state.errMessage);
+                    // }
                   },
                   builder: (context, state) {
                     return ButtonApp(
