@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:goal_master/core/components/button_app.dart';
 import 'package:goal_master/core/components/custom_text_field/custom_app_form_text_field.dart';
 import 'package:goal_master/core/components/page_wrapper.dart';
 import 'package:goal_master/core/styles/app_text_styles.dart';
 import 'package:goal_master/core/styles/spaces.dart';
+
+import '../../manager/update_profile_cubit/update_profile_cubit.dart';
 
 class UpdateProfileBody extends StatelessWidget {
   const UpdateProfileBody({
@@ -13,6 +16,7 @@ class UpdateProfileBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    var cubit = context.read<UpdateProfileCubit>();
     return PageWrapper(
       title: "تغيير معلوماتك الشخصية",
       allowBack: true,
@@ -32,7 +36,7 @@ class UpdateProfileBody extends StatelessWidget {
             HeightSpace(8.h),
             CustomTextField(
               hint: "اسم المستخدم",
-              //   controller: cubit.emailController,
+              controller: cubit.usernameController,
               inputType: TextInputType.emailAddress,
             ),
             HeightSpace(16.h),
@@ -45,7 +49,7 @@ class UpdateProfileBody extends StatelessWidget {
             HeightSpace(8.h),
             CustomTextField(
               hint: "اكتب اسمك",
-              //   controller: cubit.emailController,
+              controller: cubit.nameController,
               inputType: TextInputType.emailAddress,
             ),
             HeightSpace(16.h),
@@ -58,11 +62,17 @@ class UpdateProfileBody extends StatelessWidget {
             HeightSpace(8.h),
             CustomTextField(
               hint: "اكتب رقم هاتفك",
-              //   controller: cubit.emailController,
+              controller: cubit.phoneController,
               inputType: TextInputType.emailAddress,
             ),
             HeightSpace(70.h),
-            ButtonApp(text: " تحديث البيانات", onTap: () {}),
+            BlocConsumer<UpdateProfileCubit, UpdateProfileState>(
+              listener: (context, state) {},
+              builder: (context, state) {
+                return ButtonApp(
+                    text: " تحديث البيانات", onTap: cubit.updateProfile);
+              },
+            ),
           ],
         ),
       ),

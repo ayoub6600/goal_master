@@ -2,18 +2,25 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:goal_master/core/components/preference_utility.dart';
+import 'package:goal_master/core/manager/user_info_cubit/user_info_cubit.dart';
 import 'package:goal_master/core/routing/app_router.dart';
 import 'package:goal_master/core/services/service_locator.dart';
 import 'package:goal_master/core/styles/app_colors.dart';
+import 'package:goal_master/core/utils/storage_service.dart';
+import 'package:goal_master/features/auth/data/repo/auth_repo_imp.dart';
 import 'package:goal_master/features/layout/presentation/manager/layout_cubit.dart';
+import 'package:goal_master/features/profail/data/repo/profile_repo_imp.dart';
+import 'package:goal_master/features/profail/presentation/manager/profile_cubit/profile_cubit.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:oktoast/oktoast.dart';
 
 void main() async {
   setupServiceLocator();
+
   WidgetsFlutterBinding.ensureInitialized(); // ✅ حل المشكلة
-  await SharedPreferenceUtil.getInstance(); // تأكد من انتظار التهيئة
+  await SharedPreferenceUtil.getInstance();
+  await StorageService.init(); // تأكد من انتظار التهيئة
   runApp(const GoalMaster());
 }
 
@@ -26,6 +33,16 @@ class GoalMaster extends StatelessWidget {
       providers: [
         BlocProvider(
           create: (context) => LayoutCubit(),
+        ),
+        BlocProvider(
+          create: (context) => UserInfoCubit(
+            getIt<AuthRepoImpl>(),
+          ),
+        ),
+        BlocProvider(
+          create: (context) => ProfileCubit(
+            getIt<ProfileRepoImp>(),
+          )..getProfile(),
         ),
       ],
       child: ScreenUtilInit(

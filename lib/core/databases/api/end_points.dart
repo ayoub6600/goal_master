@@ -12,11 +12,17 @@ class EndPoints {
 
   static String verifyOTP = 'verify';
 
+  static String update = 'user/update';
+
   static String register = 'register';
 
   static String changePassword = 'change-password';
 
-  static String refresh = '/user/refresh';
+  static String changePasswordUser = 'user/change-password-user';
+
+  static String refresh = 'user/refresh';
+
+  static String profile = 'user/profile';
 }
 
 //doctors/top-ratings

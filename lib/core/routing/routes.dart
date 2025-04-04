@@ -17,6 +17,10 @@ import 'package:goal_master/features/booking/presentation/view/booking_view.dart
 import 'package:goal_master/features/layout/presentation/view/home_layout_view.dart';
 import 'package:goal_master/features/onbording/presentation/manager/onboarding_cubit.dart';
 import 'package:goal_master/features/onbording/presentation/view/onboarding_view.dart';
+import 'package:goal_master/features/profail/data/repo/profile_repo.dart';
+import 'package:goal_master/features/profail/data/repo/profile_repo_imp.dart';
+import 'package:goal_master/features/profail/presentation/manager/reset_password_cubit/reset_password_cubit.dart';
+import 'package:goal_master/features/profail/presentation/manager/update_profile_cubit/update_profile_cubit.dart';
 import 'package:goal_master/features/profail/presentation/view/change_password_view.dart';
 import 'package:goal_master/features/profail/presentation/view/contact_view.dart';
 import 'package:goal_master/features/profail/presentation/view/profile_view.dart';
@@ -155,7 +159,12 @@ List<RouteBase> appRoutes = [
     pageBuilder: (context, state) => buildPageWithDefaultTransition<void>(
       context: context,
       state: state,
-      child: const UpdateProfileView(),
+      child: BlocProvider(
+        create: (context) => UpdateProfileCubit(
+          getIt<ProfileRepoImp>(),
+        ),
+        child: const UpdateProfileView(),
+      ),
     ),
   ),
   //ChangePasswordView
@@ -165,7 +174,12 @@ List<RouteBase> appRoutes = [
     pageBuilder: (context, state) => buildPageWithDefaultTransition<void>(
       context: context,
       state: state,
-      child: const ChangePasswordView(),
+      child: BlocProvider(
+        create: (context) => ResetPasswordCubit(
+          getIt<ProfileRepoImp>(),
+        ),
+        child: const ChangePasswordView(),
+      ),
     ),
   ),
   //ContactView

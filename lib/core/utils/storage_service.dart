@@ -17,7 +17,7 @@ class StorageService {
 
   static Future<void> _initToken() async {
     String? t = await AuthManager.getToken();
-    UserInfoCubit.setToken(t);
+    //   UserInfoCubit.setToken(t);
   }
 
   /// Save a value in SharedPreferences

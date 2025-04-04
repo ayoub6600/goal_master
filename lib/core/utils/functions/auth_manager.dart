@@ -21,6 +21,7 @@ class AuthManager {
 
   /// Save user data and notify listeners
   static Future<void> saveUser(User? user, String? token) async {
+    print("user: $user, token: $token");
     if (user == null && token == null) {
       throw 'user and token are both null';
     }

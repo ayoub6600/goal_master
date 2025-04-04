@@ -22,9 +22,9 @@ class UserInfoCubit extends Cubit<UserInfoState> {
   ) : super(UserInfoState()) {
     _initCubit();
     try {
-      reloadUserAPI();
+      //  reloadUserAPI();
     } catch (e) {
-      // logger.e(e);
+      print("------------> $e");
     }
   }
   final AuthRepo _authRepo;
@@ -41,6 +41,8 @@ class UserInfoCubit extends Cubit<UserInfoState> {
 
   Future<void> setUser(User? user, String? token) async {
     emit(state.copyWith(loading: true));
+    print("------------> $user");
+    print("------------> $token");
     await AuthManager.saveUser(user, token);
 
     this.user = user ?? this.user;
@@ -51,6 +53,10 @@ class UserInfoCubit extends Cubit<UserInfoState> {
       user: user ?? this.user,
       token: token ?? this.token,
     ));
+  }
+
+  Future<void> saveUser(User? user, String? token) async {
+    await AuthManager.saveUser(user, token);
   }
 
   Future<void> logout() async {
@@ -66,26 +72,26 @@ class UserInfoCubit extends Cubit<UserInfoState> {
     ));
   }
 
-  Future<void> reloadUserAPI() async {
-    emit(state.copyWith(
-      user: state.user,
-      token: state.token,
-      loading: true,
-    ));
-    var res = await _authRepo.profile();
-    res.fold(
-      (l) {
-        emit(state.copyWith(
-          errorMsg: l.errMessage,
-          loading: false,
-          user: state.user,
-          token: state.token,
-        ));
-      },
-      (r) {
-        setUser(
-            state.user, r); // Update user and token after successful response
-      },
-    );
-  }
+  // Future<void> reloadUserAPI() async {
+  //   emit(state.copyWith(
+  //     user: state.user,
+  //     token: state.token,
+  //     loading: true,
+  //   ));
+  //   var res = await _authRepo.profile();
+  //   res.fold(
+  //     (l) {
+  //       emit(state.copyWith(
+  //         errorMsg: l.errMessage,
+  //         loading: false,
+  //         user: state.user,
+  //         token: state.token,
+  //       ));
+  //     },
+  //     (r) {
+  //       setUser(
+  //           state.user, r); // Update user and token after successful response
+  //     },
+  //   );
+  // }
 }

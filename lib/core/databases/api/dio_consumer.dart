@@ -1,5 +1,6 @@
 import 'package:chucker_flutter/chucker_flutter.dart';
 import 'package:dio/dio.dart';
+import 'package:goal_master/core/databases/token_interceptor.dart';
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 import 'api_consumer.dart';
 import 'end_points.dart';
@@ -11,13 +12,15 @@ class DioConsumer extends ApiConsumer {
     dio.options.baseUrl = EndPoints.baserUrl;
     dio.options.headers['Accept'] = 'application/json';
     dio.options.headers['Content-Type'] = 'application/json';
-    dio.options.headers['authorization'] =
-        'Bearer 12|Wu7IYOcLQumoNdV7P4BtkBnD2e3TKmcP3GLwp82jf3934caf';
+    String token =
+        "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwczovL3dlYi5nb2FsbWFzdGVycy5vbmxpbmUvYXBpL2xvZ2luIiwiaWF0IjoxNzQzNzI3ODkwLCJleHAiOjE3NDM3MzE0OTAsIm5iZiI6MTc0MzcyNzg5MCwianRpIjoiU0hueEFneHVpTm9UMmI1SCIsInN1YiI6Ijk1IiwicHJ2IjoiMjNiZDVjODk0OWY2MDBhZGIzOWU3MDFjNDAwODcyZGI3YTU5NzZmNyJ9.PKDIr4uf_R7sDRaPQCHW4duSJ8o4tlRNJWoleX8mi0A";
+    dio.options.headers['Authorization'] = 'Bearer $token';
+
     dio.options.headers['accept-language'] = 'ar';
-    dio.options.headers['Authorization'] =
-        'Bearer 67|UY4xmjsDVxJktH6YdmlprbWidCUD1Ir1sdX4Zrzjee44974a';
+
     dio.options.followRedirects = false;
     dio.interceptors.addAll([
+      const TokenInterceptor(),
       ChuckerDioInterceptor(),
       PrettyDioLogger(
         requestBody: true,

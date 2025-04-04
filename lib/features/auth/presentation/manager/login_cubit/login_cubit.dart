@@ -1,7 +1,13 @@
 // ignore_for_file: prefer_const_constructors
 
+import 'package:dartz/dartz.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:goal_master/core/components/keys_values.dart';
+import 'package:goal_master/core/components/preference_utility.dart';
+import 'package:goal_master/core/manager/user_info_cubit/user_info_cubit.dart';
+import 'package:goal_master/core/utils/functions/auth_manager.dart';
+import 'package:goal_master/features/auth/data/model/login_model/user.dart';
 import 'package:goal_master/features/auth/data/repo/auth_repo.dart';
 import 'package:goal_master/utils/input_validator.dart';
 
@@ -25,7 +31,13 @@ class LoginCubit extends Cubit<LoginState> {
       (error) {
         emit(LoginError(error.errMessage));
       },
-      (user) => emit(LoginSuccess()),
+      (user) {
+        emit(LoginSuccess());
+        print("---->token ${SharedPreferenceUtil.getString(PrefKey.fcmToken)}");
+        //save user
+        print("user: ${user.data?.user}, token: ${user.data?.token}");
+        print("user: ${user.data?.user}, token: ${user.data?.token}");
+      },
     );
   }
 
