@@ -1,8 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:goal_master/core/services/service_locator.dart';
 import 'package:goal_master/core/styles/app_colors.dart';
 import 'package:goal_master/core/styles/assets.dart';
+import 'package:goal_master/features/booking/data/repo/booking_repo_imp.dart';
+import 'package:goal_master/features/booking/presentation/manager/booking_cubit/booking_cubit.dart';
+import 'package:goal_master/features/booking/presentation/manager/cancel_booking_cubit/cancel_booking_cubit.dart';
+import 'package:goal_master/features/booking/presentation/manager/toggle_booking/booking_toggle_cubit.dart';
 
 import 'package:goal_master/features/booking/presentation/view/booking_view.dart';
 import 'package:goal_master/features/home/presentation/view/home_view.dart';
@@ -36,7 +41,25 @@ class _HomeLayoutViewState extends State<HomeLayoutView> {
             children: [
               if (state.activeScreen == NavBarElement.home) const HomeView(),
               if (state.activeScreen == NavBarElement.booking)
-                const BookingView(),
+                MultiBlocProvider(
+                  providers: [
+                    BlocProvider(
+                      create: (context) => BookingCubit(
+                        bookingRepo: getIt<BookingRepoImp>(),
+                      ),
+                    ),
+                    //CancelBookingCubit
+                    BlocProvider(
+                      create: (context) => CancelBookingCubit(
+                        getIt<BookingRepoImp>(),
+                      ),
+                    ),
+                    BlocProvider(
+                      create: (context) => ToggleCubit(),
+                    ),
+                  ],
+                  child: const BookingView(),
+                ),
               if (state.activeScreen == NavBarElement.profile)
                 const ProfileView(),
               // Align(
