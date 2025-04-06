@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:goal_master/core/components/button_app.dart';
+import 'package:goal_master/core/routing/route_utils.dart';
+import 'package:goal_master/core/routing/routes_keys.dart';
 import 'package:goal_master/core/styles/app_colors.dart';
 import 'package:goal_master/core/styles/app_text_styles.dart';
 import 'package:goal_master/core/styles/assets.dart';
@@ -59,7 +61,11 @@ class _HomeViewState extends State<HomeView> {
                     )),
                   ),
                   HeightSpace(20.h),
-                  ButtonApp(text: " احجز الان", onTap: () {}),
+                  ButtonApp(
+                      text: " احجز الان",
+                      onTap: () {
+                        push(RoutesKeys.kBookingDetails, context);
+                      }),
                   HeightSpace(24.h),
                   Text(
                     "قسم الالعاب",
