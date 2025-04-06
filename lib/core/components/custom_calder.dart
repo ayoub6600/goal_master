@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:goal_master/core/styles/app_colors.dart';
-import 'package:goal_master/features/booking/presentation/manager/cubit/calendar_cubit.dart';
-import 'package:goal_master/features/booking/presentation/manager/cubit/calendar_state.dart';
+import 'package:goal_master/features/booking/presentation/manager/calendar_cubit/calendar_cubit.dart';
+import 'package:goal_master/features/booking/presentation/manager/calendar_cubit/calendar_state.dart';
 import 'package:table_calendar/table_calendar.dart';
 
 class CustomCalder extends StatelessWidget {

@@ -1,4 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:goal_master/core/components/build_page_with_default_transition.dart';
 import 'package:goal_master/core/routing/routes_keys.dart';
@@ -13,6 +14,15 @@ import 'package:goal_master/features/auth/presentation/view/new_password_view.da
 import 'package:goal_master/features/auth/presentation/view/otp_view.dart';
 import 'package:goal_master/features/auth/presentation/view/register_view.dart';
 import 'package:goal_master/features/auth/presentation/view/login_view.dart';
+import 'package:goal_master/features/booking/data/repo/booking_repo_imp.dart';
+import 'package:goal_master/features/booking/presentation/manager/booking_cubit/booking_cubit.dart';
+import 'package:goal_master/features/booking/presentation/manager/calendar_cubit/calendar_cubit.dart';
+import 'package:goal_master/features/booking/presentation/manager/cancel_booking_cubit/cancel_booking_cubit.dart';
+import 'package:goal_master/features/booking/presentation/manager/category_cubit/category_cubit.dart';
+import 'package:goal_master/features/booking/presentation/manager/club_cubit/club_cubit.dart';
+import 'package:goal_master/features/booking/presentation/manager/toggle_booking/booking_toggle_cubit.dart';
+import 'package:goal_master/features/booking/presentation/manager/zone_cubit/zone_cubit.dart';
+import 'package:goal_master/features/booking/presentation/view/booking_details.dart';
 import 'package:goal_master/features/booking/presentation/view/booking_view.dart';
 import 'package:goal_master/features/layout/presentation/view/home_layout_view.dart';
 import 'package:goal_master/features/onbording/presentation/manager/onboarding_cubit.dart';
@@ -199,9 +209,59 @@ List<RouteBase> appRoutes = [
     pageBuilder: (context, state) => buildPageWithDefaultTransition<void>(
       context: context,
       state: state,
-      child: const BookingView(),
+      child: MultiBlocProvider(
+        providers: [
+          BlocProvider(
+            create: (context) => BookingCubit(
+              bookingRepo: getIt<BookingRepoImp>(),
+            ),
+          ),
+          BlocProvider(
+            create: (context) => CancelBookingCubit(
+              getIt<BookingRepoImp>(),
+            ),
+          ),
+          BlocProvider(
+            create: (context) => ToggleCubit(),
+          ),
+        ],
+        child: const BookingView(),
+      ),
     ),
   ),
+  //BookingDetails
+  GoRoute(
+    parentNavigatorKey: parentKey,
+    path: RoutesKeys.kBookingDetails,
+    pageBuilder: (context, state) => buildPageWithDefaultTransition<void>(
+      context: context,
+      state: state,
+      child: MultiBlocProvider(
+        providers: [
+          BlocProvider(
+            create: (context) => ZoneCubitCubit(
+              getIt<BookingRepoImp>(),
+            )..listZone(),
+          ),
+          //ClubCubit
+          BlocProvider(
+              create: (context) => ClubCubit(
+                    getIt<BookingRepoImp>(),
+                  )..listClub(2)),
+          //CategoryCubit
+          BlocProvider(
+              create: (context) => CategoryCubit(
+                    getIt<BookingRepoImp>(),
+                  )..listCategory(branchId: 15)),
+          BlocProvider(
+            create: (context) => CalendarCubit(),
+          ),
+        ],
+        child: const BookingDetails(),
+      ),
+    ),
+  ),
+
   GoRoute(
     parentNavigatorKey: parentKey,
     path: RoutesKeys.kHome,

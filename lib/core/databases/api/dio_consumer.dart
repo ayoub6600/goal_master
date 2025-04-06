@@ -13,7 +13,7 @@ class DioConsumer extends ApiConsumer {
     dio.options.headers['Accept'] = 'application/json';
     dio.options.headers['Content-Type'] = 'application/json';
     String token =
-        "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwczovL3dlYi5nb2FsbWFzdGVycy5vbmxpbmUvYXBpL2xvZ2luIiwiaWF0IjoxNzQzNzI3ODkwLCJleHAiOjE3NDM3MzE0OTAsIm5iZiI6MTc0MzcyNzg5MCwianRpIjoiU0hueEFneHVpTm9UMmI1SCIsInN1YiI6Ijk1IiwicHJ2IjoiMjNiZDVjODk0OWY2MDBhZGIzOWU3MDFjNDAwODcyZGI3YTU5NzZmNyJ9.PKDIr4uf_R7sDRaPQCHW4duSJ8o4tlRNJWoleX8mi0A";
+        "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwczovL3dlYi5nb2FsbWFzdGVycy5vbmxpbmUvYXBpL2xvZ2luIiwiaWF0IjoxNzQzOTAzNjE5LCJleHAiOjE3NDM5MDcyMTksIm5iZiI6MTc0MzkwMzYxOSwianRpIjoiMjluTG5uVnVtWkw4YUZWUyIsInN1YiI6Ijk1IiwicHJ2IjoiMjNiZDVjODk0OWY2MDBhZGIzOWU3MDFjNDAwODcyZGI3YTU5NzZmNyJ9.Idmv925P5E_e9-aWQfaBsFXBCmGY4pJ_MsUePgCIziM";
     dio.options.headers['Authorization'] = 'Bearer $token';
 
     dio.options.headers['accept-language'] = 'ar';
