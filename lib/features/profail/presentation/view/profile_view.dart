@@ -65,12 +65,12 @@ class ProfileView extends StatelessWidget {
                       color: Color(0xffDADEE3),
                       height: 1.h,
                     ),
-                    HeightSpace(8.h),
-                    ProfileItem(
-                      title: "تفعيل الاشعارات",
-                      icon: Assets.imagesPngImageNotification,
-                      onTap: () {},
-                    ),
+                    // HeightSpace(8.h),
+                    // ProfileItem(
+                    //   title: "تفعيل الاشعارات",
+                    //   icon: Assets.imagesPngImageNotification,
+                    //   onTap: () {},
+                    // ),
                     Container(
                       width: double.infinity,
                       color: Color(0xffDADEE3),

@@ -25,7 +25,7 @@ class ProfileItem extends StatelessWidget {
       child: Padding(
         padding: EdgeInsets.symmetric(vertical: 8.h),
         child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.start,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Image.asset(
@@ -34,12 +34,16 @@ class ProfileItem extends StatelessWidget {
             ),
             WidthSpace(16.w),
             Expanded(
-              child: Text(
-                title,
-                //  textDirection: TextDirection.rtl,
-                style: AppTextStyles.font16Bold.copyWith(
-                  color: AppColors.fontColor,
-                ),
+              child: Row(
+                children: [
+                  Text(
+                    title,
+                    textDirection: TextDirection.ltr,
+                    style: AppTextStyles.font16Bold.copyWith(
+                      color: AppColors.fontColor,
+                    ),
+                  ),
+                ],
               ),
             ),
             child != null
