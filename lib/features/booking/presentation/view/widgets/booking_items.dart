@@ -1,16 +1,23 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:goal_master/core/components/button_app.dart';
+import 'package:goal_master/core/components/custom_failure_toast.dart';
+import 'package:goal_master/core/components/custom_success_toast.dart';
 import 'package:goal_master/core/styles/app_colors.dart';
 import 'package:goal_master/core/styles/app_text_styles.dart';
 import 'package:goal_master/core/styles/assets.dart';
+import 'package:goal_master/core/styles/format_to_hour.dart';
 import 'package:goal_master/core/styles/spaces.dart';
+import 'package:goal_master/features/booking/data/model/booking_history_response.dart';
+import 'package:goal_master/features/booking/presentation/manager/booking_cubit/booking_cubit.dart';
+import 'package:goal_master/features/booking/presentation/manager/cancel_booking_cubit/cancel_booking_cubit.dart';
 import 'package:goal_master/features/booking/presentation/view/booking_details.dart';
 import 'package:goal_master/features/booking/presentation/view/booking_items_details.dart.dart';
 
 class BookingItems extends StatelessWidget {
-  const BookingItems({super.key});
-
+  const BookingItems({super.key, required this.booking});
+  final Booking booking;
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
@@ -18,7 +25,9 @@ class BookingItems extends StatelessWidget {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => BookingItemsDetails(),
+            builder: (context) => BookingItemsDetails(
+              booking: booking,
+            ),
           ),
         );
       },
@@ -55,7 +64,7 @@ class BookingItems extends StatelessWidget {
                           )),
                       WidthSpace(10.w),
                       Text(
-                        "ملعب سباعي",
+                        booking.service,
                         style: AppTextStyles.font16Bold.copyWith(
                           color: Color(0xff204523),
                         ),
@@ -81,7 +90,7 @@ class BookingItems extends StatelessWidget {
                   child: Row(
                     children: [
                       Text(
-                        "كرة قدم",
+                        booking.category,
                         style: AppTextStyles.font16Bold.copyWith(
                           color: Color(0xff204523),
                         ),
@@ -102,7 +111,7 @@ class BookingItems extends StatelessWidget {
                   ),
                   WidthSpace(10.w),
                   Text(
-                    "ليبيا - المصراتة",
+                    booking.address,
                     style: AppTextStyles.font16Bold.copyWith(
                       color: AppColors.fontColor,
                     ),
@@ -124,7 +133,8 @@ class BookingItems extends StatelessWidget {
                         ),
                         WidthSpace(10.w),
                         Text(
-                          "10:00 صباحا",
+                          formatToHour(booking.startTime),
+                          textDirection: TextDirection.ltr,
                           style: AppTextStyles.font16Bold.copyWith(
                             color: AppColors.fontColor,
                           ),
@@ -141,7 +151,9 @@ class BookingItems extends StatelessWidget {
                         ),
                         WidthSpace(10.w),
                         Text(
-                          "18 Jan , 2024",
+                          formatDate(booking.date),
+                          textDirection: TextDirection.ltr,
+                          //  booking.date,
                           style: AppTextStyles.font16Bold.copyWith(
                             color: AppColors.fontColor,
                           ),
@@ -153,40 +165,105 @@ class BookingItems extends StatelessWidget {
               ),
             ),
             HeightSpace(16.h),
-            Text("السعر  : 80 دينار",
+            Text("السعر  : ${booking.serviceAmount} دينار",
                 style: AppTextStyles.font18Bold.copyWith(
                   color: AppColors.primary,
                 )),
             HeightSpace(12.h),
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 12.w),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: ButtonApp(
-                      text: "تعديل الحجز",
-                      textColor: Colors.white,
-                      backGround: AppColors.primary,
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => BookingDetails(),
+            if (booking.status == 0)
+              BlocConsumer<CancelBookingCubit, CancelBookingState>(
+                listener: (context, state) {
+                  print("state: $state");
+                  if (state is CancelBookingSuccess) {
+                    CustomSuccessToast(toastText: state.message);
+
+                    context.read<BookingCubit>().refresh();
+                  } else if (state is CancelBookingFailure) {
+                    CustomFailureToastWidget(toastText: state.message);
+                  }
+                },
+                builder: (context, state) {
+                  return Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 12.w),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: ButtonApp(
+                            text: "الغاء الحجز",
+                            textColor: Colors.white,
+                            backGround: AppColors.redcolor,
+                            onTap: () {
+                              showModalBottomSheet(
+                                context: context,
+                                shape: const RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.vertical(
+                                      top: Radius.circular(16)),
+                                ),
+                                builder: (context2) {
+                                  return Padding(
+                                    padding: EdgeInsets.all(16.w),
+                                    child: Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Text(
+                                          'هل تريد إلغاء الحجز؟',
+                                          style: TextStyle(
+                                              fontSize: 16.sp,
+                                              fontWeight: FontWeight.bold),
+                                        ),
+                                        SizedBox(height: 20.h),
+                                        Row(
+                                          children: [
+                                            Expanded(
+                                              child: ElevatedButton(
+                                                style: ElevatedButton.styleFrom(
+                                                  backgroundColor:
+                                                      AppColors.primary,
+                                                ),
+                                                onPressed: () {
+                                                  Navigator.pop(
+                                                      context2); // اغلاق المودال
+                                                  context
+                                                      .read<
+                                                          CancelBookingCubit>()
+                                                      .cancelBooking(
+                                                          booking.id);
+                                                },
+                                                child: Text('نعم',
+                                                    style: TextStyle(
+                                                        color: Colors.white)),
+                                              ),
+                                            ),
+                                            SizedBox(width: 10.w),
+                                            Expanded(
+                                              child: ElevatedButton(
+                                                style: ElevatedButton.styleFrom(
+                                                  backgroundColor:
+                                                      Colors.grey[300],
+                                                ),
+                                                onPressed: () {
+                                                  Navigator.pop(context);
+                                                },
+                                                child: Text('لا',
+                                                    style: TextStyle(
+                                                        color: Colors.black)),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                },
+                              );
+                            },
                           ),
-                        );
-                      },
+                        ),
+                      ],
                     ),
-                  ),
-                  Expanded(
-                    child: ButtonApp(
-                      text: "الغاء الحجز",
-                      textColor: Colors.black,
-                      backGround: Colors.white,
-                    ),
-                  ),
-                ],
+                  );
+                },
               ),
-            ),
           ],
         ),
       ),

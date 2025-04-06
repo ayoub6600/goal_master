@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:goal_master/core/styles/app_colors.dart';
 import 'package:goal_master/core/styles/app_text_styles.dart';
 import 'package:goal_master/core/styles/spaces.dart';
+import 'package:goal_master/features/booking/data/model/booking_history_response.dart';
 import 'package:goal_master/features/booking/presentation/view/widgets/build_facility_row.dart';
 import 'package:goal_master/features/booking/presentation/view/widgets/build_location_row.dart';
 import 'package:goal_master/features/booking/presentation/view/widgets/build_specifications_section.dart';
@@ -11,7 +12,9 @@ import 'package:goal_master/features/booking/presentation/view/widgets/build_tit
 class BuildDetailsSection extends StatelessWidget {
   const BuildDetailsSection({
     super.key,
+    required this.booking,
   });
+  final Booking booking;
 
   @override
   Widget build(BuildContext context) {
@@ -21,16 +24,20 @@ class BuildDetailsSection extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment: MainAxisAlignment.start,
         children: [
-          BuildTitleRow(),
+          BuildTitleRow(
+            booking: booking,
+          ),
           HeightSpace(8.h),
           Text(
-            "ملعب (7*7)",
+            " ${booking.remarks}",
             style: AppTextStyles.font16Bold.copyWith(
               color: AppColors.fontColor,
             ),
           ),
           HeightSpace(20.h),
-          BuildLocationRow(),
+          BuildLocationRow(
+            booking: booking,
+          ),
           HeightSpace(30.h),
           BuildSpecificationsSection(),
           HeightSpace(30.h),
@@ -39,13 +46,15 @@ class BuildDetailsSection extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
               Text(
-                "مواصفات الملعب",
+                "تفاصيل الحجز",
                 style: AppTextStyles.font16Bold.copyWith(
                   color: AppColors.fontColor,
                 ),
               ),
               HeightSpace(8.h),
-              BuildFacilityRow(),
+              BuildFacilityRow(
+                booking: booking,
+              ),
             ],
           ),
         ],

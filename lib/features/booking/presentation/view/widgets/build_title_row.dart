@@ -4,18 +4,21 @@ import 'package:goal_master/core/styles/app_colors.dart';
 import 'package:goal_master/core/styles/app_text_styles.dart';
 import 'package:goal_master/core/styles/assets.dart';
 import 'package:goal_master/core/styles/spaces.dart';
+import 'package:goal_master/features/booking/data/model/booking_history_response.dart';
 
 class BuildTitleRow extends StatelessWidget {
   const BuildTitleRow({
     super.key,
+    required this.booking,
   });
+  final Booking booking;
 
   @override
   Widget build(BuildContext context) {
     return Row(
       children: [
         Text(
-          "ملعب سباعي",
+          booking.branch,
           style: AppTextStyles.font20Bold.copyWith(
             color: Color(0xff204523),
           ),
@@ -26,19 +29,17 @@ class BuildTitleRow extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Wrap(
-                children: List.generate(
-              5,
-              (index) => Image.asset(
-                Assets.imagesPngImageStar,
-                fit: BoxFit.cover,
+            Container(
+              padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+              decoration: BoxDecoration(
+                color: AppColors.primary,
+                borderRadius: BorderRadius.circular(8.r),
               ),
-            )),
-            WidthSpace(8.w),
-            Text(
-              "4.5",
-              style: AppTextStyles.font16Bold.copyWith(
-                color: AppColors.fontColor,
+              child: Text(
+                "${booking.statusName}",
+                style: AppTextStyles.font16Bold.copyWith(
+                  color: AppColors.white,
+                ),
               ),
             ),
           ],

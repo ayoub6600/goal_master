@@ -4,27 +4,29 @@ import 'package:goal_master/core/components/button_app.dart';
 import 'package:goal_master/core/styles/app_colors.dart';
 import 'package:goal_master/core/styles/app_text_styles.dart';
 import 'package:goal_master/core/styles/spaces.dart';
+import 'package:goal_master/features/booking/data/model/booking_history_response.dart';
 import 'package:goal_master/features/booking/presentation/view/widgets/build_details_section.dart';
 import 'package:goal_master/features/booking/presentation/view/widgets/build_header_image.dart';
 
 class BookingItemsDetails extends StatelessWidget {
-  const BookingItemsDetails({super.key});
+  const BookingItemsDetails({super.key, required this.booking});
+  final Booking booking;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: [
-            BuildHeaderImage(),
-            Expanded(child: BuildDetailsSection()),
-            CustomBookingButton(
-              text: "حجز الملعب",
-              onTap: () {},
-            ),
-          ],
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              BuildHeaderImage(),
+              BuildDetailsSection(
+                booking: booking,
+              ),
+            ],
+          ),
         ),
       ),
     );

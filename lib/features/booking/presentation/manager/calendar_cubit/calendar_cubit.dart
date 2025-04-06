@@ -1,5 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:goal_master/features/booking/presentation/manager/cubit/calendar_state.dart';
+import 'package:goal_master/features/booking/presentation/manager/calendar_cubit/calendar_state.dart';
 
 class CalendarCubit extends Cubit<CalendarState> {
   CalendarCubit()

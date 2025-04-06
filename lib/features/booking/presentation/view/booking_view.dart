@@ -7,9 +7,6 @@ class BookingView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return PageWrapper(
-      title: 'حجوزاتي',
-      child: BookingViewBody(),
-    );
+    return PageWrapper(title: 'حجوزاتي', child: BookingViewBody());
   }
 }

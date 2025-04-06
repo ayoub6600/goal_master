@@ -23,7 +23,7 @@ class BuildSpecificationsSection extends StatelessWidget {
         ),
         HeightSpace(8.h),
         Text(
-          "ملعب سباعي نجيل صناعي مجهز بمعايير عالية، بأبعاد مثالية (50-65 م × 30-45 م) وإضاءة قوية للعب في أي وقت. مناسب للمباريات والتدريبات بأفضل جودة!",
+          "ملعب مجهر نجيل صناعي مجهز بمعايير عالية، بأبعاد مثالية  وإضاءة قوية للعب في أي وقت. مناسب للمباريات والتدريبات بأفضل جودة!",
           style: AppTextStyles.font14Medium.copyWith(
             color: AppColors.fontColor,
           ),
