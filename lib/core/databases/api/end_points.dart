@@ -31,6 +31,12 @@ class EndPoints {
   static String listClub = 'list/club';
 
   static String listCategory = 'list/category';
+
+  static String listService = 'list/service';
+
+  static String listEmployee = 'list/booking';
+
+  static String listTimeslot = 'list/timeslot';
 }
 
 //doctors/top-ratings

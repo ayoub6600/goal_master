@@ -14,17 +14,22 @@ import 'package:goal_master/features/auth/presentation/view/new_password_view.da
 import 'package:goal_master/features/auth/presentation/view/otp_view.dart';
 import 'package:goal_master/features/auth/presentation/view/register_view.dart';
 import 'package:goal_master/features/auth/presentation/view/login_view.dart';
+import 'package:goal_master/features/booking/data/model/booking_history_response.dart';
 import 'package:goal_master/features/booking/data/repo/booking_repo_imp.dart';
 import 'package:goal_master/features/booking/presentation/manager/booking_cubit/booking_cubit.dart';
 import 'package:goal_master/features/booking/presentation/manager/calendar_cubit/calendar_cubit.dart';
 import 'package:goal_master/features/booking/presentation/manager/cancel_booking_cubit/cancel_booking_cubit.dart';
 import 'package:goal_master/features/booking/presentation/manager/category_cubit/category_cubit.dart';
 import 'package:goal_master/features/booking/presentation/manager/club_cubit/club_cubit.dart';
+import 'package:goal_master/features/booking/presentation/manager/employee_cubit/employee_cubit.dart';
+import 'package:goal_master/features/booking/presentation/manager/service_cubit/service_cubit.dart';
 import 'package:goal_master/features/booking/presentation/manager/toggle_booking/booking_toggle_cubit.dart';
 import 'package:goal_master/features/booking/presentation/manager/zone_cubit/zone_cubit.dart';
 import 'package:goal_master/features/booking/presentation/view/booking_details.dart';
+import 'package:goal_master/features/booking/presentation/view/booking_items_details.dart.dart';
 import 'package:goal_master/features/booking/presentation/view/booking_view.dart';
 import 'package:goal_master/features/layout/presentation/view/home_layout_view.dart';
+import 'package:goal_master/features/notification/presentation/view/notifaction_view.dart';
 import 'package:goal_master/features/onbording/presentation/manager/onboarding_cubit.dart';
 import 'package:goal_master/features/onbording/presentation/view/onboarding_view.dart';
 import 'package:goal_master/features/profail/data/repo/profile_repo.dart';
@@ -253,8 +258,21 @@ List<RouteBase> appRoutes = [
               create: (context) => CategoryCubit(
                     getIt<BookingRepoImp>(),
                   )..listCategory(branchId: 15)),
+          //ServiceCubit
           BlocProvider(
-            create: (context) => CalendarCubit(),
+              create: (context) => ServiceCubit(
+                    getIt<BookingRepoImp>(),
+                  )..listService(27, 15)),
+          //EmployeeCubit
+          BlocProvider(
+            create: (context) => EmployeeCubit(
+              getIt<BookingRepoImp>(),
+            )..listEmployee(15),
+          ),
+          BlocProvider(
+            create: (context) => CalendarCubit(
+              getIt<BookingRepoImp>(),
+            ),
           ),
         ],
         child: const BookingDetails(),
@@ -271,4 +289,35 @@ List<RouteBase> appRoutes = [
       child: const HomeLayoutView(),
     ),
   ),
+  //NotificationView
+  GoRoute(
+    parentNavigatorKey: parentKey,
+    path: RoutesKeys.kNotification,
+    pageBuilder: (context, state) => buildPageWithDefaultTransition<void>(
+      context: context,
+      state: state,
+      child: BlocProvider(
+        create: (context) => BookingCubit(
+          bookingRepo: getIt<BookingRepoImp>(),
+        ),
+        child: const NotificationView(),
+      ),
+    ),
+  ),
+  //BookingItemsDetails
+  GoRoute(
+      parentNavigatorKey: parentKey,
+      path: RoutesKeys.kBookingItemsDetails,
+      pageBuilder: (context, state) => buildPageWithDefaultTransition<void>(
+            context: context,
+            state: state,
+            child: BlocProvider(
+              create: (context) => BookingCubit(
+                bookingRepo: getIt<BookingRepoImp>(),
+              ),
+              child: BookingItemsDetails(
+                booking: state.extra as Booking,
+              ),
+            ),
+          ))
 ];

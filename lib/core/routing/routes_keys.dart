@@ -13,4 +13,6 @@ class RoutesKeys {
   static const kBooking = '/kBooking';
   static const kHome = '/kHome';
   static const kBookingDetails = '/kBookingDetails';
+  static const kNotification = '/kNotification';
+  static const kBookingItemsDetails = '/kBookingItemsDetails';
 }

@@ -10,6 +10,7 @@ class PrefKey {
   static const String country = "COUNTRY";
   static const String mobile = "MOBILE";
   static const String gender = "gender";
+  static const String phone = "phone";
 
   static const String currentLanguageCode = "currentLanguageCode";
   static const String chucker = "chucker";

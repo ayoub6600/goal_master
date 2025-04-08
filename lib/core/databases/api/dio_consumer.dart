@@ -1,5 +1,7 @@
 import 'package:chucker_flutter/chucker_flutter.dart';
 import 'package:dio/dio.dart';
+import 'package:goal_master/core/components/keys_values.dart';
+import 'package:goal_master/core/components/preference_utility.dart';
 import 'package:goal_master/core/databases/token_interceptor.dart';
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 import 'api_consumer.dart';
@@ -12,15 +14,15 @@ class DioConsumer extends ApiConsumer {
     dio.options.baseUrl = EndPoints.baserUrl;
     dio.options.headers['Accept'] = 'application/json';
     dio.options.headers['Content-Type'] = 'application/json';
-    String token =
-        "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwczovL3dlYi5nb2FsbWFzdGVycy5vbmxpbmUvYXBpL2xvZ2luIiwiaWF0IjoxNzQzOTAzNjE5LCJleHAiOjE3NDM5MDcyMTksIm5iZiI6MTc0MzkwMzYxOSwianRpIjoiMjluTG5uVnVtWkw4YUZWUyIsInN1YiI6Ijk1IiwicHJ2IjoiMjNiZDVjODk0OWY2MDBhZGIzOWU3MDFjNDAwODcyZGI3YTU5NzZmNyJ9.Idmv925P5E_e9-aWQfaBsFXBCmGY4pJ_MsUePgCIziM";
+    String token = SharedPreferenceUtil.getString(PrefKey.fcmToken);
+    print("Authorization token: $token");
     dio.options.headers['Authorization'] = 'Bearer $token';
 
     dio.options.headers['accept-language'] = 'ar';
 
     dio.options.followRedirects = false;
     dio.interceptors.addAll([
-      const TokenInterceptor(),
+      // const TokenInterceptor(),
       ChuckerDioInterceptor(),
       PrettyDioLogger(
         requestBody: true,
