@@ -7,7 +7,10 @@ import 'package:goal_master/core/errors/failure.dart';
 import 'package:goal_master/features/booking/data/model/booking_history_response.dart';
 import 'package:goal_master/features/booking/data/model/category_model.dart';
 import 'package:goal_master/features/booking/data/model/club_responce.dart';
+import 'package:goal_master/features/booking/data/model/employe/employe.dart';
 import 'package:goal_master/features/booking/data/model/location_reponse.dart';
+import 'package:goal_master/features/booking/data/model/service_model.dart';
+import 'package:goal_master/features/booking/data/model/timeslot.dart';
 import 'package:goal_master/features/booking/data/repo/booking_repo.dart';
 
 class BookingRepoImp extends BookingRepo {
@@ -97,5 +100,67 @@ class BookingRepoImp extends BookingRepo {
         return categories;
       },
     );
+  }
+
+  @override
+  Future<Either<Failure, List<Service>>> listService(
+      int categoryId, int branchId) {
+    return apiConsumer.handleRequest(
+      () => apiConsumer.post(
+        EndPoints.listService,
+        data: {
+          'category': categoryId,
+          'branch': branchId,
+        },
+      ),
+      (data) {
+        List<Service> services = (data['data'] as List<dynamic>)
+            .map((item) => Service.fromJson(item as Map<String, dynamic>))
+            .toList();
+        return services;
+      },
+    );
+  }
+
+  @override
+  Future<Either<Failure, List<Employee>>> listEmployee(
+      {required int branchId}) {
+    return apiConsumer.handleRequest(
+      () => apiConsumer.post(
+        EndPoints.listEmployee,
+        data: {
+          'branch': branchId,
+        },
+      ),
+      (data) {
+        List<Employee> employees = (data['data'] as List<dynamic>)
+            .map((item) => Employee.fromJson(item as Map<String, dynamic>))
+            .toList();
+        return employees;
+      },
+    );
+  }
+
+  @override
+  Future<Either<Failure, List<TimeslotModel>>> listTimeslot(
+      {required int branchId,
+      required int employeeId,
+      required int serviceId,
+      required String date}) {
+    return apiConsumer.handleRequest(
+        () => apiConsumer.post(
+              EndPoints.listTimeslot,
+              data: {
+                'branch_id': branchId,
+                'employee_id': employeeId,
+                'service_id': serviceId,
+                'date': date,
+              },
+            ), (data) {
+      List<TimeslotModel> timeslots = (data['data'] as List<dynamic>)
+          .map((item) => TimeslotModel.fromJson(item as Map<String, dynamic>))
+          .toList();
+      return timeslots;
+    });
   }
 }

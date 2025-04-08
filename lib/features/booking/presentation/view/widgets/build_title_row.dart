@@ -5,6 +5,7 @@ import 'package:goal_master/core/styles/app_text_styles.dart';
 import 'package:goal_master/core/styles/assets.dart';
 import 'package:goal_master/core/styles/spaces.dart';
 import 'package:goal_master/features/booking/data/model/booking_history_response.dart';
+import 'package:goal_master/features/booking/presentation/view/widgets/status_container.dart';
 
 class BuildTitleRow extends StatelessWidget {
   const BuildTitleRow({
@@ -29,19 +30,9 @@ class BuildTitleRow extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Container(
-              padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
-              decoration: BoxDecoration(
-                color: AppColors.primary,
-                borderRadius: BorderRadius.circular(8.r),
-              ),
-              child: Text(
-                "${booking.statusName}",
-                style: AppTextStyles.font16Bold.copyWith(
-                  color: AppColors.white,
-                ),
-              ),
-            ),
+            StatusContainer(
+              status: booking.status,
+            )
           ],
         ),
       ],

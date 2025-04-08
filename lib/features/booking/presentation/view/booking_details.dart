@@ -1,220 +1,207 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:goal_master/core/components/custom_calder.dart';
-import 'package:goal_master/core/components/custom_drop_down.dart';
 import 'package:goal_master/core/components/page_wrapper.dart';
 import 'package:goal_master/core/styles/app_colors.dart';
 import 'package:goal_master/core/styles/app_text_styles.dart';
 import 'package:goal_master/core/styles/spaces.dart';
 import 'package:goal_master/features/booking/presentation/manager/category_cubit/category_cubit.dart';
 import 'package:goal_master/features/booking/presentation/manager/club_cubit/club_cubit.dart';
+import 'package:goal_master/features/booking/presentation/manager/employee_cubit/employee_cubit.dart';
+import 'package:goal_master/features/booking/presentation/manager/service_cubit/service_cubit.dart';
 import 'package:goal_master/features/booking/presentation/manager/zone_cubit/zone_cubit.dart';
 import 'package:goal_master/features/booking/presentation/view/booking_items_details.dart.dart';
 
-class BookingDetails extends StatelessWidget {
+class BookingDetails extends StatefulWidget {
   const BookingDetails({super.key});
+
+  @override
+  State<BookingDetails> createState() => _BookingDetailsState();
+}
+
+class _BookingDetailsState extends State<BookingDetails> {
+  final PageController _controller = PageController();
+  int _currentPage = 0;
+
+  void _nextPage() {
+    if (_currentPage < 5) {
+      setState(() => _currentPage++);
+      _controller.nextPage(
+          duration: Duration(milliseconds: 300), curve: Curves.ease);
+    }
+  }
+
+  void _prevPage() {
+    if (_currentPage > 0) {
+      setState(() => _currentPage--);
+      _controller.previousPage(
+          duration: Duration(milliseconds: 300), curve: Curves.ease);
+    }
+  }
+
+  Widget _stepTitle(String title, String dis) => Padding(
+        padding: EdgeInsets.all(16.w),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(title,
+                style: AppTextStyles.font16Bold.copyWith(color: Colors.black)),
+            HeightSpace(8.h),
+            Text(
+              dis,
+              style: AppTextStyles.font14Medium.copyWith(
+                color: AppColors.inactiveText1,
+              ),
+            )
+          ],
+        ),
+      );
 
   @override
   Widget build(BuildContext context) {
     return PageWrapper(
-      title: "اضافة الحجز",
+      title: "إضافة الحجز",
       allowBack: true,
-      child: SingleChildScrollView(
-        child: Column(
-          children: [
+      child: Column(
+        children: [
+          Expanded(
+            child: PageView(
+              controller: _controller,
+              physics: NeverScrollableScrollPhysics(),
+              children: [
+                BlocBuilder<ZoneCubitCubit, ZoneCubitState>(
+                  builder: (context, state) {
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _stepTitle(
+                          "اختر الموقع",
+                          "اختر الموقع المناسب للحجز الذي تريده",
+                        ),
+                        if (state is ZoneCubitSuccess)
+                          ...state.location.map((zone) => ListTile(
+                                title: Text(zone.name),
+                                onTap: _nextPage,
+                              )),
+                        if (state is ZoneCubitLoading)
+                          CircularProgressIndicator(),
+                        if (state is ZoneCubitError)
+                          Text('خطأ: ${state.message}'),
+                      ],
+                    );
+                  },
+                ),
+                BlocBuilder<ClubCubit, ClubState>(
+                  builder: (context, state) {
+                    return Column(
+                      children: [
+                        _stepTitle("اختر النادي",
+                            "اختر النادي المناسب للحجز الذي تريده"),
+                        if (state is ClubSuccess)
+                          ...state.clubs.map((club) => ListTile(
+                                title: Text(club.name),
+                                onTap: _nextPage,
+                              )),
+                        if (state is ClubLoading) CircularProgressIndicator(),
+                        if (state is ClubError) Text('خطأ: ${state.message}'),
+                      ],
+                    );
+                  },
+                ),
+                BlocBuilder<CategoryCubit, CategoryState>(
+                  builder: (context, state) {
+                    return Column(
+                      children: [
+                        _stepTitle("اختر الفئة",
+                            "اختر الفئة المناسب للحجز الذي تريده"),
+                        if (state is CategorySuccess)
+                          ...state.categories.map((cat) => ListTile(
+                                title: Text(cat.name),
+                                onTap: _nextPage,
+                              )),
+                        if (state is CategoryLoading)
+                          CircularProgressIndicator(),
+                        if (state is CategoryFailure)
+                          Text('خطأ: ${state.message}'),
+                      ],
+                    );
+                  },
+                ),
+                BlocBuilder<ServiceCubit, ServiceState>(
+                  builder: (context, state) {
+                    return Column(
+                      children: [
+                        _stepTitle("اختر الخدمة",
+                            "اختر الخدمة المناسب للحجز الذي تريده"),
+                        if (state is ServiceSuccess)
+                          ...state.services.map((service) => ListTile(
+                                title: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    //CachedNetworkImage(imageUrl: service.image),
+                                    Text(service.title),
+                                    Text(service.price.toString()),
+                                  ],
+                                ),
+                                onTap: _nextPage,
+                              )),
+                        if (state is ServiceLoading)
+                          CircularProgressIndicator(),
+                        if (state is ServiceError)
+                          Text('خطأ: ${state.message}'),
+                      ],
+                    );
+                  },
+                ),
+                BlocBuilder<EmployeeCubit, EmployeeState>(
+                  builder: (context, state) {
+                    return Column(
+                      children: [
+                        _stepTitle("اختر الموظف",
+                            "اختر الموظف المناسب للحجز الذي تريده"),
+                        if (state is EmployeeSuccess)
+                          ...state.employees.map((emp) => ListTile(
+                                title: Text(emp.fullName ?? ""),
+                                onTap: _nextPage,
+                              )),
+                        if (state is EmployeeLoading)
+                          CircularProgressIndicator(),
+                        if (state is EmployeeFailure)
+                          Text('خطأ: ${state.message}'),
+                      ],
+                    );
+                  },
+                ),
+                SingleChildScrollView(
+                  child: Column(
+                    children: [
+                      _stepTitle("تاريخ الحجز",
+                          "اختر التاريخ المناسب للحجز الذي تريده"),
+                      SizedBox(height: 700.h, child: CustomCalder()),
+                      //    HeightSpace(20.h),
+                      // CustomBookingButton(
+                      //   text: "اذهب للدفع",
+                      //   onTap: () {
+                      //     // تنفيذ الدفع
+                      //   },
+                      // ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          if (_currentPage > 0)
             Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16.w),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: [
-                  HeightSpace(16.h),
-                  BlocBuilder<ZoneCubitCubit, ZoneCubitState>(
-                    builder: (context, state) {
-                      print("state: $state");
-                      if (state is ZoneCubitLoading) {
-                        return CustomDropdown(
-                          hint: "اختر الموقع",
-                          items: [], // تأكد من أن `zone.name` هو النص المناسب
-                          onChanged: (value) {
-                            // قم بإجراء العمليات المطلوبة بعد تغيير القيمة
-                            // على سبيل المثال، إرسال القيمة إلى الـ Cubit أو غيرها
-                            //     print("الملعب المختار: $value");
-                          },
-                        );
-                      } else if (state is ZoneCubitError) {
-                        print("error: ${state.message}");
-                        return Center(child: Text('خطأ: ${state.message}'));
-                      } else if (state is ZoneCubitSuccess) {
-                        final zones = state.location;
-
-                        return CustomDropdown(
-                          hint: "اختر الموقع",
-                          items: zones.map((zone) => zone.name).toList(),
-                          onChanged: (value) {
-                            print("الملعب المختار: $value");
-                          },
-                        );
-                      }
-                      return Center(child: Text('لا يوجد بيانات لعرضها.'));
-                    },
-                  ),
-                  HeightSpace(16.h),
-                  BlocBuilder<ClubCubit, ClubState>(
-                    builder: (context, state) {
-                      print("state: $state");
-                      if (state is ClubLoading) {
-                        return CustomDropdown(
-                          hint: "اختر الملعب",
-                          items: [], // تأكد من أن `zone.name` هو النص المناسب
-                          onChanged: (value) {
-                            // قم بإجراء العمليات المطلوبة بعد تغيير القيمة
-                            // على سبيل المثال، إرسال القيمة إلى الـ Cubit أو غيرها
-                            print("الملعب المختار: $value");
-                          },
-                        );
-                      } else if (state is ClubError) {
-                        print("error: ${state.message}");
-                        return Center(child: Text('خطأ: ${state.message}'));
-                      } else if (state is ClubSuccess) {
-                        final clubs = state.clubs;
-
-                        return CustomDropdown(
-                          hint: "اختر الملعب",
-                          items: clubs.map((zone) => zone.name).toList(),
-                          onChanged: (value) {
-                            print("الملعب المختار: $value");
-                          },
-                        );
-                      }
-                      return Center(child: Text('لا يوجد بيانات لعرضها.'));
-                    },
-                  ),
-                  HeightSpace(16.h),
-                  BlocBuilder<CategoryCubit, CategoryState>(
-                    builder: (context, state) {
-                      print("state: $state");
-                      if (state is CategoryLoading) {
-                        return CustomDropdown(
-                          hint: "اختر الملعب",
-                          items: [], // تأكد من أن `zone.name` هو النص المناسب
-                          onChanged: (value) {
-                            // قم بإجراء العمليات المطلوبة بعد تغيير القيمة
-                            // على سبيل المثال، إرسال القيمة إلى الـ Cubit أو غيرها
-                            print("الملعب المختار: $value");
-                          },
-                        );
-                      } else if (state is CategoryFailure) {
-                        print("error: ${state.message}");
-                        return Center(child: Text('خطأ: ${state.message}'));
-                      } else if (state is CategorySuccess) {
-                        final category = state.categories;
-
-                        return CustomDropdown(
-                          hint: "اختر الملعب",
-                          items: category.map((zone) => zone.name).toList(),
-                          onChanged: (value) {
-                            print("الملعب المختار: $value");
-                          },
-                        );
-                      }
-                      return Center(child: Text('لا يوجد بيانات لعرضها.'));
-                    },
-                  ),
-                  CustomDropdown(
-                      //  label: "اختر الماركة",
-                      hint: "اختر الرياضة",
-                      items: ["ملعب 1", "ملعب 2", "ملعب 3", "ملعب 4"],
-                      onChanged: (value) {
-                        // cubit.changeSelectedBrand(value!);
-                        // cubit.getBrandTypes();
-                      }),
-                  HeightSpace(16.h),
-                  Text(
-                    "تاريخ الحجز",
-                    style: AppTextStyles.font16Bold.copyWith(
-                      color: Colors.black,
-                    ),
-                  ),
-                  HeightSpace(16.h),
-                  SizedBox(height: 400.h, child: CustomCalder()),
-                  HeightSpace(16.h),
-                  Text(
-                    "وقت الحجز",
-                    style: AppTextStyles.font16Bold.copyWith(
-                      color: Colors.black,
-                    ),
-                  ),
-                  HeightSpace(16.h),
-                  Wrap(
-                    children: List.generate(
-                      5,
-                      (index) => Container(
-                        // height: 50.h,
-                        margin: EdgeInsets.symmetric(
-                            horizontal: 4.w, vertical: 4.h),
-                        padding: EdgeInsets.all(12.h),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(12.r),
-                          border: Border.all(
-                            color: AppColors.primary,
-                          ),
-                        ),
-                        child: Text(
-                          "7:00 PM",
-                          textAlign: TextAlign.center,
-                          style: AppTextStyles.font16Bold.copyWith(
-                            color: Color(0xff204523),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                  HeightSpace(16.h),
-                  Text(
-                    "وقت الحجز",
-                    style: AppTextStyles.font16Bold.copyWith(
-                      color: Colors.black,
-                    ),
-                  ),
-                  HeightSpace(16.h),
-                  Wrap(
-                    children: List.generate(
-                      5,
-                      (index) => Container(
-                        // height: 50.h,
-                        margin: EdgeInsets.symmetric(
-                            horizontal: 4.w, vertical: 4.h),
-                        padding: EdgeInsets.all(12.h),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(12.r),
-                          border: Border.all(
-                            color: AppColors.primary,
-                          ),
-                        ),
-                        child: Text(
-                          "60 دقيقة",
-                          textAlign: TextAlign.center,
-                          style: AppTextStyles.font16Bold.copyWith(
-                            color: Color(0xff204523),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                  HeightSpace(50.h),
-                ],
+              padding: EdgeInsets.all(16.w),
+              child: ElevatedButton(
+                onPressed: _prevPage,
+                child: Text("الرجوع"),
               ),
             ),
-            CustomBookingButton(
-              text: "اذهب للدفع",
-              onTap: () {},
-            ),
-          ],
-        ),
+        ],
       ),
     );
   }

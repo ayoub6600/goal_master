@@ -4,6 +4,8 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:goal_master/core/components/button_app.dart';
 import 'package:goal_master/core/components/custom_failure_toast.dart';
 import 'package:goal_master/core/components/custom_success_toast.dart';
+import 'package:goal_master/core/routing/route_utils.dart';
+import 'package:goal_master/core/routing/routes_keys.dart';
 import 'package:goal_master/core/styles/app_colors.dart';
 import 'package:goal_master/core/styles/app_text_styles.dart';
 import 'package:goal_master/core/styles/assets.dart';
@@ -12,8 +14,8 @@ import 'package:goal_master/core/styles/spaces.dart';
 import 'package:goal_master/features/booking/data/model/booking_history_response.dart';
 import 'package:goal_master/features/booking/presentation/manager/booking_cubit/booking_cubit.dart';
 import 'package:goal_master/features/booking/presentation/manager/cancel_booking_cubit/cancel_booking_cubit.dart';
-import 'package:goal_master/features/booking/presentation/view/booking_details.dart';
-import 'package:goal_master/features/booking/presentation/view/booking_items_details.dart.dart';
+
+import 'package:goal_master/features/booking/presentation/view/widgets/status_container.dart';
 
 class BookingItems extends StatelessWidget {
   const BookingItems({super.key, required this.booking});
@@ -22,14 +24,7 @@ class BookingItems extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => BookingItemsDetails(
-              booking: booking,
-            ),
-          ),
-        );
+        push(RoutesKeys.kBookingItemsDetails, context, extra: booking);
       },
       child: Container(
         margin: EdgeInsets.symmetric(horizontal: 16.w),
@@ -165,12 +160,25 @@ class BookingItems extends StatelessWidget {
               ),
             ),
             HeightSpace(16.h),
-            Text("السعر  : ${booking.serviceAmount} دينار",
-                style: AppTextStyles.font18Bold.copyWith(
-                  color: AppColors.primary,
-                )),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                StatusContainer(
+                  status: booking.status,
+                ),
+                WidthSpace(12.w),
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Text("السعر  : ${booking.serviceAmount} دينار",
+                      style: AppTextStyles.font18Bold.copyWith(
+                        color: AppColors.primary,
+                      )),
+                ),
+              ],
+            ),
             HeightSpace(12.h),
-            if (booking.status == 0)
+            if (booking.status == 0 || booking.status == 1)
               BlocConsumer<CancelBookingCubit, CancelBookingState>(
                 listener: (context, state) {
                   print("state: $state");
