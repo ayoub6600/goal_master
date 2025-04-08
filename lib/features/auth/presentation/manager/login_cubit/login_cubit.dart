@@ -1,13 +1,9 @@
-// ignore_for_file: prefer_const_constructors
-
-import 'package:dartz/dartz.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:goal_master/core/components/keys_values.dart';
 import 'package:goal_master/core/components/preference_utility.dart';
-import 'package:goal_master/core/manager/user_info_cubit/user_info_cubit.dart';
-import 'package:goal_master/core/utils/functions/auth_manager.dart';
 import 'package:goal_master/features/auth/data/model/login_model/user.dart';
+
 import 'package:goal_master/features/auth/data/repo/auth_repo.dart';
 import 'package:goal_master/utils/input_validator.dart';
 
@@ -35,10 +31,23 @@ class LoginCubit extends Cubit<LoginState> {
         emit(LoginSuccess());
         print("---->token ${SharedPreferenceUtil.getString(PrefKey.fcmToken)}");
         //save user
-        print("user: ${user.data?.user}, token: ${user.data?.token}");
-        print("user: ${user.data?.user}, token: ${user.data?.token}");
+
+        _saveUserData(user);
       },
     );
+  }
+
+  Future<void> _saveUserData(UserData userData) async {
+    print("---->UserData token ${userData.token}");
+    await SharedPreferenceUtil.putString(
+        PrefKey.fcmToken, userData.token ?? "");
+    await SharedPreferenceUtil.putString(
+        PrefKey.fullName, userData.user?.name ?? "");
+    await SharedPreferenceUtil.putString(
+        PrefKey.email, userData.user?.username ?? "");
+    await SharedPreferenceUtil.putString(
+        PrefKey.phone, userData.user?.phoneNumber ?? "");
+    SharedPreferenceUtil.putString(PrefKey.login, "false");
   }
 
   bool _validate(String email, String password) {

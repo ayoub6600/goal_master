@@ -16,7 +16,7 @@ class AuthRepoImpl implements AuthRepo {
   final ApiConsumer consumer;
   AuthRepoImpl(this.consumer);
   @override
-  Future<Either<Failure, LoginModel>> login({
+  Future<Either<Failure, UserData>> login({
     required String email,
     required String password,
   }) async {
@@ -30,7 +30,7 @@ class AuthRepoImpl implements AuthRepo {
         var user = data['user'];
         var token = data['token'];
         SharedPreferenceUtil.putString(PrefKey.fcmToken, "${token}");
-        var model = LoginModel.fromJson(data);
+        var model = UserData.fromJson(data);
         print("----------->user: $user, token: $token");
 
         // AuthManager.saveUser(user.data?.user, user.data?.token);

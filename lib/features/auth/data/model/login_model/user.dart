@@ -58,3 +58,35 @@ class User {
         'email_verified_at': emailVerifiedAt,
       };
 }
+
+class UserData {
+  final User? user;
+  final String? token;
+
+  UserData({this.user, this.token});
+
+  factory UserData.fromJson(Map<String, dynamic> json) {
+    return UserData(
+      user: json['user'] != null && json['user'] is Map<String, dynamic>
+          ? User.fromJson(json['user'])
+          : null,
+      token: json['token'] as String?,
+    );
+  }
+}
+
+class UpdateProfileResponse {
+  final String? status;
+  final UserData? data;
+  final String? message;
+
+  UpdateProfileResponse({this.status, this.data, this.message});
+
+  factory UpdateProfileResponse.fromJson(Map<String, dynamic> json) {
+    return UpdateProfileResponse(
+      status: json['status'],
+      data: json['data'] != null ? UserData.fromJson(json['data']) : null,
+      message: json['message'],
+    );
+  }
+}

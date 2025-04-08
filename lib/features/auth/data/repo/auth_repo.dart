@@ -2,11 +2,12 @@ import 'package:bloc/bloc.dart';
 import 'package:dartz/dartz.dart';
 import 'package:goal_master/core/errors/failure.dart';
 import 'package:goal_master/features/auth/data/model/login_model/login_model.dart';
+import 'package:goal_master/features/auth/data/model/login_model/user.dart';
 
 abstract class AuthRepo {
   // Future<Either<Failure, UserModel>> profile();
   Future<Either<Failure, Unit>> logout();
-  Future<Either<Failure, LoginModel>> login({
+  Future<Either<Failure, UserData>> login({
     required String email,
     required String password,
   });
