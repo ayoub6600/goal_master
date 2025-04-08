@@ -16,11 +16,11 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:oktoast/oktoast.dart';
 
 void main() async {
-  setupServiceLocator();
-
-  WidgetsFlutterBinding.ensureInitialized(); // ✅ حل المشكلة
+  WidgetsFlutterBinding.ensureInitialized();
   await SharedPreferenceUtil.getInstance();
-  await StorageService.init(); // تأكد من انتظار التهيئة
+
+  await StorageService.init();
+  setupServiceLocator();
   runApp(const GoalMaster());
 }
 
