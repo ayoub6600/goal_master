@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:goal_master/core/components/keys_values.dart';
 import 'package:goal_master/core/components/page_wrapper.dart';
+import 'package:goal_master/core/components/preference_utility.dart';
 import 'package:goal_master/core/routing/route_utils.dart';
 import 'package:goal_master/core/routing/routes_keys.dart';
 import 'package:goal_master/core/services/service_locator.dart';
@@ -56,8 +58,13 @@ class ProfileView extends StatelessWidget {
                     ProfileItem(
                       title: "تغيير معلوماتك الشخصية",
                       icon: Assets.imagesPngImageMagicpen,
-                      onTap: () {
-                        push(RoutesKeys.kUpdateProfile, context);
+                      onTap: () async {
+                        final result =
+                            await push(RoutesKeys.kUpdateProfile, context);
+
+                        if (result == true) {
+                          context.read<ProfileCubit>().getProfile();
+                        }
                       },
                     ),
                     Container(
@@ -106,7 +113,11 @@ class ProfileView extends StatelessWidget {
                     ProfileItem(
                       title: "خروج",
                       icon: Assets.imagesPngImageLogout,
-                      onTap: () {},
+                      onTap: () async {
+                        await SharedPreferenceUtil.clear();
+                        pushReplacement(RoutesKeys.kLogin, context);
+                        SharedPreferenceUtil.putString(PrefKey.login, "true");
+                      },
                       child: SizedBox(),
                     ),
                     Container(

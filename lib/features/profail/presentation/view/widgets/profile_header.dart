@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:goal_master/core/components/keys_values.dart';
+import 'package:goal_master/core/components/preference_utility.dart';
 import 'package:goal_master/core/manager/user_info_cubit/user_info_cubit.dart';
 import 'package:goal_master/core/styles/app_text_styles.dart';
 import 'package:goal_master/core/styles/assets.dart';
@@ -31,14 +33,14 @@ class ProfileHeader extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        "No Name",
+                        SharedPreferenceUtil.getString(PrefKey.fullName),
                         style: AppTextStyles.font16SemiBold,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
                       HeightSpace(8.h),
                       Text(
-                        "No Phone",
+                        SharedPreferenceUtil.getString(PrefKey.phone),
                         style: AppTextStyles.font16SemiBold
                             .copyWith(color: Color(0xff6D7580)),
                       ),

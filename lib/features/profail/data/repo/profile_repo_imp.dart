@@ -43,7 +43,7 @@ class ProfileRepoImp extends ProfileRepo {
   }
 
   @override
-  Future<Either<Failure, List>> updateProfile({
+  Future<Either<Failure, UserData>> updateProfile({
     required String name,
     required String username,
     required String phone,
@@ -52,13 +52,12 @@ class ProfileRepoImp extends ProfileRepo {
       () => consumer.post(
         EndPoints.update,
         isFormData: false,
-        data: {
-          'name': "Ayoub",
-          'username': "Ayoubbelhaj663@gmail.com",
-          'phone_number': "0916776600"
-        },
+        data: {'name': name, 'username': username, 'phone_number': phone},
       ),
-      (data) => (data as List).map((e) => e).toList(),
+      (data) {
+        print("data: ${data["data"]}");
+        return UserData.fromJson(data["data"]);
+      },
     );
   } //
 }

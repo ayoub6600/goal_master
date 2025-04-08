@@ -8,8 +8,9 @@ final class UpdateProfileInitial extends UpdateProfileState {}
 final class UpdateProfileLoading extends UpdateProfileState {}
 
 final class UpdateProfileSuccess extends UpdateProfileState {
-  final String message;
+  final UserData message;
   UpdateProfileSuccess({required this.message});
+  
 }
 
 final class UpdateProfileError extends UpdateProfileState {

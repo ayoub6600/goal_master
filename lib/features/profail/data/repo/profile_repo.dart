@@ -9,7 +9,7 @@ abstract class ProfileRepo {
     required String newPassword,
     required String newPasswordConfirmation,
   });
-  Future<Either<Failure, dynamic>> updateProfile({
+  Future<Either<Failure, UserData>> updateProfile({
     required String name,
     required String username,
     required String phone,
