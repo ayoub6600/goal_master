@@ -75,13 +75,13 @@ class _HomeViewState extends State<HomeView> {
                   HeightSpace(8.h),
                   ListSectionPlay(),
                   HeightSpace(24.h),
-                  Text(
-                    "اختر ملعبك المفضل",
-                    style:
-                        AppTextStyles.font16Bold.copyWith(color: AppColors.bg),
-                  ),
-                  HeightSpace(8.h),
-                  ListFavoriteStadium(),
+                  // Text(
+                  //   "اختر ملعبك المفضل",
+                  //   style:
+                  //       AppTextStyles.font16Bold.copyWith(color: AppColors.bg),
+                  // ),
+                  // HeightSpace(8.h),
+                  // ListFavoriteStadium(),
                   HeightSpace(100.h),
                 ],
               ),

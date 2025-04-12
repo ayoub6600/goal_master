@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:goal_master/core/styles/spaces.dart';
+import 'package:goal_master/features/home/presentation/manager/analysis_cubit/analysis_cubit.dart';
 import 'package:goal_master/features/home/presentation/view/widgets/section_play.dart';
 
 class ListSectionPlay extends StatelessWidget {
@@ -10,16 +12,27 @@ class ListSectionPlay extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      height: 150.h,
-      child: ListView.separated(
-          separatorBuilder: (context, index) => WidthSpace(16.w),
-          scrollDirection: Axis.horizontal,
-          shrinkWrap: true,
-          itemCount: 10,
-          itemBuilder: (context, index) {
-            return SectionPlay();
-          }),
+    return BlocConsumer<AnalysisCubit, AnalysisState>(
+      listener: (context, state) {
+        // TODO: implement listener
+      },
+      builder: (context, state) {
+        if (state is AnalysisLoading) {
+          return const Center(
+            child: CircularProgressIndicator(),
+          );
+        } else if (state is AnalysisError) {
+          return Center(
+            child: Text(state.message),
+          );
+        } else if (state is AnalysisLoaded) {
+          return SectionPlay(
+            analysis: state.analysis,
+          );
+        } else {
+          return Container();
+        }
+      },
     );
   }
 }
