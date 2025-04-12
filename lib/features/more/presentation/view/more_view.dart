@@ -7,6 +7,7 @@ import 'package:goal_master/core/styles/spaces.dart';
 import 'package:goal_master/features/more/presentation/view/widgets/information_to_app_view.dart';
 import 'package:goal_master/features/more/presentation/view/widgets/term_and_condition_view.dart';
 import 'package:goal_master/features/profail/presentation/view/widgets/profile_item.dart';
+import 'package:share_plus/share_plus.dart';
 
 class MoreView extends StatelessWidget {
   const MoreView({super.key});
@@ -58,7 +59,7 @@ class MoreView extends StatelessWidget {
               title: "مشاركة التطبيق",
               icon: Assets.imagesPngImageSend2,
               onTap: () {
-                // push(RoutesKeys.kUpdateProfile, context);
+                Share.share('جرّب تطبيقنا الرائع! 📲\nhttps://example.com');
               },
             ),
             Container(
