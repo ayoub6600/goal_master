@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:socket_io_client/socket_io_client.dart' as IO;
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 class PrivateChatScreen extends StatefulWidget {
   @override
@@ -13,12 +14,28 @@ class _PrivateChatScreenState extends State<PrivateChatScreen> {
   GoogleMapController? mapController;
   LatLng? branchLocation;
 
+  final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+      FlutterLocalNotificationsPlugin();
+
   @override
   void initState() {
     super.initState();
-    connectToSocket();
+    initializeNotifications(); // تهيئة الإشعارات
+    connectToSocket(); // الاتصال بـ Socket.io
   }
 
+  // تهيئة الإشعارات
+  void initializeNotifications() async {
+    const AndroidInitializationSettings androidSettings =
+        AndroidInitializationSettings('@mipmap/ic_launcher');
+
+    const InitializationSettings initSettings =
+        InitializationSettings(android: androidSettings);
+
+    await flutterLocalNotificationsPlugin.initialize(initSettings);
+  }
+
+  // الاتصال بـ Socket.io
   void connectToSocket() {
     socket = IO.io('https://socket.goalmasters.online', <String, dynamic>{
       'transports': ['websocket'],
@@ -52,11 +69,37 @@ class _PrivateChatScreenState extends State<PrivateChatScreen> {
           mapController?.moveCamera(CameraUpdate.newLatLng(branchLocation!));
         }
       });
+
+      // عرض الإشعار عند استلام رسالة جديدة
+      _showNotification(message['msg'], message['branchName']);
     });
 
     socket.on('disconnect', (_) {
       print('Disconnected from Socket');
     });
+  }
+
+  // عرض إشعار عند استلام الرسالة
+  Future<void> _showNotification(String title, String body) async {
+    const AndroidNotificationDetails androidDetails =
+        AndroidNotificationDetails(
+      'channel_id', // يجب أن يكون ثابت
+      'Channel Name',
+      channelDescription: 'وصف القناة',
+      importance: Importance.max,
+      priority: Priority.high,
+      ticker: 'ticker',
+    );
+
+    const NotificationDetails notificationDetails =
+        NotificationDetails(android: androidDetails);
+
+    await flutterLocalNotificationsPlugin.show(
+      0,
+      title,
+      body,
+      notificationDetails,
+    );
   }
 
   @override
