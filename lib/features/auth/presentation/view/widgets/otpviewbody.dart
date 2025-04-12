@@ -3,6 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_otp_text_field/flutter_otp_text_field.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:goal_master/core/components/button_app.dart';
+import 'package:goal_master/core/components/custom_failure_toast.dart';
+import 'package:goal_master/core/components/custom_success_toast.dart';
 import 'package:goal_master/core/components/page_wrapper.dart';
 import 'package:goal_master/core/routing/route_utils.dart';
 import 'package:goal_master/core/routing/routes_keys.dart';
@@ -46,8 +48,8 @@ class Otpviewbody extends StatelessWidget {
               ),
               HeightSpace(16.h),
               OtpTextField(
-                numberOfFields: 4,
-                fieldWidth: 64.w,
+                numberOfFields: 6,
+                //fieldWidth: 64.w,
                 borderWidth: 1,
                 enabledBorderColor: AppColors.inactive2,
                 focusedBorderColor: AppColors.primary,
@@ -89,8 +91,12 @@ class Otpviewbody extends StatelessWidget {
               HeightSpace(20.h),
               BlocConsumer<VerifyEmailCubit, VerifyEmailState>(
                 listener: (context, state) {
+                  print("---->state $state");
                   if (state is VerifyEmailSuccess) {
+                    push(RoutesKeys.kNewPassword, context);
+                    showCustomSuccessToast(state.msg);
                   } else if (state is VerifyEmailError) {
+                    showCustomFailureToast(state.errMessage);
                     print(state..errMessage);
                   }
                 },

@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:goal_master/core/components/button_app.dart';
 import 'package:goal_master/core/components/custom_failure_toast.dart';
+import 'package:goal_master/core/components/custom_success_toast.dart';
 import 'package:goal_master/core/components/custom_text_field/custom_app_form_text_field.dart';
 import 'package:goal_master/core/components/page_wrapper.dart';
 import 'package:goal_master/core/routing/route_utils.dart';
@@ -152,18 +153,19 @@ class RegisterViewBody extends StatelessWidget {
                 HeightSpace(40.h),
                 BlocConsumer<RegisterCubit, RegisterState>(
                   listener: (context, state) {
-                    push(RoutesKeys.kOtp, context, extra: {
-                      'phone': cubit.phoneController.text,
-                      'forget': false,
-                    });
-                    // if (state is RegisterSuccess) {
-                    //   push(RoutesKeys.kOtp, context, extra: {
-                    //     'phone': cubit.phoneController.text,
-                    //     'forget': false,
-                    //   });
-                    // } else if (state is RegisterError) {
-                    //   showCustomFailureToast(state.errMessage);
-                    // }
+                    if (state is RegisterSuccess) {
+                      push(
+                        RoutesKeys.kLogin, context,
+
+                        // extra: {
+                        //   'phone': cubit.phoneController.text,
+                        //   'forget': false,
+                        // },
+                      );
+                      showCustomSuccessToast("تم التسجيل بنجاح");
+                    } else if (state is RegisterError) {
+                      showCustomFailureToast(state.errMessage);
+                    }
                   },
                   builder: (context, state) {
                     return ButtonApp(

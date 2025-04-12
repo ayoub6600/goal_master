@@ -22,7 +22,7 @@ class LoginCubit extends Cubit<LoginState> {
     var isValid = _validate(email, password);
     if (!isValid) return;
 
-    var result = await _repo.login(email: email, password: password);
+    var result = await _repo.login(phone: email, password: password);
     result.fold(
       (error) {
         emit(LoginError(error.errMessage));
@@ -50,10 +50,10 @@ class LoginCubit extends Cubit<LoginState> {
     SharedPreferenceUtil.putString(PrefKey.login, "false");
   }
 
-  bool _validate(String email, String password) {
-    String? emailError = InputValidator.validateEmail(email);
-    if (emailError != null) {
-      emit(LoginError(emailError));
+  bool _validate(String phone, String password) {
+    String? phoneError = InputValidator.validatePhoneNumber(phone);
+    if (phoneError != null) {
+      emit(LoginError(phoneError));
       return false;
     }
     String? passwordError = InputValidator.validatePassword(password);

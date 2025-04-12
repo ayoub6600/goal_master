@@ -17,12 +17,12 @@ class AuthRepoImpl implements AuthRepo {
   AuthRepoImpl(this.consumer);
   @override
   Future<Either<Failure, UserData>> login({
-    required String email,
+    required String phone,
     required String password,
   }) async {
     return consumer.handleRequestCustom(
       () => consumer.post(EndPoints.login, data: {
-        'username': email,
+        'phone_number': phone,
         'password': password,
       }),
       (res) async {
@@ -63,7 +63,11 @@ class AuthRepoImpl implements AuthRepo {
     return consumer.handleRequestCustom(
       () => consumer.post(EndPoints.verifyOTP,
           data: forget
-              ? {'phone': phone, 'code': otp, 'forget': 1}
+              ? {
+                  'phone': phone,
+                  'code': otp,
+                  'forget': 1,
+                }
               : {
                   'phone': phone,
                   'code': otp,
