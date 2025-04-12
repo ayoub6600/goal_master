@@ -8,6 +8,8 @@ import 'package:goal_master/core/services/service_locator.dart';
 import 'package:goal_master/core/styles/app_colors.dart';
 import 'package:goal_master/core/utils/storage_service.dart';
 import 'package:goal_master/features/auth/data/repo/auth_repo_imp.dart';
+import 'package:goal_master/features/home/data/repo/analysis_repo_imp.dart';
+import 'package:goal_master/features/home/presentation/manager/analysis_cubit/analysis_cubit.dart';
 import 'package:goal_master/features/layout/presentation/manager/layout_cubit.dart';
 import 'package:goal_master/features/profail/data/repo/profile_repo_imp.dart';
 import 'package:goal_master/features/profail/presentation/manager/profile_cubit/profile_cubit.dart';
@@ -38,6 +40,11 @@ class GoalMaster extends StatelessWidget {
           create: (context) => UserInfoCubit(
             getIt<AuthRepoImpl>(),
           ),
+        ),
+        BlocProvider(
+          create: (context) => AnalysisCubit(
+            getIt<AnalysisRepoImp>(),
+          )..getAnalysis(),
         ),
         BlocProvider(
           create: (context) => ProfileCubit(
