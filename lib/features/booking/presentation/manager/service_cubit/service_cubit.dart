@@ -9,7 +9,8 @@ class ServiceCubit extends Cubit<ServiceState> {
   ServiceCubit(this.bookingRepo) : super(ServiceInitial());
   final BookingRepo bookingRepo;
 
-  Future<void> listService(int categoryId, int branchId) async {
+  Future<void> listService(
+      {required int categoryId, required int branchId}) async {
     emit(ServiceLoading());
     final result = await bookingRepo.listService(categoryId, branchId);
     result.fold((failure) => emit(ServiceError(failure.errMessage)), (service) {

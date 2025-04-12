@@ -70,7 +70,7 @@ class BookingRepoImp extends BookingRepo {
       () => apiConsumer.post(
         EndPoints.listClub,
         data: {
-          'zone': '2',
+          'zone': zoneId,
         },
       ),
       (data) {
@@ -162,5 +162,37 @@ class BookingRepoImp extends BookingRepo {
           .toList();
       return timeslots;
     });
+  }
+
+  @override
+  Future<Either<Failure, String>> addBooking(
+      {required int branchId,
+      required int employeeId,
+      required int serviceId,
+      required int paymentType,
+      required String date,
+      required String startTime,
+      required String endTime,
+      required String fullName,
+      required String phone,
+      required String state}) {
+    return apiConsumer.handleRequest(
+      () => apiConsumer.post(
+        EndPoints.addBooking,
+        data: {
+          'branch_id': branchId,
+          'employee_id': employeeId,
+          'service_id': serviceId,
+          'payment_type': paymentType,
+          'service_date': date,
+          'start_time': startTime,
+          'end_time': endTime,
+          'full_name': fullName,
+          'phone_no': phone,
+          'state': "1",
+        },
+      ),
+      (data) => data['data'],
+    );
   }
 }

@@ -39,4 +39,16 @@ abstract class BookingRepo {
     required int serviceId,
     required String date,
   });
+  Future<Either<Failure, String>> addBooking({
+    required int branchId,
+    required int employeeId,
+    required int serviceId,
+    required int paymentType,
+    required String date,
+    required String startTime,
+    required String endTime,
+    required String fullName,
+    required String phone,
+    required String state,
+  });
 }

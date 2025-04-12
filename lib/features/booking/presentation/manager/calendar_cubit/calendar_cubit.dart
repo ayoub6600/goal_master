@@ -21,14 +21,18 @@ class CalendarCubit extends Cubit<CalendarState> {
     print("تم تحديد التاريخ: ${selectedDay.toLocal()}");
   }
 
-  Future<void> listTimeslot() async {
+  Future<void> listTimeslot({
+    required int branchId,
+    required int employeeId,
+    required int serviceId,
+  }) async {
     final formattedDate = DateFormat('yyyy-MM-dd').format(state.selectedDay);
 
     emit(TimeLoading());
     final result = await bookingRepo.listTimeslot(
-      branchId: 15,
-      employeeId: 37,
-      serviceId: 20,
+      branchId: branchId,
+      employeeId: employeeId,
+      serviceId: serviceId,
       date: formattedDate, // Provide appropriate date format if needed
     );
     result.fold(
