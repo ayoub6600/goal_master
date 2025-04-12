@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/svg.dart';
 import 'package:oktoast/oktoast.dart';
 import '../styles/app_colors.dart';
 

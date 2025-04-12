@@ -21,6 +21,8 @@ import 'package:goal_master/features/booking/presentation/manager/calendar_cubit
 import 'package:goal_master/features/booking/presentation/manager/cancel_booking_cubit/cancel_booking_cubit.dart';
 import 'package:goal_master/features/booking/presentation/manager/category_cubit/category_cubit.dart';
 import 'package:goal_master/features/booking/presentation/manager/club_cubit/club_cubit.dart';
+import 'package:goal_master/features/booking/presentation/manager/cubit/add_booking_cubit.dart';
+import 'package:goal_master/features/booking/presentation/manager/page_view_cubit/page_view_cubit_cubit.dart';
 import 'package:goal_master/features/booking/presentation/manager/employee_cubit/employee_cubit.dart';
 import 'package:goal_master/features/booking/presentation/manager/service_cubit/service_cubit.dart';
 import 'package:goal_master/features/booking/presentation/manager/toggle_booking/booking_toggle_cubit.dart';
@@ -32,7 +34,6 @@ import 'package:goal_master/features/layout/presentation/view/home_layout_view.d
 import 'package:goal_master/features/notification/presentation/view/notifaction_view.dart';
 import 'package:goal_master/features/onbording/presentation/manager/onboarding_cubit.dart';
 import 'package:goal_master/features/onbording/presentation/view/onboarding_view.dart';
-import 'package:goal_master/features/profail/data/repo/profile_repo.dart';
 import 'package:goal_master/features/profail/data/repo/profile_repo_imp.dart';
 import 'package:goal_master/features/profail/presentation/manager/reset_password_cubit/reset_password_cubit.dart';
 import 'package:goal_master/features/profail/presentation/manager/update_profile_cubit/update_profile_cubit.dart';
@@ -252,27 +253,36 @@ List<RouteBase> appRoutes = [
           BlocProvider(
               create: (context) => ClubCubit(
                     getIt<BookingRepoImp>(),
-                  )..listClub(2)),
+                  )),
           //CategoryCubit
           BlocProvider(
               create: (context) => CategoryCubit(
                     getIt<BookingRepoImp>(),
-                  )..listCategory(branchId: 15)),
+                  )),
           //ServiceCubit
           BlocProvider(
               create: (context) => ServiceCubit(
                     getIt<BookingRepoImp>(),
-                  )..listService(27, 15)),
+                  )),
           //EmployeeCubit
           BlocProvider(
             create: (context) => EmployeeCubit(
               getIt<BookingRepoImp>(),
-            )..listEmployee(15),
+            ),
+          ),
+          //AddBookingCubit
+          BlocProvider(
+            create: (context) => AddBookingCubit(
+              getIt<BookingRepoImp>(),
+            ),
           ),
           BlocProvider(
             create: (context) => CalendarCubit(
               getIt<BookingRepoImp>(),
             ),
+          ),
+          BlocProvider(
+            create: (context) => PageViewCubit(),
           ),
         ],
         child: const BookingDetails(),

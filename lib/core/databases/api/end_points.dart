@@ -23,6 +23,7 @@ class EndPoints {
   static String refresh = 'user/refresh';
 
   static String profile = 'user/profile';
+  static String analysis = 'user/analysis';
   static String bookingHistory(int id) => 'user/booking/history?page=$id';
 
   static String cancelBooking = 'user/booking/cancel-booking';
@@ -37,6 +38,8 @@ class EndPoints {
   static String listEmployee = 'list/booking';
 
   static String listTimeslot = 'list/timeslot';
+
+  static String addBooking = 'user/booking/store-booking';
 }
 
 //doctors/top-ratings
