@@ -66,7 +66,7 @@ class ContactUsBody extends StatelessWidget {
             ProfileItem(
               title: "www.goalmasters.online",
               icon: Assets.imagesPngImageGlobalRefresh,
-              onTap: () => _openWebsite("www.goalmasters.online"),
+              onTap: () => _openWebsite("https://web.goalmasters.online"),
               child: SizedBox(),
             ),
             Container(
@@ -118,9 +118,9 @@ class ContactUsBody extends StatelessWidget {
       // Log the URL to check if it's formatted correctly
       print('Attempting to open URL: $uri');
 
-      // Attempt to launch the URL without specifying the launch mode first
-      if (await canLaunchUrl(uri)) {
-        await launchUrl(uri);
+      // Attempt to launch the URL
+      if (await canLaunch(uri.toString())) {
+        await launch(uri.toString());
       } else {
         // If the URL can't be launched, show an error
         throw 'Could not launch $uri';
