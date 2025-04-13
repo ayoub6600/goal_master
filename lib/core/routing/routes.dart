@@ -21,7 +21,7 @@ import 'package:goal_master/features/booking/presentation/manager/calendar_cubit
 import 'package:goal_master/features/booking/presentation/manager/cancel_booking_cubit/cancel_booking_cubit.dart';
 import 'package:goal_master/features/booking/presentation/manager/category_cubit/category_cubit.dart';
 import 'package:goal_master/features/booking/presentation/manager/club_cubit/club_cubit.dart';
-import 'package:goal_master/features/booking/presentation/manager/cubit/add_booking_cubit.dart';
+import 'package:goal_master/features/booking/presentation/manager/add_booking_cubit/add_booking_cubit.dart';
 import 'package:goal_master/features/booking/presentation/manager/page_view_cubit/page_view_cubit_cubit.dart';
 import 'package:goal_master/features/booking/presentation/manager/employee_cubit/employee_cubit.dart';
 import 'package:goal_master/features/booking/presentation/manager/service_cubit/service_cubit.dart';
