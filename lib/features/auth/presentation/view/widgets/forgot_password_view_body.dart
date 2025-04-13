@@ -49,7 +49,7 @@ class ForgotPasswordViewBody extends StatelessWidget {
             HeightSpace(50.h),
             BlocConsumer<VerifyEmailCubit, VerifyEmailState>(
               listener: (context, state) {
-                if (state is VerifyEmailSuccess) {
+                if (state is VerifyResend) {
                   pushReplacement(
                     RoutesKeys.kOtp,
                     context,

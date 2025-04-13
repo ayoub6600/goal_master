@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/svg.dart';
 import 'package:oktoast/oktoast.dart';
 import '../styles/app_colors.dart';
 
@@ -24,6 +23,7 @@ class CustomSuccessToast extends StatelessWidget {
           BoxShadow(
             blurRadius: 10,
             offset: const Offset(0, -2),
+            // ignore: deprecated_member_use
             color: const Color(0xFF000000).withOpacity(.12),
             spreadRadius: 0,
           ),

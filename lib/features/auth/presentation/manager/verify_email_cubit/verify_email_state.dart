@@ -9,10 +9,11 @@ final class VerifyEmailInitial extends VerifyEmailState {}
 final class VerifyEmailLoading extends VerifyEmailState {}
 
 final class VerifyEmailSuccess extends VerifyEmailState {
-  final String msg;
+  final ResetTokenResponse model;
+
   final bool nextPage;
   const VerifyEmailSuccess(
-    this.msg, {
+    this.model, {
     this.nextPage = false,
   });
 }
@@ -21,4 +22,10 @@ final class VerifyEmailError extends VerifyEmailState {
   final String errMessage;
 
   const VerifyEmailError(this.errMessage);
+}
+
+final class VerifyResend extends VerifyEmailState {
+  final String massage;
+
+  const VerifyResend(this.massage);
 }

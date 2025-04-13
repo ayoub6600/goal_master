@@ -22,6 +22,7 @@ class Otpviewbody extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cubit = context.read<VerifyEmailCubit>();
+    var cubitWatch = context.watch<VerifyEmailCubit>();
     return PageWrapper(
       child: Padding(
         padding: EdgeInsets.all(20.0.w),
@@ -47,57 +48,68 @@ class Otpviewbody extends StatelessWidget {
                 ),
               ),
               HeightSpace(16.h),
-              OtpTextField(
-                numberOfFields: 6,
-                //fieldWidth: 64.w,
-                borderWidth: 1,
-                enabledBorderColor: AppColors.inactive2,
-                focusedBorderColor: AppColors.primary,
-                borderRadius: BorderRadius.circular(20.r),
-                borderColor: Color(0xFF512DA8),
-                showFieldAsBox: true,
-                onSubmit: (String verificationCode) {
-                  cubit.setOTP(verificationCode);
-                }, // end onSubmit
+              Directionality(
+                textDirection: TextDirection.ltr,
+                child: OtpTextField(
+                  numberOfFields: 6,
+                  //fieldWidth: 64.w,
+                  borderWidth: 1,
+                  enabledBorderColor: AppColors.inactive2,
+                  focusedBorderColor: AppColors.primary,
+                  borderRadius: BorderRadius.circular(20.r),
+                  borderColor: Color(0xFF512DA8),
+                  showFieldAsBox: true,
+                  onSubmit: (String verificationCode) {
+                    cubit.setOTP(verificationCode);
+                  }, // end onSubmit
+                ),
               ),
-              HeightSpace(20.h),
+              HeightSpace(50.h),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text(
-                    '${cubit.timeString} ',
-                    style: AppTextStyles.font14SemiBold.copyWith(
-                      color: AppColors.primary,
-                    ),
-                  ),
+                  if (!cubitWatch.allowResend)
+                    Text(cubitWatch.timeString,
+                        style: AppTextStyles.font16Bold.copyWith(
+                          color: AppColors.primary,
+                        )),
                   WidthSpace(8.w),
-                  BlocBuilder<VerifyEmailCubit, VerifyEmailState>(
-                    builder: (context, state) {
-                      return GestureDetector(
-                        onTap: () {
-                          cubit.resend();
-                        },
-                        child: Text(
-                          'اعادة ارسال',
-                          style: AppTextStyles.font14SemiBold.copyWith(
-                            color: AppColors.primary,
-                          ),
-                        ),
-                      );
-                    },
+                  GestureDetector(
+                    onTap: cubit.resend,
+                    child: Text('اعادة ارسال',
+                        style: AppTextStyles.font16Bold.copyWith(
+                          color: cubitWatch.allowResend
+                              ? AppColors.primary
+                              : AppColors.inactiveText2,
+                        )),
                   ),
                 ],
               ),
-              HeightSpace(20.h),
+              HeightSpace(30.h),
               BlocConsumer<VerifyEmailCubit, VerifyEmailState>(
                 listener: (context, state) {
                   print("---->state $state");
                   if (state is VerifyEmailSuccess) {
-                    push(RoutesKeys.kNewPassword, context);
-                    showCustomSuccessToast(state.msg);
+                    final forget = context.read<VerifyEmailCubit>().forget;
+
+                    if (forget) {
+                      // في حالة نسيت كلمة المرور
+                      if (state.model.data.resetToken != null) {
+                        pushReplacement(RoutesKeys.kNewPassword, context,
+                            extra: state.model.data.resetToken);
+                      }
+                    } else {
+                      // في حالة تسجيل دخول عادي
+                      pushReplacement(RoutesKeys.kLogin, context);
+                    }
+
+                    showCustomSuccessToast(state.model.message);
                   } else if (state is VerifyEmailError) {
                     showCustomFailureToast(state.errMessage);
                     print(state..errMessage);
+                  }
+                  if (state is VerifyResend) {
+                    showCustomSuccessToast(state.massage);
                   }
                 },
                 builder: (context, state) {

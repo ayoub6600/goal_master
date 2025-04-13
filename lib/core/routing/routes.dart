@@ -145,19 +145,21 @@ List<RouteBase> appRoutes = [
   ),
   //NewPasswordView
   GoRoute(
-    parentNavigatorKey: parentKey,
-    path: RoutesKeys.kNewPassword,
-    pageBuilder: (context, state) => buildPageWithDefaultTransition<void>(
-      context: context,
-      state: state,
-      child: BlocProvider(
-        create: (context) => ChangePasswordCubit(
-          getIt<AuthRepoImpl>(),
-        ),
-        child: const NewPasswordView(),
-      ),
-    ),
-  ),
+      parentNavigatorKey: parentKey,
+      path: RoutesKeys.kNewPassword,
+      pageBuilder: (context, state) {
+        return buildPageWithDefaultTransition<void>(
+          context: context,
+          state: state,
+          child: BlocProvider(
+            create: (context) => ChangePasswordCubit(
+              getIt<AuthRepoImpl>(),
+              state.extra as String,
+            ),
+            child: const NewPasswordView(),
+          ),
+        );
+      }),
   //ProfileView
   GoRoute(
     parentNavigatorKey: parentKey,

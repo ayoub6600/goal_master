@@ -12,7 +12,6 @@ import 'package:goal_master/core/styles/app_colors.dart';
 import 'package:goal_master/core/styles/app_text_styles.dart';
 import 'package:goal_master/core/styles/spaces.dart';
 import 'package:goal_master/features/auth/presentation/manager/register_cubit/register_cubit.dart';
-import 'package:goal_master/features/auth/presentation/view/widgets/accept_terms.dart';
 
 class RegisterViewBody extends StatelessWidget {
   const RegisterViewBody({
@@ -124,7 +123,7 @@ class RegisterViewBody extends StatelessWidget {
                   controller: cubit.confirmPasswordController,
                 ),
                 HeightSpace(24.h),
-                AcceptTerms(),
+                //  AcceptTerms(),
                 HeightSpace(29.h),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -155,12 +154,12 @@ class RegisterViewBody extends StatelessWidget {
                   listener: (context, state) {
                     if (state is RegisterSuccess) {
                       push(
-                        RoutesKeys.kLogin, context,
-
-                        // extra: {
-                        //   'phone': cubit.phoneController.text,
-                        //   'forget': false,
-                        // },
+                        RoutesKeys.kOtp,
+                        context,
+                        extra: {
+                          'phone': cubit.phoneController.text,
+                          'forget': false,
+                        },
                       );
                       showCustomSuccessToast("تم التسجيل بنجاح");
                     } else if (state is RegisterError) {

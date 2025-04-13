@@ -4,6 +4,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:goal_master/features/auth/data/model/new_password/new_password_model.dart';
 import 'package:goal_master/features/auth/data/repo/auth_repo.dart';
 
 part 'verify_email_state.dart';
@@ -81,12 +82,10 @@ class VerifyEmailCubit extends Cubit<VerifyEmailState> {
     var result = await repo.sendOTP(
       phone: phone,
     );
-    result.fold(
-      (error) => emit(VerifyEmailError(error.errMessage)),
-      (msg) => emit(VerifyEmailSuccess(
+    result.fold((error) => emit(VerifyEmailError(error.errMessage)), (msg) {
+      emit(VerifyResend(
         msg,
-        nextPage: false,
-      )),
-    );
+      ));
+    });
   }
 }

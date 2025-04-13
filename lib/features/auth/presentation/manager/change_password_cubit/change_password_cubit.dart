@@ -7,10 +7,11 @@ import 'package:meta/meta.dart';
 part 'change_password_state.dart';
 
 class ChangePasswordCubit extends Cubit<ChangePasswordState> {
-  ChangePasswordCubit(this._repo) : super(ChangePasswordInitial());
+  ChangePasswordCubit(this._repo, this.token) : super(ChangePasswordInitial());
   final AuthRepo _repo;
   final passwordController = TextEditingController();
   final confirmPasswordController = TextEditingController();
+  final String token;
 
   Future<void> changePassword() async {
     emit(ChangePasswordLoading());
@@ -21,7 +22,7 @@ class ChangePasswordCubit extends Cubit<ChangePasswordState> {
     var result = await _repo.changePassword(
       password: password,
       passwordConfirm: confirmPassword,
-      token: '',
+      token: token,
     );
     result.fold(
       (error) {

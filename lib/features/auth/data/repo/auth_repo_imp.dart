@@ -1,15 +1,13 @@
 import 'package:dartz/dartz.dart';
-import 'package:get_it/get_it.dart';
 import 'package:goal_master/core/components/keys_values.dart';
 import 'package:goal_master/core/components/preference_utility.dart';
 import 'package:goal_master/core/databases/api/api_consumer.dart';
 import 'package:goal_master/core/databases/api/api_consumer_extension.dart';
 import 'package:goal_master/core/databases/api/end_points.dart';
 import 'package:goal_master/core/errors/failure.dart';
-import 'package:goal_master/core/manager/user_info_cubit/user_info_cubit.dart';
-import 'package:goal_master/core/utils/functions/auth_manager.dart';
 import 'package:goal_master/features/auth/data/model/login_model/login_model.dart';
 import 'package:goal_master/features/auth/data/model/login_model/user.dart';
+import 'package:goal_master/features/auth/data/model/new_password/new_password_model.dart';
 import 'package:goal_master/features/auth/data/repo/auth_repo.dart';
 
 class AuthRepoImpl implements AuthRepo {
@@ -55,7 +53,7 @@ class AuthRepoImpl implements AuthRepo {
   }
 
   @override
-  Future<Either<Failure, String>> verifyOTP({
+  Future<Either<Failure, ResetTokenResponse>> verifyOTP({
     required String phone,
     required String otp,
     required bool forget,
@@ -71,10 +69,11 @@ class AuthRepoImpl implements AuthRepo {
               : {
                   'phone': phone,
                   'code': otp,
+                  'forget': 0,
                 }),
       (res) async {
-        var message = res['message'];
-        return message;
+        //  var message = res['message'];
+        return ResetTokenResponse.fromJson(res);
       },
     );
   }
@@ -113,7 +112,7 @@ class AuthRepoImpl implements AuthRepo {
       () => consumer.post(EndPoints.changePassword, data: {
         'password': password,
         'password_confirmation': passwordConfirm,
-        'token': token,
+        'reset_token': token,
       }),
       (res) async {
         var message = res['message'];
@@ -133,9 +132,8 @@ class AuthRepoImpl implements AuthRepo {
     return consumer.handleRequest(
       () => consumer.get(EndPoints.refresh),
       (p0) {
-        // Extract the token from the 'data' field
         String token = p0['data']['token'];
-        return token; // Return the token as the result
+        return token;
       },
     );
   }

@@ -2,7 +2,6 @@ import 'package:bloc/bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:goal_master/features/auth/data/repo/auth_repo.dart';
 import 'package:goal_master/utils/input_validator.dart';
-
 part 'register_state.dart';
 
 class RegisterCubit extends Cubit<RegisterState> {
@@ -48,11 +47,6 @@ class RegisterCubit extends Cubit<RegisterState> {
       return false;
     }
 
-    String? emailError = InputValidator.validateEmail(email);
-    if (emailError != null) {
-      emit(RegisterError(emailError));
-      return false;
-    }
     String? phoneError = InputValidator.validatePhoneNumber(phone);
     if (phoneError != null) {
       emit(RegisterError(phoneError));
