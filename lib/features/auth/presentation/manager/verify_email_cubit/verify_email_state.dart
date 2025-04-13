@@ -18,6 +18,16 @@ final class VerifyEmailSuccess extends VerifyEmailState {
   });
 }
 
+final class VerifyEmailSuccessRegister extends VerifyEmailState {
+  final VerifyOtpModel model;
+
+  final bool nextPage;
+  const VerifyEmailSuccessRegister(
+    this.model, {
+    this.nextPage = false,
+  });
+}
+
 final class VerifyEmailError extends VerifyEmailState {
   final String errMessage;
 

@@ -8,6 +8,7 @@ import 'package:goal_master/core/errors/failure.dart';
 import 'package:goal_master/features/auth/data/model/login_model/login_model.dart';
 import 'package:goal_master/features/auth/data/model/login_model/user.dart';
 import 'package:goal_master/features/auth/data/model/new_password/new_password_model.dart';
+import 'package:goal_master/features/auth/data/model/verify_otp_model/verify_otp_model..dart';
 import 'package:goal_master/features/auth/data/repo/auth_repo.dart';
 
 class AuthRepoImpl implements AuthRepo {
@@ -134,6 +135,29 @@ class AuthRepoImpl implements AuthRepo {
       (p0) {
         String token = p0['data']['token'];
         return token;
+      },
+    );
+  }
+
+  @override
+  Future<Either<Failure, VerifyOtpModel>> verifyOTPRegister(
+      {required String phone, required String otp, required bool forget}) {
+    return consumer.handleRequestCustom(
+      () => consumer.post(EndPoints.verifyOTP,
+          data: forget
+              ? {
+                  'phone': phone,
+                  'code': otp,
+                  'forget': 1,
+                }
+              : {
+                  'phone': phone,
+                  'code': otp,
+                  'forget': 0,
+                }),
+      (res) async {
+        //  var message = res['message'];
+        return VerifyOtpModel.fromJson(res);
       },
     );
   }

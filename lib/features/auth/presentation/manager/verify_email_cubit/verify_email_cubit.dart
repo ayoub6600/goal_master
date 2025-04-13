@@ -1,10 +1,9 @@
 // ignore_for_file: prefer_const_constructors
-
 import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:goal_master/features/auth/data/model/new_password/new_password_model.dart';
+import 'package:goal_master/features/auth/data/model/verify_otp_model/verify_otp_model..dart';
 import 'package:goal_master/features/auth/data/repo/auth_repo.dart';
 
 part 'verify_email_state.dart';
@@ -72,6 +71,21 @@ class VerifyEmailCubit extends Cubit<VerifyEmailState> {
       (error) => emit(VerifyEmailError(error.errMessage)),
       (msg) => emit(VerifyEmailSuccess(msg)),
     );
+  }
+
+  Future<void> verifyOTPRegister() async {
+    emit(VerifyEmailLoading());
+
+    var result = await repo.verifyOTPRegister(
+      phone: phone,
+      otp: otp,
+      forget: forget,
+    );
+    result.fold((error) => emit(VerifyEmailError(error.errMessage)), (msg) {
+      emit(VerifyEmailSuccessRegister(
+        msg,
+      ));
+    });
   }
 
   Future<void> sendOTP({

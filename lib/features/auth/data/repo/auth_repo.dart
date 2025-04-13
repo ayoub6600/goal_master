@@ -3,6 +3,7 @@ import 'package:goal_master/core/errors/failure.dart';
 import 'package:goal_master/features/auth/data/model/login_model/login_model.dart';
 import 'package:goal_master/features/auth/data/model/login_model/user.dart';
 import 'package:goal_master/features/auth/data/model/new_password/new_password_model.dart';
+import 'package:goal_master/features/auth/data/model/verify_otp_model/verify_otp_model..dart';
 
 abstract class AuthRepo {
   // Future<Either<Failure, UserModel>> profile();
@@ -15,6 +16,11 @@ abstract class AuthRepo {
     required String phone,
   });
   Future<Either<Failure, ResetTokenResponse>> verifyOTP({
+    required String phone,
+    required String otp,
+    required bool forget,
+  });
+  Future<Either<Failure, VerifyOtpModel>> verifyOTPRegister({
     required String phone,
     required String otp,
     required bool forget,

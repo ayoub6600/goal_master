@@ -105,8 +105,15 @@ class Otpviewbody extends StatelessWidget {
 
                     showCustomSuccessToast(state.model.message);
                   } else if (state is VerifyEmailError) {
+                    print(state.errMessage);
                     showCustomFailureToast(state.errMessage);
                     print(state..errMessage);
+                  } else if (state is VerifyEmailSuccessRegister) {
+                    if (state.model.data?.token != null) {
+                      pushReplacement(RoutesKeys.kLogin, context);
+                      showCustomSuccessToast("تم التسجيل بنجاح");
+                    }
+                    // showCustomFailureToast("الكود غير صالح.");
                   }
                   if (state is VerifyResend) {
                     showCustomSuccessToast(state.massage);
@@ -116,7 +123,9 @@ class Otpviewbody extends StatelessWidget {
                   return ButtonApp(
                     text: 'تأكيد',
                     backGround: AppColors.primary,
-                    onTap: cubit.verifyOTP,
+                    onTap: context.read<VerifyEmailCubit>().forget
+                        ? cubit.verifyOTP
+                        : cubit.verifyOTPRegister,
                   );
                 },
               ),
