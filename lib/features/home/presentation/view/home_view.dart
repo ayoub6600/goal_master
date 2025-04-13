@@ -8,7 +8,6 @@ import 'package:goal_master/core/styles/app_colors.dart';
 import 'package:goal_master/core/styles/app_text_styles.dart';
 import 'package:goal_master/core/styles/assets.dart';
 import 'package:goal_master/core/styles/spaces.dart';
-import 'package:goal_master/features/home/presentation/view/widgets/list_favorite_stadium.dart';
 import 'package:goal_master/features/home/presentation/view/widgets/build_header_home.dart';
 import 'package:goal_master/features/home/presentation/view/widgets/build_location_row.dart';
 import 'package:goal_master/features/home/presentation/view/widgets/list_section_play.dart';
