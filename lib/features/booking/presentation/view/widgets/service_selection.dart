@@ -83,7 +83,8 @@ class ServiceSelection extends StatelessWidget {
                           curve: Curves.ease);
                     },
                   )),
-            if (state is ServiceLoading) CircularProgressIndicator(),
+            if (state is ServiceLoading)
+              Center(child: CircularProgressIndicator()),
             if (state is ServiceError) Text('خطأ: ${state.message}'),
           ],
         );

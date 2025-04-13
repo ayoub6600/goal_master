@@ -7,7 +7,7 @@ class PageViewCubit extends Cubit<PageViewState> {
   PageViewCubit() : super(const PageViewState(currentPage: 0));
 
   void nextPage() {
-    if (state.currentPage < 5) {
+    if (state.currentPage < 6) {
       emit(state.copyWith(currentPage: state.currentPage + 1));
     }
   }

@@ -81,7 +81,8 @@ class CategorySelection extends StatelessWidget {
                       }
                     },
                   )),
-            if (state is CategoryLoading) CircularProgressIndicator(),
+            if (state is CategoryLoading)
+              Center(child: CircularProgressIndicator()),
             if (state is CategoryFailure) Text('خطأ: ${state.message}'),
           ],
         );

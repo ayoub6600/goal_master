@@ -7,11 +7,13 @@ import 'package:goal_master/core/styles/format_to_hour.dart';
 import 'package:goal_master/core/styles/spaces.dart';
 import 'package:goal_master/features/booking/presentation/manager/calendar_cubit/calendar_cubit.dart';
 import 'package:goal_master/features/booking/presentation/manager/calendar_cubit/calendar_state.dart';
+import 'package:goal_master/features/booking/presentation/manager/page_view_cubit/page_view_cubit_cubit.dart';
 
 class TimeSlotSection extends StatelessWidget {
   final CalendarState state;
-
-  const TimeSlotSection({required this.state});
+  final PageController controller;
+  const TimeSlotSection(
+      {super.key, required this.state, required this.controller});
 
   @override
   Widget build(BuildContext context) {
@@ -41,6 +43,13 @@ class TimeSlotSection extends StatelessWidget {
 
               return GestureDetector(
                 onTap: () {
+                  //nextPage
+                  context.read<PageViewCubit>().nextPage();
+                  controller.nextPage(
+                      duration: Duration(milliseconds: 300),
+                      curve: Curves.ease);
+                  // Handle time selection
+
                   context.read<CalendarCubit>().selectTime(time);
                 },
                 child: Container(

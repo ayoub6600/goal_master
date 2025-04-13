@@ -1,28 +1,27 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:goal_master/core/components/button_app.dart';
-import 'package:goal_master/features/booking/presentation/manager/cubit/add_booking_cubit.dart';
+import 'package:goal_master/core/components/custom_failure_toast.dart';
+import 'package:goal_master/core/components/custom_success_toast.dart';
+import 'package:goal_master/core/routing/route_utils.dart';
+import 'package:goal_master/core/routing/routes_keys.dart';
+import 'package:goal_master/features/booking/presentation/manager/add_booking_cubit/add_booking_cubit.dart';
+import 'package:goal_master/features/booking/presentation/view/widgets/choose_payment.dart';
 import 'package:goal_master/features/booking/presentation/view/widgets/custom_calder.dart';
 import 'package:goal_master/core/components/page_wrapper.dart';
 import 'package:goal_master/core/styles/app_colors.dart';
-import 'package:goal_master/core/styles/app_text_styles.dart';
-
-import 'package:goal_master/core/styles/spaces.dart';
 import 'package:goal_master/features/booking/presentation/manager/calendar_cubit/calendar_cubit.dart';
 import 'package:goal_master/features/booking/presentation/manager/page_view_cubit/page_view_cubit_cubit.dart';
-import 'package:goal_master/features/booking/presentation/manager/employee_cubit/employee_cubit.dart';
 import 'package:goal_master/features/booking/presentation/view/widgets/category_selection.dart';
 import 'package:goal_master/features/booking/presentation/view/widgets/club_selection.dart';
+import 'package:goal_master/features/booking/presentation/view/widgets/employee_selection.dart';
 import 'package:goal_master/features/booking/presentation/view/widgets/service_selection.dart';
-import 'package:goal_master/features/booking/presentation/view/widgets/step_title.dart';
 
 import 'package:goal_master/features/booking/presentation/view/widgets/zone_selection.dart';
 
 class BookingDetails extends StatefulWidget {
-  const BookingDetails({Key? key}) : super(key: key);
+  const BookingDetails({super.key});
 
   @override
   State<BookingDetails> createState() => _BookingDetailsState();
@@ -37,7 +36,7 @@ class _BookingDetailsState extends State<BookingDetails> {
 
     return PageWrapper(
       title: "إضافة الحجز",
-      allowBack: true,
+      allowBack: false,
       child: BlocBuilder<PageViewCubit, PageViewState>(
         builder: (context, state) {
           return Column(
@@ -52,7 +51,12 @@ class _BookingDetailsState extends State<BookingDetails> {
                     CategorySelection(controller: _controller),
                     ServiceSelection(controller: _controller),
                     EmployeeSelection(controller: _controller),
-                    CustomCalder(),
+                    CustomCalder(
+                      controller: _controller,
+                    ),
+                    ChoosePayment(
+                      controller: _controller,
+                    ),
                   ],
                 ),
               ),
@@ -61,13 +65,18 @@ class _BookingDetailsState extends State<BookingDetails> {
                   padding: EdgeInsets.all(16.w),
                   child: Row(
                     children: [
-                      if (state.currentPage == 5)
+                      if (state.currentPage == 6)
                         BlocConsumer<AddBookingCubit, AddBookingState>(
                           listener: (context, state) {
                             if (state is AddBookingSuccess) {
-                              print("---->success ${state.massage}");
+                              showCustomSuccessToast(
+                                "تم اضافة الحجز بنجاح",
+                              );
+                              pushReplacement(RoutesKeys.kHome, context);
                             } else if (state is AddBookingFailure) {
-                              print("---->error ${state.massage}");
+                              showCustomFailureToast(
+                                state.massage,
+                              );
                             } else if (state is AddBookingLoading) {
                               print("---->loading");
                             }
@@ -135,77 +144,6 @@ class _BookingDetailsState extends State<BookingDetails> {
           );
         },
       ),
-    );
-  }
-}
-
-class EmployeeSelection extends StatelessWidget {
-  final PageController controller;
-
-  const EmployeeSelection({Key? key, required this.controller})
-      : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return BlocBuilder<EmployeeCubit, EmployeeState>(
-      builder: (context, state) {
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            StepTitle(
-                title: "اختر الحجز",
-                description: "اختر الحجز المناسب للحجز الذي تريده"),
-            HeightSpace(8.h),
-            if (state is EmployeeSuccess)
-              ...state.employees.map((emp) => ListTile(
-                    title: Card(
-                        margin: const EdgeInsets.all(8.0),
-                        color: Colors.white,
-                        elevation: 4,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Container(
-                            padding: const EdgeInsets.symmetric(
-                                vertical: 16, horizontal: 8.0),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
-                                  children: [
-                                    Icon(
-                                      Icons.watch_later,
-                                      size: 24.w,
-                                      color: AppColors.primary,
-                                    ),
-                                    WidthSpace(8.w),
-                                    Text(
-                                      emp.fullName ?? "",
-                                      style: AppTextStyles.font16Bold,
-                                    ),
-                                  ],
-                                ),
-                                HeightSpace(8.h),
-                                Text(
-                                  emp.designation?.name ?? "",
-                                  style: AppTextStyles.font16Medium,
-                                ),
-                              ],
-                            ))),
-                    onTap: () {
-                      context.read<PageViewCubit>().setEmployeeId(emp.id ?? 0);
-
-                      context.read<PageViewCubit>().nextPage();
-                      controller.nextPage(
-                          duration: Duration(milliseconds: 300),
-                          curve: Curves.ease);
-                    },
-                  )),
-            if (state is EmployeeLoading) CircularProgressIndicator(),
-            if (state is EmployeeFailure) Text('خطأ: ${state.message}'),
-          ],
-        );
-      },
     );
   }
 }

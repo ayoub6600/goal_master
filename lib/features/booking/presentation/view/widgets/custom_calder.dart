@@ -8,8 +8,8 @@ import 'package:goal_master/features/booking/presentation/view/widgets/time_slot
 import 'package:table_calendar/table_calendar.dart';
 
 class CustomCalder extends StatelessWidget {
-  const CustomCalder({super.key});
-
+  const CustomCalder({super.key, required this.controller});
+  final PageController controller;
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<CalendarCubit, CalendarState>(
@@ -133,7 +133,7 @@ class CustomCalder extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 16),
-              TimeSlotSection(state: state),
+              TimeSlotSection(state: state, controller: controller),
             ],
           ),
         );
