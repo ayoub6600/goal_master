@@ -10,7 +10,6 @@ final class UpdateProfileLoading extends UpdateProfileState {}
 final class UpdateProfileSuccess extends UpdateProfileState {
   final UserData message;
   UpdateProfileSuccess({required this.message});
-  
 }
 
 final class UpdateProfileError extends UpdateProfileState {
