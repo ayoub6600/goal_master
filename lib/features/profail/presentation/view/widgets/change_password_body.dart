@@ -74,7 +74,7 @@ class ChangePasswordBody extends StatelessWidget {
                     listener: (context, state) {
                       if (state is ResetPasswordSuccess) {
                         go(RoutesKeys.kHome, context);
-                        showCustomSuccessToast(state.message);
+                        showCustomSuccessToast("تم تغيير كلمة المرور بنجاح");
                       } else if (state is ResetPasswordError) {
                         showCustomFailureToast(state.errMessage);
                       }

@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:bloc/bloc.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:goal_master/core/components/keys_values.dart';
 import 'package:goal_master/core/components/preference_utility.dart';
@@ -11,8 +12,11 @@ import 'package:meta/meta.dart';
 part 'update_profile_state.dart';
 
 class UpdateProfileCubit extends Cubit<UpdateProfileState> {
-  UpdateProfileCubit(this._profileRepo) : super(UpdateProfileInitial());
+  UpdateProfileCubit(
+    this._profileRepo,
+  ) : super(UpdateProfileInitial());
   final ProfileRepo _profileRepo;
+
   final nameController = TextEditingController(
       text: SharedPreferenceUtil.getString(PrefKey.fullName));
   final usernameController = TextEditingController(
@@ -51,6 +55,7 @@ class UpdateProfileCubit extends Cubit<UpdateProfileState> {
 
   Future<void> _saveUserData(UserData userData) async {
     print("---->UserData token ${userData.toString()}");
+
     // Save user data to SharedPreferences
     await SharedPreferenceUtil.putString(PrefKey.fcmToken, userData.token!);
     await SharedPreferenceUtil.putString(
@@ -61,6 +66,12 @@ class UpdateProfileCubit extends Cubit<UpdateProfileState> {
         PrefKey.phone, userData.user?.phoneNumber ?? "");
     print(
         "---->UserData token1111 ${SharedPreferenceUtil.getString(PrefKey.fcmToken)}");
+
+    // Update Dio Authorization header immediately after saving token
+    String token = SharedPreferenceUtil.getString(PrefKey.fcmToken);
+    print("Updated Authorization token: $token");
+
+    // Here you need to directly update Dio's Authorization header
 
     // يمكنك إضافة المزيد من البيانات حسب الحاجة
   }

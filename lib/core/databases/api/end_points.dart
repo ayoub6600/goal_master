@@ -40,6 +40,11 @@ class EndPoints {
   static String listTimeslot = 'list/timeslot';
 
   static String addBooking = 'user/booking/store-booking';
+
+  static String charge = 'user/card/charge';
+  //user/card/balance
+
+  static String balance = 'user/card/balance';
 }
 
 //doctors/top-ratings

@@ -131,7 +131,9 @@ class AuthRepoImpl implements AuthRepo {
   @override
   Future<Either<Failure, String>> profile() {
     return consumer.handleRequest(
-      () => consumer.get(EndPoints.refresh),
+      () => consumer.post(
+        EndPoints.refresh,
+      ),
       (p0) {
         String token = p0['data']['token'];
         return token;

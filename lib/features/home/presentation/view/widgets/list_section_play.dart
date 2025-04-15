@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:goal_master/core/styles/spaces.dart';
+import 'package:goal_master/features/home/data/model/analysis_model.dart';
 import 'package:goal_master/features/home/presentation/manager/analysis_cubit/analysis_cubit.dart';
 import 'package:goal_master/features/home/presentation/view/widgets/section_play.dart';
+import 'package:shimmer/shimmer.dart';
 
 class ListSectionPlay extends StatelessWidget {
   const ListSectionPlay({
@@ -18,8 +20,25 @@ class ListSectionPlay extends StatelessWidget {
       },
       builder: (context, state) {
         if (state is AnalysisLoading) {
-          return const Center(
-            child: CircularProgressIndicator(),
+          return Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Shimmer.fromColors(
+              baseColor: Colors.grey[300]!,
+              highlightColor: Colors.grey[100]!,
+              child: Column(
+                children: List.generate(1, (index) {
+                  return SectionPlay(
+                    analysis: Analysis(
+                      approved: 0,
+                      cancel: 0,
+                      pending: 0,
+                      processing: 0,
+                      done: 0,
+                    ),
+                  );
+                }),
+              ),
+            ),
           );
         } else if (state is AnalysisError) {
           return Center(

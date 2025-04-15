@@ -40,6 +40,9 @@ class LoginCubit extends Cubit<LoginState> {
   Future<void> _saveUserData(UserData userData) async {
     print("---->UserData token ${userData.token}");
     await SharedPreferenceUtil.putString(
+        PrefKey.refreshToken, userData.token ?? "");
+
+    await SharedPreferenceUtil.putString(
         PrefKey.fcmToken, userData.token ?? "");
     await SharedPreferenceUtil.putString(
         PrefKey.fullName, userData.user?.name ?? "");

@@ -117,8 +117,10 @@ class _ChangeLocationViewState extends State<ChangeLocationView> {
 
               /// **🔹 زر تحديد الموقع الحالي**
               Positioned(
-                top: 20,
-                right: 20,
+                //   top: 20,
+                left: 20,
+                bottom: 10,
+
                 child: FloatingActionButton(
                   backgroundColor: AppColors.primary,
                   onPressed: isLoading ? null : _setCurrentLocation,

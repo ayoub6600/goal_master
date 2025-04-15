@@ -55,12 +55,16 @@ class CalendarInitial extends CalendarState {
 }
 
 class TimeLoading extends CalendarState {
-  TimeLoading()
-      : super(
-          selectedDay: DateTime.now(),
-          focusedDay: DateTime.now(),
-          selectedEvents: {},
-          selectedTime: null,
+  TimeLoading({
+    required DateTime selectedDay,
+    required DateTime focusedDay,
+    required Map<DateTime, List<dynamic>> selectedEvents,
+    dynamic selectedTime,
+  }) : super(
+          selectedDay: selectedDay,
+          focusedDay: focusedDay,
+          selectedEvents: selectedEvents,
+          selectedTime: selectedTime,
         );
 
   @override
@@ -70,7 +74,12 @@ class TimeLoading extends CalendarState {
     Map<DateTime, List<dynamic>>? selectedEvents,
     dynamic selectedTime,
   }) {
-    return TimeLoading();
+    return TimeLoading(
+      selectedDay: selectedDay ?? this.selectedDay,
+      focusedDay: focusedDay ?? this.focusedDay,
+      selectedEvents: selectedEvents ?? this.selectedEvents,
+      selectedTime: selectedTime ?? this.selectedTime,
+    );
   }
 }
 
@@ -79,14 +88,14 @@ class TimeSuccess extends CalendarState {
 
   TimeSuccess({
     required this.time,
-    DateTime? selectedDay,
-    DateTime? focusedDay,
-    Map<DateTime, List<dynamic>>? selectedEvents,
+    required DateTime selectedDay,
+    required DateTime focusedDay,
+    required Map<DateTime, List<dynamic>> selectedEvents,
     dynamic selectedTime,
   }) : super(
-          selectedDay: selectedDay ?? DateTime.now(),
-          focusedDay: focusedDay ?? DateTime.now(),
-          selectedEvents: selectedEvents ?? {},
+          selectedDay: selectedDay,
+          focusedDay: focusedDay,
+          selectedEvents: selectedEvents,
           selectedTime: selectedTime,
         );
 
@@ -116,14 +125,14 @@ class TimeFailure extends CalendarState {
 
   TimeFailure({
     required this.message,
-    DateTime? selectedDay,
-    DateTime? focusedDay,
-    Map<DateTime, List<dynamic>>? selectedEvents,
+    required DateTime selectedDay,
+    required DateTime focusedDay,
+    required Map<DateTime, List<dynamic>> selectedEvents,
     dynamic selectedTime,
   }) : super(
-          selectedDay: selectedDay ?? DateTime.now(),
-          focusedDay: focusedDay ?? DateTime.now(),
-          selectedEvents: selectedEvents ?? {},
+          selectedDay: selectedDay,
+          focusedDay: focusedDay,
+          selectedEvents: selectedEvents,
           selectedTime: selectedTime,
         );
 

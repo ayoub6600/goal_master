@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
@@ -30,6 +31,10 @@ import 'package:goal_master/features/booking/presentation/manager/zone_cubit/zon
 import 'package:goal_master/features/booking/presentation/view/booking_details.dart';
 import 'package:goal_master/features/booking/presentation/view/booking_items_details.dart.dart';
 import 'package:goal_master/features/booking/presentation/view/booking_view.dart';
+import 'package:goal_master/features/card/data/repo/card_repo.dart';
+import 'package:goal_master/features/card/data/repo/card_repo_imp.dart';
+import 'package:goal_master/features/card/presentation/manager/cubit/card_cubit.dart';
+import 'package:goal_master/features/card/presentation/view/card_view.dart';
 import 'package:goal_master/features/layout/presentation/view/home_layout_view.dart';
 import 'package:goal_master/features/notification/presentation/view/notifaction_view.dart';
 import 'package:goal_master/features/onbording/presentation/manager/onboarding_cubit.dart';
@@ -299,6 +304,21 @@ List<RouteBase> appRoutes = [
       context: context,
       state: state,
       child: const HomeLayoutView(),
+    ),
+  ),
+  //CardView
+  GoRoute(
+    parentNavigatorKey: parentKey,
+    path: RoutesKeys.kCard,
+    pageBuilder: (context, state) => buildPageWithDefaultTransition<void>(
+      context: context,
+      state: state,
+      child: BlocProvider(
+        create: (context) => CardCubit(
+          getIt<CardRepoImp>(),
+        ),
+        child: const CardView(),
+      ),
     ),
   ),
   //NotificationView

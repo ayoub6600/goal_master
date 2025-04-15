@@ -6,6 +6,8 @@ import 'package:goal_master/core/errors/failure.dart';
 import 'package:goal_master/features/auth/data/model/login_model/user.dart';
 import 'package:goal_master/features/profail/data/repo/profile_repo.dart';
 
+import '../../../../core/manager/user_info_cubit/user_info_cubit.dart';
+
 class ProfileRepoImp extends ProfileRepo {
   final ApiConsumer consumer;
 
@@ -23,7 +25,7 @@ class ProfileRepoImp extends ProfileRepo {
     );
   }
 
-  Future<Either<Failure, String>> resetPassword({
+  Future<Either<Failure, UserData>> resetPassword({
     required String oldPassword,
     required String newPassword,
     required String newPasswordConfirmation,
@@ -38,7 +40,10 @@ class ProfileRepoImp extends ProfileRepo {
         },
         isFormData: false,
       ),
-      (data) => data['message'],
+      (data) {
+        print("token: ${data["data"]["token"]}");
+        return UserData.fromJson(data["data"]);
+      },
     );
   }
 
@@ -55,7 +60,7 @@ class ProfileRepoImp extends ProfileRepo {
         data: {'name': name, 'username': username, 'phone_number': phone},
       ),
       (data) {
-        print("data: ${data["data"]}");
+        print("token: ${data["data"]["token"]}");
         return UserData.fromJson(data["data"]);
       },
     );

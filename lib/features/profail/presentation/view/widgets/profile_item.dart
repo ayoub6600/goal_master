@@ -31,6 +31,9 @@ class ProfileItem extends StatelessWidget {
             Image.asset(
               icon,
               fit: BoxFit.cover,
+              width: 24.w,
+              height: 24.h,
+              color: AppColors.primary,
             ),
             WidthSpace(16.w),
             Expanded(

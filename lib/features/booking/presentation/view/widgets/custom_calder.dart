@@ -32,13 +32,16 @@ class CustomCalder extends StatelessWidget {
                 focusedDay: state.focusedDay,
                 selectedDayPredicate: (day) =>
                     isSameDay(state.selectedDay, day),
+                locale: 'ar_SA',
                 onDaySelected: (selectedDay, focusedDay) {
                   calendarCubit.updateSelectedDay(selectedDay, focusedDay);
+
                   final clubId = context.read<PageViewCubit>().state.clubId;
                   final employeeId =
                       context.read<PageViewCubit>().state.employeeId;
                   final serviceId =
                       context.read<PageViewCubit>().state.serviceId;
+
                   calendarCubit.listTimeslot(
                     branchId: clubId ?? 0,
                     employeeId: employeeId ?? 0,
@@ -51,61 +54,18 @@ class CustomCalder extends StatelessWidget {
                     alignment: Alignment.center,
                     child: Text(
                       '${day.day}',
-                      style: TextStyle(
-                          color: Colors.grey), // لون النص للتاريخ الخارجي
+                      style: TextStyle(color: Colors.grey),
                     ),
                   ),
-                  todayBuilder: (context, day, focusedDay) => Container(
-                    margin: EdgeInsets.all(6),
-                    decoration: BoxDecoration(
-                      color: Colors.blue, // لون الخلفية للتاريخ الحالي
-                      shape: BoxShape.circle,
-                    ),
-                    alignment: Alignment.center,
-                    child: Text(
-                      '${day.day}',
-                      style: TextStyle(
-                          color: Colors.white), // لون النص للتاريخ الحالي
-                    ),
-                  ),
-                  selectedBuilder: (context, day, focusedDay) => Container(
-                    margin: EdgeInsets.all(6),
-                    decoration: BoxDecoration(
-                      color: Colors.green, // لون الخلفية للتاريخ المحدد
-                      shape: BoxShape.circle,
-                    ),
-                    alignment: Alignment.center,
-                    child: Text(
-                      '${day.day}',
-                      style: TextStyle(
-                          color: Colors.white), // لون النص للتاريخ المحدد
-                    ),
-                  ),
+                  todayBuilder: (context, day, focusedDay) =>
+                      buildDayCell(day, isToday: true),
+                  selectedBuilder: (context, day, focusedDay) =>
+                      buildDayCell(day, isSelected: true),
                   defaultBuilder: (context, day, focusedDay) {
-                    bool isToday = isSameDay(day, DateTime.now());
-                    bool isSelected = isSameDay(day, state.selectedDay);
-
-                    Color? bgColor;
-                    Color textColor = Colors.black;
-
-                    if (isSelected) {
-                      bgColor = Colors.green; // لون الخلفية للتاريخ المحدد
-                      textColor = Colors.white; // لون النص للتاريخ المحدد
-                    } else if (isToday) {
-                      bgColor = Colors.blue; // لون الخلفية للتاريخ الحالي
-                      textColor = Colors.black; // لون النص للتاريخ الحالي
-                    }
-                    return Container(
-                      margin: EdgeInsets.all(6),
-                      decoration: BoxDecoration(
-                        color: bgColor,
-                        shape: BoxShape.circle,
-                      ),
-                      alignment: Alignment.center,
-                      child: Text(
-                        '${day.day}',
-                        style: TextStyle(color: textColor),
-                      ),
+                    return buildDayCell(
+                      day,
+                      isToday: isSameDay(day, DateTime.now()),
+                      isSelected: isSameDay(day, state.selectedDay),
                     );
                   },
                 ),
@@ -115,22 +75,6 @@ class CustomCalder extends StatelessWidget {
                   leftChevronIcon: Icon(Icons.chevron_left),
                   rightChevronIcon: Icon(Icons.chevron_right),
                 ),
-                calendarStyle: CalendarStyle(
-                  selectedDecoration: BoxDecoration(
-                    color: Colors.green, // لون الخلفية للتاريخ المحدد
-                    shape: BoxShape.circle,
-                  ),
-                  selectedTextStyle: TextStyle(
-                    color: Colors.white, // لون النص للتاريخ المحدد
-                  ),
-                  todayDecoration: BoxDecoration(
-                    color: Colors.blue, // لون الخلفية للتاريخ الحالي
-                    shape: BoxShape.circle,
-                  ),
-                  todayTextStyle: TextStyle(
-                    color: Colors.black, // لون النص للتاريخ الحالي
-                  ),
-                ),
               ),
               const SizedBox(height: 16),
               TimeSlotSection(state: state, controller: controller),
@@ -138,6 +82,30 @@ class CustomCalder extends StatelessWidget {
           ),
         );
       },
+    );
+  }
+
+  Widget buildDayCell(DateTime day,
+      {bool isToday = false, bool isSelected = false}) {
+    Color bgColor = Colors.transparent;
+    Color textColor = Colors.black;
+
+    if (isSelected) {
+      bgColor = Colors.green;
+      textColor = Colors.white;
+    } else if (isToday) {
+      bgColor = Colors.blue;
+      textColor = Colors.black;
+    }
+
+    return Container(
+      margin: EdgeInsets.all(6),
+      decoration: BoxDecoration(
+        color: bgColor,
+        shape: BoxShape.circle,
+      ),
+      alignment: Alignment.center,
+      child: Text('${day.day}', style: TextStyle(color: textColor)),
     );
   }
 }

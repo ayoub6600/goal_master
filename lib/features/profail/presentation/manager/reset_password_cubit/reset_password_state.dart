@@ -17,6 +17,6 @@ final class ResetPasswordError extends ResetPasswordState {
 }
 
 final class ResetPasswordSuccess extends ResetPasswordState {
-  final String message;
-  const ResetPasswordSuccess({required this.message});
+  final UserData user;
+  const ResetPasswordSuccess({required this.user});
 }

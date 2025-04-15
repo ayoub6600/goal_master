@@ -14,15 +14,15 @@ class DioConsumer extends ApiConsumer {
     dio.options.baseUrl = EndPoints.baserUrl;
     dio.options.headers['Accept'] = 'application/json';
     dio.options.headers['Content-Type'] = 'application/json';
-    String token = SharedPreferenceUtil.getString(PrefKey.fcmToken);
-    print("Authorization token: $token");
-    dio.options.headers['Authorization'] = 'Bearer $token';
+
+    // تم تحميل التوكن عند تهيئة dio لأول مرة
+    _setAuthorizationHeader();
 
     dio.options.headers['accept-language'] = 'ar';
-
     dio.options.followRedirects = false;
+
     dio.interceptors.addAll([
-      // const TokenInterceptor(),
+      TokenInterceptor(dio), // إرفاق الـ Interceptor للتعامل مع التوكن
       ChuckerDioInterceptor(),
       PrettyDioLogger(
         requestBody: true,
@@ -30,11 +30,18 @@ class DioConsumer extends ApiConsumer {
         enabled: true,
         requestHeader: true,
         request: true,
-      )
+      ),
     ]);
   }
 
-//!POST
+  // إضافة دالة لتحديث التوكن في الهيدر
+  void _setAuthorizationHeader() {
+    String token = SharedPreferenceUtil.getString(PrefKey.fcmToken);
+    print("Authorization token: $token");
+    dio.options.headers['Authorization'] = 'Bearer $token';
+  }
+
+  //!POST
   @override
   Future post(
     String path, {
@@ -42,6 +49,7 @@ class DioConsumer extends ApiConsumer {
     Map<String, dynamic>? queryParameters,
     bool isFormData = false,
   }) async {
+    _setAuthorizationHeader(); // تأكد من تحديث التوكن في كل طلب
     var response = await dio.post(
       path,
       data: isFormData ? FormData.fromMap(data) : data,
@@ -50,13 +58,14 @@ class DioConsumer extends ApiConsumer {
     return response.data;
   }
 
-//!GET
+  //!GET
   @override
   Future get(
     String path, {
     Object? data,
     Map<String, dynamic>? queryParameters,
   }) async {
+    _setAuthorizationHeader(); // تأكد من تحديث التوكن في كل طلب
     var res = await dio.get(
       path,
       data: data,
@@ -65,13 +74,14 @@ class DioConsumer extends ApiConsumer {
     return res.data;
   }
 
-//!DELETE
+  //!DELETE
   @override
   Future delete(
     String path, {
     Object? data,
     Map<String, dynamic>? queryParameters,
   }) async {
+    _setAuthorizationHeader(); // تأكد من تحديث التوكن في كل طلب
     var res = await dio.delete(
       path,
       data: data,
@@ -80,7 +90,7 @@ class DioConsumer extends ApiConsumer {
     return res.data;
   }
 
-//!PATCH
+  //!PATCH
   @override
   Future patch(
     String path, {
@@ -88,6 +98,7 @@ class DioConsumer extends ApiConsumer {
     Map<String, dynamic>? queryParameters,
     bool isFormData = true,
   }) async {
+    _setAuthorizationHeader(); // تأكد من تحديث التوكن في كل طلب
     var res = await dio.patch(
       path,
       data: isFormData ? FormData.fromMap(data) : data,
@@ -103,6 +114,7 @@ class DioConsumer extends ApiConsumer {
     Map<String, dynamic>? queryParameters,
     bool isFormData = true,
   }) async {
+    _setAuthorizationHeader(); // تأكد من تحديث التوكن في كل طلب
     var response = await dio.put(
       path,
       data: isFormData ? FormData.fromMap(data) : data,

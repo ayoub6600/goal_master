@@ -3,13 +3,15 @@ import 'package:equatable/equatable.dart';
 import 'package:goal_master/core/components/keys_values.dart';
 import 'package:goal_master/core/components/preference_utility.dart';
 import 'package:goal_master/features/booking/data/repo/booking_repo.dart';
+import 'package:intl/intl.dart'; // إضافة مكتبة intl للتنسيق
 
 part 'add_booking_state.dart';
 
 class AddBookingCubit extends Cubit<AddBookingState> {
   AddBookingCubit(this.bookingRepo) : super(AddBookingInitial());
   final BookingRepo bookingRepo;
-  int _paymentType = 1; // default is cash
+  int _paymentType = 0; // default is cash
+
   void setPaymentType(int value) {
     _paymentType = value;
   }
@@ -23,14 +25,19 @@ class AddBookingCubit extends Cubit<AddBookingState> {
     required String time,
   }) async {
     emit(AddBookingLoading());
+
+    // تأكد من تنسيق التاريخ
+    String formattedDate = _formatDate(date);
+
     if (!_validateBookingData(
       employeeId: employeeId,
       serviceId: serviceId,
       zoneId: zoneId,
       clubId: clubId,
-      date: date,
+      date: formattedDate, // استخدام التاريخ المنسق
       time: time,
     )) return;
+
     String fullname = SharedPreferenceUtil.getString(PrefKey.fullName);
     String phone = SharedPreferenceUtil.getString(PrefKey.phone);
 
@@ -39,7 +46,7 @@ class AddBookingCubit extends Cubit<AddBookingState> {
       employeeId: employeeId,
       serviceId: serviceId,
       paymentType: _paymentType,
-      date: date,
+      date: formattedDate, // استخدام التاريخ المنسق
       startTime: time,
       endTime: time,
       fullName: fullname,
@@ -49,6 +56,16 @@ class AddBookingCubit extends Cubit<AddBookingState> {
     result.fold(
         (failure) => emit(AddBookingFailure(massage: failure.errMessage)),
         (data) => emit(AddBookingSuccess(massage: data)));
+  }
+
+  // وظيفة تنسيق التاريخ
+  String _formatDate(String date) {
+    try {
+      final parsedDate = DateTime.parse(date); // محاول تحليل التاريخ
+      return DateFormat('yyyy-MM-dd').format(parsedDate); // التنسيق
+    } catch (e) {
+      return date; // في حالة فشل التنسيق، يتم إرجاع التاريخ كما هو
+    }
   }
 
   bool _validateBookingData({

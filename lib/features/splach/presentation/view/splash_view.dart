@@ -15,9 +15,6 @@ class SplashView extends StatefulWidget {
 
 class _SplashViewState extends State<SplashView> {
   void initState() {
-    //  if (SharedPreferenceUtil.getString(PrefKey.currentLanguageCode) == '') {
-    //   SharedPreferenceUtil.putString(PrefKey.currentLanguageCode, 'ar');
-    // }
     Future.delayed(Duration(seconds: 1)).then(
       (value) {
         var result = SharedPreferenceUtil.getString(PrefKey.login);
@@ -38,15 +35,11 @@ class _SplashViewState extends State<SplashView> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Center(
-        child: SvgPicture.asset(
-          Assets.imagesSvgImageSplash,
-          width: double.infinity,
-          height: MediaQuery.of(context).size.height,
-          fit: BoxFit.cover,
-        ),
-      ),
+    return SvgPicture.asset(
+      Assets.imagesSvgImageSplash,
+      width: MediaQuery.of(context).size.width,
+      height: MediaQuery.of(context).size.height,
+      fit: BoxFit.cover,
     );
   }
 }

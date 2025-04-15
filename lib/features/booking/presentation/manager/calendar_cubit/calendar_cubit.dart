@@ -28,18 +28,37 @@ class CalendarCubit extends Cubit<CalendarState> {
   }) async {
     final formattedDate = DateFormat('yyyy-MM-dd').format(state.selectedDay);
 
-    emit(TimeLoading());
+    emit(TimeLoading(
+      selectedDay: state.selectedDay,
+      focusedDay: state.focusedDay,
+      selectedEvents: state.selectedEvents,
+      selectedTime: state.selectedTime,
+    ));
+
     final result = await bookingRepo.listTimeslot(
       branchId: branchId,
       employeeId: employeeId,
       serviceId: serviceId,
-      date: formattedDate, // Provide appropriate date format if needed
+      date: formattedDate,
     );
+
     result.fold(
-      (failure) => emit(TimeFailure(message: failure.errMessage)),
+      (failure) => emit(TimeFailure(
+        message: failure.errMessage,
+        selectedDay: state.selectedDay,
+        focusedDay: state.focusedDay,
+        selectedEvents: state.selectedEvents,
+        selectedTime: state.selectedTime,
+      )),
       (time) {
         print("---->time: ${time[0].startTime}");
-        emit(TimeSuccess(time: time));
+        emit(TimeSuccess(
+          time: time,
+          selectedDay: state.selectedDay,
+          focusedDay: state.focusedDay,
+          selectedEvents: state.selectedEvents,
+          selectedTime: state.selectedTime,
+        ));
       },
     );
   }

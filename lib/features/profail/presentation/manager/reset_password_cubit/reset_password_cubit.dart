@@ -2,6 +2,9 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:goal_master/core/components/custom_failure_toast.dart';
+import 'package:goal_master/core/components/keys_values.dart';
+import 'package:goal_master/core/components/preference_utility.dart';
+import 'package:goal_master/features/auth/data/model/login_model/user.dart';
 import 'package:goal_master/features/profail/data/repo/profile_repo.dart';
 import 'package:goal_master/utils/input_validator.dart';
 
@@ -35,7 +38,10 @@ class ResetPasswordCubit extends Cubit<ResetPasswordState> {
 
     result.fold(
       (failure) => emit(ResetPasswordError(errMessage: failure.errMessage)),
-      (data) => emit(ResetPasswordSuccess(message: data)),
+      (data) {
+        _saveUserData(data);
+        emit(ResetPasswordSuccess(user: data));
+      },
     );
   }
 
@@ -63,6 +69,29 @@ class ResetPasswordCubit extends Cubit<ResetPasswordState> {
       return false;
     }
     return true;
+  }
+
+  Future<void> _saveUserData(UserData userData) async {
+    print("---->UserData token ${userData.toString()}");
+
+    // Save user data to SharedPreferences
+    await SharedPreferenceUtil.putString(PrefKey.fcmToken, userData.token!);
+    await SharedPreferenceUtil.putString(
+        PrefKey.fullName, userData.user?.name ?? "");
+    await SharedPreferenceUtil.putString(
+        PrefKey.email, userData.user?.username ?? "");
+    await SharedPreferenceUtil.putString(
+        PrefKey.phone, userData.user?.phoneNumber ?? "");
+    print(
+        "---->UserData token1111 ${SharedPreferenceUtil.getString(PrefKey.fcmToken)}");
+
+    // Update Dio Authorization header immediately after saving token
+    String token = SharedPreferenceUtil.getString(PrefKey.fcmToken);
+    print("Updated Authorization token: $token");
+
+    // Here you need to directly update Dio's Authorization header
+
+    // يمكنك إضافة المزيد من البيانات حسب الحاجة
   }
 
   @override

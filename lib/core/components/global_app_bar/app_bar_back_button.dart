@@ -43,11 +43,11 @@ class AppBarBackButton extends StatelessWidget {
         width: 44.w,
         height: 44.w,
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(16.r),
-          border: Border.all(
-            width: 1,
-            color: borderColor ?? AppColors.inactive2,
-          ),
+          // borderRadius: BorderRadius.circular(16.r),
+          // border: Border.all(
+          //   width: 1,
+          //   color: borderColor ?? AppColors.inactive2,
+          // ),
           color: bgColor,
         ),
         child: Image.asset(
