@@ -4,6 +4,8 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:goal_master/core/services/service_locator.dart';
 import 'package:goal_master/core/styles/app_colors.dart';
 import 'package:goal_master/core/styles/assets.dart';
+import 'package:goal_master/features/balance/data/repo/balance_repo_imp.dart';
+import 'package:goal_master/features/balance/presentation/cubit/balance_cubit.dart';
 import 'package:goal_master/features/booking/data/repo/booking_repo_imp.dart';
 import 'package:goal_master/features/booking/presentation/manager/booking_cubit/booking_cubit.dart';
 import 'package:goal_master/features/booking/presentation/manager/cancel_booking_cubit/cancel_booking_cubit.dart';
@@ -61,7 +63,12 @@ class _HomeLayoutViewState extends State<HomeLayoutView> {
                   child: const BookingView(),
                 ),
               if (state.activeScreen == NavBarElement.profile)
-                const ProfileView(),
+                BlocProvider(
+                  create: (context) => BalanceCubit(
+                    getIt<BalanceRepoImp>(),
+                  )..getBalance(),
+                  child: const ProfileView(),
+                ),
               // Align(
               //   alignment: Alignment.bottomCenter,
               //   child: HomeBottomNavBar(

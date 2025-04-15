@@ -8,6 +8,8 @@ import 'package:goal_master/core/services/service_locator.dart';
 import 'package:goal_master/core/styles/app_colors.dart';
 import 'package:goal_master/core/utils/storage_service.dart';
 import 'package:goal_master/features/auth/data/repo/auth_repo_imp.dart';
+import 'package:goal_master/features/balance/data/repo/balance_repo_imp.dart';
+import 'package:goal_master/features/balance/presentation/cubit/balance_cubit.dart';
 import 'package:goal_master/features/home/data/repo/analysis_repo_imp.dart';
 import 'package:goal_master/features/home/presentation/manager/analysis_cubit/analysis_cubit.dart';
 import 'package:goal_master/features/layout/presentation/manager/layout_cubit.dart';
@@ -50,6 +52,12 @@ class GoalMaster extends StatelessWidget {
           create: (context) => ProfileCubit(
             getIt<ProfileRepoImp>(),
           )..getProfile(),
+        ),
+        //BalanceCubit
+        BlocProvider(
+          create: (context) => BalanceCubit(
+            getIt<BalanceRepoImp>(),
+          )..getBalance(),
         ),
       ],
       child: ScreenUtilInit(

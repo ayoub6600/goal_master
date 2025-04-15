@@ -8,6 +8,7 @@ import 'package:goal_master/core/manager/user_info_cubit/user_info_cubit.dart';
 import 'package:goal_master/core/styles/app_text_styles.dart';
 import 'package:goal_master/core/styles/assets.dart';
 import 'package:goal_master/core/styles/spaces.dart';
+import 'package:goal_master/features/balance/presentation/cubit/balance_cubit.dart';
 import 'package:goal_master/features/profail/presentation/manager/profile_cubit/profile_cubit.dart';
 
 class ProfileHeader extends StatelessWidget {
@@ -73,6 +74,45 @@ class ProfileHeader extends StatelessWidget {
                 return Text("No Data Available");
               },
             ),
+          ),
+          Column(
+            children: [
+              Text(
+                "رصيد المحفظة",
+                style: AppTextStyles.font12SemiBold
+                    .copyWith(color: Color(0xff6D7580)),
+              ),
+              Container(
+                padding: EdgeInsets.all(18.w),
+                decoration:
+                    BoxDecoration(shape: BoxShape.circle, color: Colors.white),
+                child: BlocBuilder<BalanceCubit, BalanceState>(
+                  builder: (context, state) {
+                    if (state is BalanceLoading) {
+                      return Text(
+                        "...",
+                        style: AppTextStyles.font16SemiBold,
+                      );
+                    } else if (state is BalanceLoaded) {
+                      return Center(
+                        child: Text(
+                          state.balance.toString(),
+                          style: AppTextStyles.font16SemiBold,
+                        ),
+                      );
+                    } else if (state is BalanceError) {
+                      return Center(
+                        child: Text(
+                          "Error: ${state.errMessage}",
+                          style: TextStyle(color: Colors.red),
+                        ),
+                      );
+                    }
+                    return Center(child: Text("No Data"));
+                  },
+                ),
+              ),
+            ],
           ),
         ],
       ),

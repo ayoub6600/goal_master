@@ -1,6 +1,7 @@
 import 'package:get_it/get_it.dart';
 import 'package:dio/dio.dart';
 import 'package:goal_master/features/auth/data/repo/auth_repo_imp.dart';
+import 'package:goal_master/features/balance/data/repo/balance_repo_imp.dart';
 import 'package:goal_master/features/card/data/repo/card_repo_imp.dart';
 import 'package:goal_master/features/home/data/repo/analysis_repo_imp.dart';
 import 'package:goal_master/features/profail/data/repo/profile_repo_imp.dart';
@@ -28,5 +29,9 @@ void setupServiceLocator() {
   //CardRepoImp
   getIt.registerSingleton<CardRepoImp>(
     CardRepoImp(getIt.get<DioConsumer>()),
+  );
+  //BalanceRepoImp
+  getIt.registerSingleton<BalanceRepoImp>(
+    BalanceRepoImp(getIt.get<DioConsumer>()),
   );
 }
