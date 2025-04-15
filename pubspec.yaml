@@ -64,6 +64,7 @@ dependencies:
   share_plus: ^10.1.4
   flutter_local_notifications: ^19.0.0
   shimmer: ^3.0.0
+  flutter_launcher_icons: ^0.14.3
   
   
  
@@ -102,6 +103,11 @@ flutter:
     - assets/images/svg_image/
     - assets/images/png_image/
     - assets/images/svg_image/sendotp.svg
+
+flutter_icons:
+  android: true
+  ios: true
+  image_path: "assets/images/png_image/app_icon.jpeg" 
    
 
   

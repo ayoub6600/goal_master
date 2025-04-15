@@ -14,6 +14,10 @@ class Assets {
   /// assets/images/png_image/Albums.png
   static const String imagesPngImageAlbums = "assets/images/png_image/Albums.png";
 
+  /// Assets for imagesPngImageAppIcon
+  /// assets/images/png_image/app_icon.jpeg
+  static const String imagesPngImageAppIcon = "assets/images/png_image/app_icon.jpeg";
+
   /// Assets for imagesPngImageArrow
   /// assets/images/png_image/arrow.png
   static const String imagesPngImageArrow = "assets/images/png_image/arrow.png";
