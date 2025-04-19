@@ -49,6 +49,19 @@ class _HomeViewState extends State<HomeView> {
                 children: [
                   BuildHeaderHome(layoutCubit: layoutCubit),
                   const SizedBox(height: 10),
+                  Row(
+                    children: [
+                      GestureDetector(
+                        onTap: () {
+                          push(RoutesKeys.kFilter, context);
+                        },
+                        child: Image.asset(
+                          Assets.imagesPngImageFiltter,
+                          //   color: AppColors.primary,
+                        ),
+                      ),
+                    ],
+                  ),
                   const BuildLocationRow(),
                   //carousel_slider
                   Container(

@@ -36,6 +36,28 @@ class BookingItems extends StatelessWidget {
             )),
         child: Column(
           children: [
+            HeightSpace(6.h),
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 12.w),
+              child: Row(
+                children: [
+                  Text(
+                    "# رقم الحجز" " : ",
+                    style: AppTextStyles.font16Bold.copyWith(
+                      color: AppColors.fontColor,
+                    ),
+                  ),
+                  WidthSpace(10.w),
+                  Text(
+                    booking.id.toString(),
+                    style: AppTextStyles.font16Bold.copyWith(
+                      color: AppColors.fontColor,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            HeightSpace(10.h),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [

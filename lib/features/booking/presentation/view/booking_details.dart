@@ -17,7 +17,6 @@ import 'package:goal_master/features/booking/presentation/view/widgets/category_
 import 'package:goal_master/features/booking/presentation/view/widgets/club_selection.dart';
 import 'package:goal_master/features/booking/presentation/view/widgets/employee_selection.dart';
 import 'package:goal_master/features/booking/presentation/view/widgets/service_selection.dart';
-
 import 'package:goal_master/features/booking/presentation/view/widgets/zone_selection.dart';
 
 class BookingDetails extends StatefulWidget {
@@ -34,116 +33,115 @@ class _BookingDetailsState extends State<BookingDetails> {
   Widget build(BuildContext context) {
     final pageViewCubit = context.read<PageViewCubit>();
 
-    return PageWrapper(
-      title: "إضافة الحجز",
-      allowBack: false,
-      child: BlocBuilder<PageViewCubit, PageViewState>(
-        builder: (context, state) {
-          return Column(
-            children: [
-              Expanded(
-                child: PageView(
-                  controller: _controller,
-                  physics: NeverScrollableScrollPhysics(),
-                  children: [
-                    ZoneSelection(controller: _controller),
-                    ClubSelection(controller: _controller),
-                    CategorySelection(controller: _controller),
-                    ServiceSelection(controller: _controller),
-                    EmployeeSelection(controller: _controller),
-                    CustomCalder(
+    return Stack(
+      children: [
+        PageWrapper(
+          title: "إضافة الحجز",
+          allowBack: false,
+          child: BlocBuilder<PageViewCubit, PageViewState>(
+            builder: (context, state) {
+              return Column(
+                children: [
+                  Expanded(
+                    child: PageView(
                       controller: _controller,
+                      physics: NeverScrollableScrollPhysics(),
+                      children: [
+                        ZoneSelection(controller: _controller),
+                        ClubSelection(controller: _controller),
+                        CategorySelection(controller: _controller),
+                        ServiceSelection(controller: _controller),
+                        EmployeeSelection(controller: _controller),
+                        CustomCalder(controller: _controller),
+                        ChoosePayment(controller: _controller),
+                      ],
                     ),
-                    ChoosePayment(
-                      controller: _controller,
-                    ),
-                  ],
-                ),
-              ),
-              if (state.currentPage > 0)
-                Padding(
-                  padding: EdgeInsets.all(16.w),
-                  child: Row(
-                    children: [
-                      if (state.currentPage == 6)
-                        BlocConsumer<AddBookingCubit, AddBookingState>(
-                          listener: (context, state) {
-                            if (state is AddBookingSuccess) {
-                              showCustomSuccessToast(
-                                "تم اضافة الحجز بنجاح",
-                              );
-                              pushReplacement(RoutesKeys.kHome, context);
-                            } else if (state is AddBookingFailure) {
-                              showCustomFailureToast(
-                                state.massage,
-                              );
-                            } else if (state is AddBookingLoading) {
-                              print("---->loading");
-                            }
-                          },
-                          builder: (context, state) {
-                            return Expanded(
-                              child: ButtonApp(
-                                text: "  تأكيد الحجز",
-                                onTap: () {
-                                  context.read<AddBookingCubit>().addBooking(
-                                        employeeId: context
-                                                .read<PageViewCubit>()
-                                                .state
-                                                .employeeId ??
-                                            0,
-                                        serviceId: context
-                                                .read<PageViewCubit>()
-                                                .state
-                                                .serviceId ??
-                                            0,
-                                        zoneId: context
-                                                .read<PageViewCubit>()
-                                                .state
-                                                .zoneId ??
-                                            0,
-                                        clubId: context
-                                                .read<PageViewCubit>()
-                                                .state
-                                                .clubId ??
-                                            0,
-                                        date: context
-                                            .read<CalendarCubit>()
-                                            .state
-                                            .focusedDay
-                                            .toString(),
-                                        time: context
-                                            .read<CalendarCubit>()
-                                            .state
-                                            .selectedTime,
-                                      );
-                                },
-                              ),
-                            );
-                          },
-                        ),
-                      SizedBox(
-                        width: 8.w,
-                      ),
-                      Expanded(
-                        child: ButtonApp(
-                          backGround: AppColors.grey,
-                          text: "رجوع",
-                          onTap: () {
-                            pageViewCubit.previousPage();
-                            _controller.previousPage(
-                                duration: Duration(milliseconds: 300),
-                                curve: Curves.ease);
-                          },
-                        ),
-                      )
-                    ],
                   ),
+                  if (state.currentPage > 0)
+                    Padding(
+                      padding: EdgeInsets.all(16.w),
+                      child: Row(
+                        children: [
+                          if (state.currentPage == 6)
+                            BlocConsumer<AddBookingCubit, AddBookingState>(
+                              listener: (context, state) {
+                                if (state is AddBookingSuccess) {
+                                  showCustomSuccessToast(
+                                      "تم اضافة الحجز بنجاح");
+                                  pushReplacement(RoutesKeys.kHome, context);
+                                } else if (state is AddBookingFailure) {
+                                  showCustomFailureToast(state.massage);
+                                }
+                              },
+                              builder: (context, state) {
+                                return Expanded(
+                                  child: ButtonApp(
+                                    text: "تأكيد الحجز",
+                                    onTap: () {
+                                      context
+                                          .read<AddBookingCubit>()
+                                          .addBooking(
+                                            employeeId: pageViewCubit
+                                                    .state.employeeId ??
+                                                0,
+                                            serviceId:
+                                                pageViewCubit.state.serviceId ??
+                                                    0,
+                                            zoneId:
+                                                pageViewCubit.state.zoneId ?? 0,
+                                            clubId:
+                                                pageViewCubit.state.clubId ?? 0,
+                                            date: context
+                                                .read<CalendarCubit>()
+                                                .state
+                                                .focusedDay
+                                                .toString(),
+                                            time: context
+                                                .read<CalendarCubit>()
+                                                .state
+                                                .selectedTime,
+                                          );
+                                    },
+                                  ),
+                                );
+                              },
+                            ),
+                          SizedBox(width: 8.w),
+                          Expanded(
+                            child: ButtonApp(
+                              backGround: AppColors.grey,
+                              text: "رجوع",
+                              onTap: () {
+                                pageViewCubit.previousPage();
+                                _controller.previousPage(
+                                  duration: Duration(milliseconds: 300),
+                                  curve: Curves.ease,
+                                );
+                              },
+                            ),
+                          )
+                        ],
+                      ),
+                    ),
+                ],
+              );
+            },
+          ),
+        ),
+        BlocBuilder<AddBookingCubit, AddBookingState>(
+          builder: (context, state) {
+            if (state is AddBookingLoading) {
+              return Container(
+                color: Colors.black.withOpacity(0.5),
+                child: Center(
+                  child: CircularProgressIndicator(),
                 ),
-            ],
-          );
-        },
-      ),
+              );
+            }
+            return SizedBox.shrink();
+          },
+        ),
+      ],
     );
   }
 }

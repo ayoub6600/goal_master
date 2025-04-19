@@ -16,4 +16,5 @@ class RoutesKeys {
   static const kNotification = '/kNotification';
   static const kBookingItemsDetails = '/kBookingItemsDetails';
   static const kCard = '/kCard';
+  static const kFilter = '/kFilter';
 }

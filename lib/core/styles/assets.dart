@@ -54,6 +54,10 @@ class Assets {
   /// assets/images/png_image/danger.png
   static const String imagesPngImageDanger = "assets/images/png_image/danger.png";
 
+  /// Assets for imagesPngImageFiltter
+  /// assets/images/png_image/filtter.png
+  static const String imagesPngImageFiltter = "assets/images/png_image/filtter.png";
+
   /// Assets for imagesPngImageGlobalRefresh
   /// assets/images/png_image/global-refresh.png
   static const String imagesPngImageGlobalRefresh = "assets/images/png_image/global-refresh.png";

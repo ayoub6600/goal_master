@@ -13,11 +13,11 @@ class StatusContainer extends StatelessWidget {
     switch (status) {
       case 0:
         containerColor = Colors.orange; // Pending
-        statusText = "قيد الانتظار";
+        statusText = "غير خالص";
         break;
       case 1:
         containerColor = Colors.blue; // Processing
-        statusText = "قيد المعالجة";
+        statusText = "في إنتظار قبول الطلب";
         break;
       case 2:
         containerColor = Colors.green; // Approved
@@ -29,7 +29,7 @@ class StatusContainer extends StatelessWidget {
         break;
       case 4:
         containerColor = Colors.grey; // Done
-        statusText = "مكتمل";
+        statusText = "خالص";
         break;
       default:
         containerColor = Colors.black; // Default color

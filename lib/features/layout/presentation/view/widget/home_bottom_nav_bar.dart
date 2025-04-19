@@ -24,22 +24,22 @@ class HomeBottomNavBar extends StatelessWidget {
       child: Row(
         children: [
           NavBarItem(
-            title: "حجوزاتي",
-            icon: Assets.imagesPngImageAlbums,
-            // selectedIcon: AssetsData.homeSelected,
-            isActive: activeElement == NavBarElement.booking,
-            onTap: () => changeElement(NavBarElement.booking),
-          ),
-          SizedBox(
-            width: 50.w,
-          ),
-          NavBarItem(
             title: "حسابك",
 
             icon: Assets.imagesPngImageProfile,
             // selectedIcon: AssetsData.profileSelected,
             isActive: activeElement == NavBarElement.profile,
             onTap: () => changeElement(NavBarElement.profile),
+          ),
+          SizedBox(
+            width: 50.w,
+          ),
+          NavBarItem(
+            title: "حجوزاتي",
+            icon: Assets.imagesPngImageAlbums,
+            // selectedIcon: AssetsData.homeSelected,
+            isActive: activeElement == NavBarElement.booking,
+            onTap: () => changeElement(NavBarElement.booking),
           ),
         ],
       ),

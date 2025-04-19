@@ -45,6 +45,10 @@ class EndPoints {
   //user/card/balance
 
   static String balance = 'user/card/balance';
+
+  ///user/booking/fillter-new-booking?page=5
+
+  static String fillterNewBooking = 'user/booking/fillter-new-booking';
 }
 
 //doctors/top-ratings

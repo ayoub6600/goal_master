@@ -35,6 +35,10 @@ import 'package:goal_master/features/card/data/repo/card_repo.dart';
 import 'package:goal_master/features/card/data/repo/card_repo_imp.dart';
 import 'package:goal_master/features/card/presentation/manager/cubit/card_cubit.dart';
 import 'package:goal_master/features/card/presentation/view/card_view.dart';
+import 'package:goal_master/features/home/data/model/analysis_model.dart';
+import 'package:goal_master/features/home/data/repo/analysis_repo_imp.dart';
+import 'package:goal_master/features/home/presentation/manager/filter_cubit/filter_cubit.dart';
+import 'package:goal_master/features/home/presentation/view/fillter_view.dart';
 import 'package:goal_master/features/layout/presentation/view/home_layout_view.dart';
 import 'package:goal_master/features/notification/presentation/view/notifaction_view.dart';
 import 'package:goal_master/features/onbording/presentation/manager/onboarding_cubit.dart';
@@ -351,5 +355,40 @@ List<RouteBase> appRoutes = [
                 booking: state.extra as Booking,
               ),
             ),
-          ))
+          )),
+  //FilterView
+  GoRoute(
+    parentNavigatorKey: parentKey,
+    path: RoutesKeys.kFilter,
+    pageBuilder: (context, state) => buildPageWithDefaultTransition<void>(
+      context: context,
+      state: state,
+      child: MultiBlocProvider(
+        providers: [
+          BlocProvider(
+            create: (context) => ZoneCubitCubit(
+              getIt<BookingRepoImp>(),
+            )..listZone(),
+          ),
+          //ClubCubit
+          BlocProvider(
+              create: (context) => ClubCubit(
+                    getIt<BookingRepoImp>(),
+                  )),
+          //CategoryCubit
+          BlocProvider(
+              create: (context) => CategoryCubit(
+                    getIt<BookingRepoImp>(),
+                  )),
+          //FilterCubit
+          BlocProvider(
+            create: (context) => FilterCubit(
+              getIt<AnalysisRepoImp>(),
+            ),
+          ),
+        ],
+        child: const FilterView(),
+      ),
+    ),
+  ),
 ];

@@ -96,7 +96,7 @@ class ProfileHeader extends StatelessWidget {
                     } else if (state is BalanceLoaded) {
                       return Center(
                         child: Text(
-                          state.balance.toString(),
+                          state.balance.toString() + "\nدينار",
                           style: AppTextStyles.font16SemiBold,
                         ),
                       );

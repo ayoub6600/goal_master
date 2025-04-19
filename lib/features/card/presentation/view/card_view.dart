@@ -51,6 +51,8 @@ class CardView extends StatelessWidget {
                   showCustomSuccessToast("تم شحن الرصيد بنجاح");
                 } else if (state is CardFailure) {
                   showCustomFailureToast(state.message);
+                } else if (state is CardLoading) {
+                  showCustomSuccessToast("جاري شحن الرصيد");
                 }
               },
               builder: (context, state) {

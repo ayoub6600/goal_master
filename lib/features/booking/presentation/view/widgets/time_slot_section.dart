@@ -43,14 +43,23 @@ class TimeSlotSection extends StatelessWidget {
 
               return GestureDetector(
                 onTap: () {
-                  //nextPage
+                  if (times[index].isAvailable == 0)
+                    return; // امنع التحديد لو غير متاح
+
                   context.read<PageViewCubit>().nextPage();
                   controller.nextPage(
-                      duration: Duration(milliseconds: 300),
-                      curve: Curves.ease);
-                  // Handle time selection
-
+                    duration: Duration(milliseconds: 300),
+                    curve: Curves.ease,
+                  );
                   context.read<CalendarCubit>().selectTime(time);
+                  //nextPage
+                  // context.read<PageViewCubit>().nextPage();
+                  // controller.nextPage(
+                  //     duration: Duration(milliseconds: 300),
+                  //     curve: Curves.ease);
+                  // // Handle time selection
+
+                  // context.read<CalendarCubit>().selectTime(time);
                 },
                 child: Container(
                   margin: EdgeInsets.symmetric(horizontal: 4.w, vertical: 4.h),
@@ -67,7 +76,7 @@ class TimeSlotSection extends StatelessWidget {
                     ),
                   ),
                   child: Text(
-                    formatToHour(time), // Format time display
+                    formatToHour(time),
                     textAlign: TextAlign.center,
                     textDirection: TextDirection.ltr,
                     style: AppTextStyles.font16Bold.copyWith(
@@ -76,6 +85,9 @@ class TimeSlotSection extends StatelessWidget {
                           : isSelected
                               ? Colors.white
                               : Color(0xff204523),
+                      decoration: times[index].isAvailable == 0
+                          ? TextDecoration.lineThrough
+                          : TextDecoration.none,
                     ),
                   ),
                 ),

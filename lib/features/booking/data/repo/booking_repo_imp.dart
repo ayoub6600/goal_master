@@ -192,7 +192,20 @@ class BookingRepoImp extends BookingRepo {
           'state': "1",
         },
       ),
-      (data) => data['data'],
+      (data) {
+        if (paymentType == 1) {
+          return data['data'];
+        }
+
+        // Extract returnUrl if available
+        final returnUrl = data['data']?['returnUrl'];
+        if (returnUrl != null && returnUrl is String) {
+          return returnUrl;
+        }
+
+        // fallback: return something useful (e.g., success message or booking ID)
+        return data['data'].toString();
+      },
     );
   }
 }
