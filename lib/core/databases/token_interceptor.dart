@@ -12,7 +12,10 @@ class TokenInterceptor extends Interceptor {
 
   TokenInterceptor(this.dio);
 
-  void _redirectToLogin() {
+  void _redirectToLogin() async {
+    await SharedPreferenceUtil.clear();
+
+    SharedPreferenceUtil.putString(PrefKey.login, "true");
     AppRouter.router.go(RoutesKeys.kLogin);
   }
 

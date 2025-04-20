@@ -1,15 +1,17 @@
-# Uncomment this line to define a global platform for your project
-# platform :ios, '12.0'
+# تحديد الحد الأدنى لإصدار iOS المطلوب لتوافق المكتبات مثل google_maps_flutter_ios
+platform :ios, '14.0'
 
-# CocoaPods analytics sends network stats synchronously affecting flutter build latency.
+# تعطيل إرسال إحصائيات CocoaPods لتحسين سرعة build
 ENV['COCOAPODS_DISABLE_STATS'] = 'true'
 
+# تحديد إعدادات المشروع
 project 'Runner', {
   'Debug' => :debug,
   'Profile' => :release,
   'Release' => :release,
 }
 
+# مسار إعدادات Xcode التي يتم توليدها من Flutter
 def flutter_root
   generated_xcode_build_settings_path = File.expand_path(File.join('..', 'Flutter', 'Generated.xcconfig'), __FILE__)
   unless File.exist?(generated_xcode_build_settings_path)
@@ -23,20 +25,25 @@ def flutter_root
   raise "FLUTTER_ROOT not found in #{generated_xcode_build_settings_path}. Try deleting Generated.xcconfig, then run flutter pub get"
 end
 
+# تحميل الأدوات المساعدة لـ Flutter
 require File.expand_path(File.join('packages', 'flutter_tools', 'bin', 'podhelper'), flutter_root)
 
+# إعداد CocoaPods لـ Flutter
 flutter_ios_podfile_setup
 
+# إعدادات الهدف الرئيسي للتطبيق
 target 'Runner' do
   use_frameworks!
   use_modular_headers!
 
   flutter_install_all_ios_pods File.dirname(File.realpath(__FILE__))
+
   target 'RunnerTests' do
     inherit! :search_paths
   end
 end
 
+# إعدادات إضافية بعد تثبيت البودات
 post_install do |installer|
   installer.pods_project.targets.each do |target|
     flutter_additional_ios_build_settings(target)

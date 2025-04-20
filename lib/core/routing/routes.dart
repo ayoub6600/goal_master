@@ -36,9 +36,12 @@ import 'package:goal_master/features/card/data/repo/card_repo_imp.dart';
 import 'package:goal_master/features/card/presentation/manager/cubit/card_cubit.dart';
 import 'package:goal_master/features/card/presentation/view/card_view.dart';
 import 'package:goal_master/features/home/data/model/analysis_model.dart';
+import 'package:goal_master/features/home/data/model/booking_slots_response.dart';
 import 'package:goal_master/features/home/data/repo/analysis_repo_imp.dart';
 import 'package:goal_master/features/home/presentation/manager/filter_cubit/filter_cubit.dart';
+import 'package:goal_master/features/home/presentation/manager/page_view_new_booking_cubit/page_view_new_booking_cubit.dart';
 import 'package:goal_master/features/home/presentation/view/fillter_view.dart';
+import 'package:goal_master/features/home/presentation/view/widgets/booking_item.dart';
 import 'package:goal_master/features/home/presentation/view/widgets/show_all_resulat_filtter.dart';
 import 'package:goal_master/features/layout/presentation/view/home_layout_view.dart';
 import 'package:goal_master/features/notification/presentation/view/notifaction_view.dart';
@@ -300,6 +303,34 @@ List<RouteBase> appRoutes = [
         child: const BookingDetails(),
       ),
     ),
+  ),
+
+//AddNewBooking
+  GoRoute(
+    parentNavigatorKey: parentKey,
+    path: RoutesKeys.kAddNewBooking,
+    pageBuilder: (context, state) {
+      final booking = state.extra as BookingSlot;
+
+      return buildPageWithDefaultTransition<void>(
+        context: context,
+        state: state,
+        child: MultiBlocProvider(
+          providers: [
+            BlocProvider(
+              create: (context) => EmployeeCubit(getIt<BookingRepoImp>()),
+            ),
+            BlocProvider(
+              create: (context) => AddBookingCubit(getIt<BookingRepoImp>()),
+            ),
+            BlocProvider(
+              create: (context) => PageViewNewBookingCubit(),
+            ),
+          ],
+          child: AddNewBooking(booking: booking), // ✅ pass the booking here
+        ),
+      );
+    },
   ),
 
   GoRoute(

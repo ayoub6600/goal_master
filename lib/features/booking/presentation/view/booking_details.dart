@@ -96,7 +96,11 @@ class _BookingDetailsState extends State<BookingDetails> {
                                                 .state
                                                 .focusedDay
                                                 .toString(),
-                                            time: context
+                                            startTime: context
+                                                .read<CalendarCubit>()
+                                                .state
+                                                .selectedTime,
+                                            endTime: context
                                                 .read<CalendarCubit>()
                                                 .state
                                                 .selectedTime,
