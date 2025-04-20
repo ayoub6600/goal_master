@@ -39,6 +39,7 @@ import 'package:goal_master/features/home/data/model/analysis_model.dart';
 import 'package:goal_master/features/home/data/repo/analysis_repo_imp.dart';
 import 'package:goal_master/features/home/presentation/manager/filter_cubit/filter_cubit.dart';
 import 'package:goal_master/features/home/presentation/view/fillter_view.dart';
+import 'package:goal_master/features/home/presentation/view/widgets/show_all_resulat_filtter.dart';
 import 'package:goal_master/features/layout/presentation/view/home_layout_view.dart';
 import 'package:goal_master/features/notification/presentation/view/notifaction_view.dart';
 import 'package:goal_master/features/onbording/presentation/manager/onboarding_cubit.dart';
@@ -388,6 +389,21 @@ List<RouteBase> appRoutes = [
           ),
         ],
         child: const FilterView(),
+      ),
+    ),
+  ),
+  //kShowAllResulatFiltter
+  GoRoute(
+    parentNavigatorKey: parentKey,
+    path: RoutesKeys.kShowAllResulatFiltter,
+    pageBuilder: (context, state) => buildPageWithDefaultTransition<void>(
+      context: context,
+      state: state,
+      child: BlocProvider(
+        create: (context) => FilterCubit(
+          getIt<AnalysisRepoImp>(),
+        ),
+        child: ShowAllResulatFiltter(),
       ),
     ),
   ),

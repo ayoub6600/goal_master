@@ -6,18 +6,24 @@ import 'package:goal_master/core/components/custom_date_picker.dart';
 import 'package:goal_master/core/components/custom_drop_down.dart';
 import 'package:goal_master/core/components/custom_drop_down_shimmer.dart';
 import 'package:goal_master/core/components/custom_failure_toast.dart';
+import 'package:goal_master/core/components/custom_loading_widget.dart';
 import 'package:goal_master/core/components/custom_time_picker.dart';
+import 'package:goal_master/core/components/empty_loading.dart';
+import 'package:goal_master/core/components/error_state_widget.dart';
 import 'package:goal_master/core/components/page_wrapper.dart';
+import 'package:goal_master/core/routing/route_utils.dart';
+import 'package:goal_master/core/routing/routes_keys.dart';
 import 'package:goal_master/core/styles/app_colors.dart';
 import 'package:goal_master/core/styles/app_text_styles.dart';
 import 'package:goal_master/core/styles/assets.dart';
 import 'package:goal_master/core/styles/spaces.dart';
+import 'package:goal_master/features/booking/data/model/booking_history_response.dart';
 import 'package:goal_master/features/booking/presentation/manager/category_cubit/category_cubit.dart';
 import 'package:goal_master/features/booking/presentation/manager/club_cubit/club_cubit.dart';
 import 'package:goal_master/features/booking/presentation/manager/zone_cubit/zone_cubit.dart';
 import 'package:goal_master/features/home/data/model/booking_slots_response.dart';
 import 'package:goal_master/features/home/presentation/manager/filter_cubit/filter_cubit.dart';
-import 'package:intl/intl.dart';
+import 'package:goal_master/features/home/presentation/view/widgets/show_all_resulat_filtter.dart';
 
 class FilterView extends StatelessWidget {
   const FilterView({super.key});
@@ -56,6 +62,8 @@ class FilterView extends StatelessWidget {
                               HeightSpace(8.h),
                               CustomDatePicker(
                                 firstDate: DateTime.now(),
+                                lastDate: DateTime.now()
+                                    .add(const Duration(days: 30)),
                                 onDatePicked: (value) => context
                                     .read<FilterCubit>()
                                     .updateBookingStart(value.toString()),
@@ -75,6 +83,8 @@ class FilterView extends StatelessWidget {
                               HeightSpace(8.h),
                               CustomDatePicker(
                                 firstDate: DateTime.now(),
+                                lastDate: DateTime.now()
+                                    .add(const Duration(days: 30)),
                                 onDatePicked: (value) => context
                                     .read<FilterCubit>()
                                     .updateBookingEnd(value.toString()),
@@ -104,7 +114,6 @@ class FilterView extends StatelessWidget {
                               CustomTimePicker(
                                 onTimePicked: (value) {
                                   if (value != null) {
-                                    // تحويل TimeOfDay إلى String بالتنسيق المطلوب
                                     final hours =
                                         value.hour.toString().padLeft(2, '0');
                                     final minutes =
@@ -112,7 +121,6 @@ class FilterView extends StatelessWidget {
                                     final formattedTime24 =
                                         "$hours:$minutes:00"; // مثال: "02:28:00"
 
-                                    // تمرير الوقت بالتنسيق الجديد إلى updateStartTime
                                     context
                                         .read<FilterCubit>()
                                         .updateStartTime(formattedTime24);
@@ -216,7 +224,6 @@ class FilterView extends StatelessWidget {
                         return const SizedBox(); // default for ZoneCubitInitial or unexpected states
                       },
                     ),
-                    HeightSpace(20.h),
                     BlocBuilder<CategoryCubit, CategoryState>(
                       builder: (context, state) {
                         if (state is CategoryLoading) {
@@ -247,6 +254,9 @@ class FilterView extends StatelessWidget {
                 ),
               ),
             ),
+            HeightSpace(10.h),
+            Divider(color: Colors.grey),
+            HeightSpace(10.h),
             Expanded(
               flex: 1,
               child: BlocConsumer<FilterCubit, FilterState>(
@@ -261,16 +271,22 @@ class FilterView extends StatelessWidget {
                   } else if (state is FilterLoaded) {
                     final bookings = state.filter.data;
                     return state.filter.data.isNotEmpty
-                        ? ListView.separated(
-                            shrinkWrap: true,
-                            //    physics: const NeverScrollableScrollPhysics(),
-                            itemCount: bookings.length,
-                            separatorBuilder: (_, __) => Divider(),
-                            itemBuilder: (context, index) {
-                              final booking = bookings[index];
-                              return BookingItem(booking: booking);
-                            },
-                          )
+                        ? Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text(
+                                      "النتائج ",
+                                      style: AppTextStyles.font18Bold,
+                                    ),
+                                  ],
+                                ),
+                                HeightSpace(12.h),
+                                Expanded(child: ShowAllResulatFiltter()),
+                              ])
                         : const Center(child: Text("لا يوجد نتائج"));
                   }
                   return const SizedBox();
@@ -296,106 +312,4 @@ class FilterView extends StatelessWidget {
       ),
     );
   }
-}
-
-class BookingItem extends StatelessWidget {
-  const BookingItem({super.key, required this.booking});
-  final BookingSlot booking;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.symmetric(vertical: 8.h, horizontal: 8.w),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(12.r),
-        color: Color(0xfff5f7fa),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.5),
-            spreadRadius: 1,
-            blurRadius: 1,
-            offset: const Offset(0, 1), // changes position of shadow
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: [
-                Text(
-                  "${booking.serviceTitle}",
-                  style: AppTextStyles.font16Medium,
-                ),
-                Row(
-                  children: [
-                    Icon(
-                      Icons.location_on,
-                      color: AppColors.primary,
-                    ),
-                    WidthSpace(8.w),
-                    Text(
-                      "${booking.address}",
-                      style: AppTextStyles.font16Medium,
-                    ),
-                  ],
-                ),
-                HeightSpace(8.h),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Row(children: [
-                      Icon(
-                        Icons.watch_later_outlined,
-                        color: AppColors.primary,
-                      ),
-                      WidthSpace(8.w),
-                      Text(
-                        "${formatTime(booking.startTime)} - ${formatTime(booking.endTime)}",
-                        style: AppTextStyles.font16Medium,
-                      ),
-                    ]),
-                    Row(
-                      children: [
-                        Image.asset(
-                          Assets.imagesPngImageCalendar,
-                          color: AppColors.primary,
-                        ),
-                        WidthSpace(8.w),
-                        Text(
-                          "${booking.date}",
-                          style: AppTextStyles.font16Medium,
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-                HeightSpace(8.h),
-                Row(
-                  children: [
-                    Text(
-                      "الفئة: ",
-                      style: AppTextStyles.font16Medium,
-                    ),
-                    WidthSpace(8.w),
-                    Text(
-                      "${booking.categoryName}",
-                      style: AppTextStyles.font16Medium,
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-String formatTime(String time24) {
-  final time = DateFormat("HH:mm:ss").parse(time24);
-  return DateFormat("h a").format(time); // مثال: "2 PM"
 }

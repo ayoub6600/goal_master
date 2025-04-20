@@ -26,9 +26,10 @@ class AnalysisRepoImp extends AnalysisRepo {
     String startTime,
     String endTime,
     String categoryId,
+    int page,
   ) {
     return consumer.handleRequest(
-      () => consumer.post(EndPoints.fillterNewBooking, data: {
+      () => consumer.post(EndPoints.fillterNewBooking(page), data: {
         if (branch?.isNotEmpty ?? false) 'branch': branch,
         if (startTime?.isNotEmpty ?? false) 'start_time': startTime,
         if (endTime?.isNotEmpty ?? false) 'end_time': endTime,

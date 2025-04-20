@@ -49,6 +49,8 @@ class _HomeViewState extends State<HomeView> {
                 children: [
                   BuildHeaderHome(layoutCubit: layoutCubit),
                   const SizedBox(height: 10),
+                  const BuildLocationRow(),
+                  const SizedBox(height: 10),
                   Row(
                     children: [
                       GestureDetector(
@@ -93,7 +95,7 @@ class _HomeViewState extends State<HomeView> {
                       ),
                     ],
                   ),
-                  const BuildLocationRow(),
+                  const SizedBox(height: 10),
                   //carousel_slider
                   Container(
                     // width: double.infinity,
@@ -104,27 +106,19 @@ class _HomeViewState extends State<HomeView> {
                     )),
                   ),
                   HeightSpace(20.h),
+
                   ButtonApp(
                       text: " احجز الان",
                       onTap: () {
                         push(RoutesKeys.kBookingDetails, context);
                       }),
+
                   HeightSpace(24.h),
-                  Text(
-                    "قسم الالعاب",
-                    style:
-                        AppTextStyles.font16Bold.copyWith(color: AppColors.bg),
-                  ),
+
                   HeightSpace(8.h),
                   ListSectionPlay(),
                   HeightSpace(24.h),
-                  // Text(
-                  //   "اختر ملعبك المفضل",
-                  //   style:
-                  //       AppTextStyles.font16Bold.copyWith(color: AppColors.bg),
-                  // ),
-                  // HeightSpace(8.h),
-                  // ListFavoriteStadium(),
+
                   HeightSpace(100.h),
                 ],
               ),

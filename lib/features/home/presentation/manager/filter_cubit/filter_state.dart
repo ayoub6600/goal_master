@@ -13,7 +13,8 @@ final class FilterLoading extends FilterState {}
 
 final class FilterLoaded extends FilterState {
   final BookingSlotsResponse filter;
-  const FilterLoaded(this.filter);
+  final PagingController<int, BookingSlot> pagingController;
+  const FilterLoaded(this.filter, this.pagingController);
 
   @override
   List<Object> get props => [filter];

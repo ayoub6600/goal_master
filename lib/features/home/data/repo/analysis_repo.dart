@@ -13,5 +13,6 @@ abstract class AnalysisRepo {
     String startTime,
     String endTime,
     String categoryId,
+    int page,
   );
 }

@@ -48,7 +48,8 @@ class EndPoints {
 
   ///user/booking/fillter-new-booking?page=5
 
-  static String fillterNewBooking = 'user/booking/fillter-new-booking';
+  static String fillterNewBooking(int id) =>
+      'user/booking/fillter-new-booking?page=$id';
 }
 
 //doctors/top-ratings
