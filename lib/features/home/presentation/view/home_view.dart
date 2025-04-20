@@ -55,6 +55,37 @@ class _HomeViewState extends State<HomeView> {
                         onTap: () {
                           push(RoutesKeys.kFilter, context);
                         },
+                        child: Container(
+                            width: 300.w,
+                            height: 40.h,
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                                color: AppColors.white,
+                                borderRadius: BorderRadius.circular(8.r),
+                                border: Border.all(
+                                  width: 1,
+                                  color: Color(0xffDADEE3),
+                                )),
+                            child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  Text(
+                                    "ابحث",
+                                    style: AppTextStyles.font14Medium
+                                        .copyWith(color: AppColors.fontColor),
+                                  ),
+                                  Image.asset(
+                                    Assets.imagesPngImageSearchNormal,
+                                  )
+                                ])),
+                      ),
+                      WidthSpace(8.w),
+                      GestureDetector(
+                        onTap: () {
+                          push(RoutesKeys.kFilter, context);
+                        },
                         child: Image.asset(
                           Assets.imagesPngImageFiltter,
                           //   color: AppColors.primary,

@@ -130,6 +130,10 @@ class Assets {
   /// assets/images/png_image/receipt-edit.png
   static const String imagesPngImageReceiptEdit = "assets/images/png_image/receipt-edit.png";
 
+  /// Assets for imagesPngImageSearchNormal
+  /// assets/images/png_image/search-normal.png
+  static const String imagesPngImageSearchNormal = "assets/images/png_image/search-normal.png";
+
   /// Assets for imagesPngImageSend2
   /// assets/images/png_image/send-2.png
   static const String imagesPngImageSend2 = "assets/images/png_image/send-2.png";
