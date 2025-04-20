@@ -12,6 +12,9 @@ import 'package:goal_master/features/booking/presentation/manager/cancel_booking
 import 'package:goal_master/features/booking/presentation/manager/toggle_booking/booking_toggle_cubit.dart';
 
 import 'package:goal_master/features/booking/presentation/view/booking_view.dart';
+import 'package:goal_master/features/home/data/model/analysis_model.dart';
+import 'package:goal_master/features/home/data/repo/analysis_repo_imp.dart';
+import 'package:goal_master/features/home/presentation/manager/analysis_cubit/analysis_cubit.dart';
 import 'package:goal_master/features/home/presentation/view/home_view.dart';
 import 'package:goal_master/features/layout/presentation/manager/layout_cubit.dart';
 import 'package:goal_master/features/layout/presentation/manager/layout_state.dart';
@@ -41,7 +44,13 @@ class _HomeLayoutViewState extends State<HomeLayoutView> {
         builder: (context, state) {
           return Stack(
             children: [
-              if (state.activeScreen == NavBarElement.home) const HomeView(),
+              if (state.activeScreen == NavBarElement.home)
+                BlocProvider(
+                  create: (context) => AnalysisCubit(
+                    getIt<AnalysisRepoImp>(),
+                  )..getAnalysis(),
+                  child: const HomeView(),
+                ),
               if (state.activeScreen == NavBarElement.booking)
                 MultiBlocProvider(
                   providers: [

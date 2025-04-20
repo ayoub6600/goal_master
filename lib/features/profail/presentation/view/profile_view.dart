@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:goal_master/core/components/button_app.dart';
 import 'package:goal_master/core/components/keys_values.dart';
 import 'package:goal_master/core/components/page_wrapper.dart';
 import 'package:goal_master/core/components/preference_utility.dart';
@@ -116,9 +117,64 @@ class ProfileView extends StatelessWidget {
                       title: "خروج",
                       icon: Assets.imagesPngImageLogout,
                       onTap: () async {
-                        await SharedPreferenceUtil.clear();
-                        pushReplacement(RoutesKeys.kLogin, context);
-                        SharedPreferenceUtil.putString(PrefKey.login, "true");
+                        showModalBottomSheet(
+                          context: context,
+                          shape: RoundedRectangleBorder(
+                            borderRadius:
+                                BorderRadius.vertical(top: Radius.circular(16)),
+                          ),
+                          builder: (context) {
+                            return Padding(
+                              padding: const EdgeInsets.all(16.0),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text(
+                                    "تسجيل الخروج",
+                                    style: AppTextStyles.font16Bold,
+                                  ),
+                                  HeightSpace(16.h),
+                                  Text(
+                                    "هل أنت متأكد أنك تريد تسجيل الخروج؟",
+                                    style: AppTextStyles.font14Medium.copyWith(
+                                      color: AppColors.fontColor,
+                                    ),
+                                  ),
+                                  HeightSpace(16.h),
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child: ButtonApp(
+                                            text: "تسجيل الخروج",
+                                            onTap: () async {
+                                              Navigator.pop(
+                                                  context); // Close the sheet
+                                              await SharedPreferenceUtil
+                                                  .clear();
+                                              pushReplacement(
+                                                  RoutesKeys.kLogin, context);
+                                              SharedPreferenceUtil.putString(
+                                                  PrefKey.login, "true");
+                                            }),
+                                      ),
+                                      WidthSpace(16.w),
+                                      Expanded(
+                                        child: ButtonApp(
+                                            textColor: Colors.white,
+                                            backGround: Colors.red,
+                                            text: "الغاء",
+                                            onTap: () {
+                                              Navigator.pop(
+                                                  context); // Close the sheet
+                                            }),
+                                      )
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
+                        );
                       },
                       child: SizedBox(),
                     ),
