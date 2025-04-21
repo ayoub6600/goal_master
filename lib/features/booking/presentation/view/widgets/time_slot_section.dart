@@ -53,8 +53,27 @@ class TimeSlotSection extends StatelessWidget {
                           duration: Duration(milliseconds: 300),
                           curve: Curves.ease,
                         );
-                        context.read<CalendarCubit>().selectTime(time);
-                        context.read<CalendarCubit>().selectTimeEnd(time);
+
+// التاريخ المختار من CalendarCubit
+                        final selectedDate =
+                            context.read<CalendarCubit>().state.focusedDay;
+
+// حول String الوقت إلى DateTime
+                        final parts = time.split(':'); // لو time = "19:00:00"
+                        final parsedTime = DateTime(
+                          selectedDate.year,
+                          selectedDate.month,
+                          selectedDate.day,
+                          int.parse(parts[0]), // hour
+                          int.parse(parts[1]), // minute
+                          int.parse(parts[2]), // second
+                        );
+
+// حدد وقت البداية والنهاية
+                        context.read<CalendarCubit>().selectTime(parsedTime);
+                        context
+                            .read<CalendarCubit>()
+                            .selectTimeEnd(parsedTime.add(Duration(hours: 1)));
                       },
                       child: Container(
                         margin: EdgeInsets.symmetric(

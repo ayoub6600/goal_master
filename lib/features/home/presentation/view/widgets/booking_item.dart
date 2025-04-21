@@ -164,8 +164,11 @@ class _AddNewBookingState extends State<AddNewBooking> {
                                               pageViewCubit.state.zoneId ?? 12,
                                           clubId: widget.booking.clubId,
                                           date: widget.booking.date,
-                                          startTime: widget.booking.startTime,
-                                          endTime: widget.booking.endTime,
+                                          startTime: DateTime.parse(widget
+                                              .booking
+                                              .startTime), // تحويل startTime إلى DateTime
+                                          endTime: DateTime.parse(widget.booking
+                                              .endTime), // تحويل endTime إلى DateTime
                                         );
                                   },
                                 ),

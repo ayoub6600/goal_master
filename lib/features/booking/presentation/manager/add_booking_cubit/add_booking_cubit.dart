@@ -23,22 +23,28 @@ class AddBookingCubit extends Cubit<AddBookingState> {
     required int zoneId,
     required int clubId,
     required String date,
-    required String startTime,
-    required String endTime,
+    required DateTime startTime, // change to DateTime
+    required DateTime endTime, // change to DateTime
   }) async {
     emit(AddBookingLoading());
 
     String formattedDate = _formatDate(date);
-    print("formattedDate: $startTime");
-    print("formattedDate: $endTime");
+
+    // Convert startTime and endTime to "HH:mm:ss"
+    String formattedStartTime = DateFormat("HH:mm:ss").format(startTime);
+    String formattedEndTime = DateFormat("HH:mm:ss").format(endTime);
+
+    print("startTime: $formattedStartTime");
+    print("endTime: $formattedEndTime");
+
     if (!_validateBookingData(
       employeeId: employeeId,
       serviceId: serviceId,
       zoneId: zoneId,
       clubId: clubId,
       date: formattedDate,
-      startTime: startTime,
-      endTime: endTime,
+      startTime: formattedStartTime,
+      endTime: formattedEndTime,
     )) return;
 
     String fullname = SharedPreferenceUtil.getString(PrefKey.fullName);
@@ -50,8 +56,8 @@ class AddBookingCubit extends Cubit<AddBookingState> {
       serviceId: serviceId,
       paymentType: _paymentType,
       date: formattedDate,
-      startTime: startTime,
-      endTime: endTime,
+      startTime: formattedStartTime,
+      endTime: formattedEndTime,
       fullName: fullname,
       phone: phone,
       state: '1',
@@ -84,7 +90,8 @@ class AddBookingCubit extends Cubit<AddBookingState> {
   }) {
     if (employeeId == 0 || serviceId == 0 || zoneId == 0 || clubId == 0) {
       emit(
-          const AddBookingFailure(massage: "يرجى اختيار جميع الحقول المطلوبة"));
+        const AddBookingFailure(massage: "يرجى اختيار جميع الحقول المطلوبة"),
+      );
       return false;
     }
 
@@ -100,8 +107,8 @@ class AddBookingCubit extends Cubit<AddBookingState> {
 
     // التحقق من أن المدة ساعة على الأقل
     try {
-      final start = DateFormat("HH:mm").parse(startTime);
-      final end = DateFormat("HH:mm").parse(endTime);
+      final start = DateFormat("HH:mm:ss").parse(startTime);
+      final end = DateFormat("HH:mm:ss").parse(endTime);
       final difference = end.difference(start);
 
       if (difference.inMinutes < 60) {

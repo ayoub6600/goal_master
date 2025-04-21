@@ -94,6 +94,8 @@ class _BookingDetailsState extends State<BookingDetails> {
                                   child: ButtonApp(
                                     text: "تأكيد الحجز",
                                     onTap: () {
+                                      print(
+                                          "employeeId : ${pageViewCubit.state.employeeId} , serviceId : ${pageViewCubit.state.serviceId} , zoneId : ${pageViewCubit.state.zoneId} , clubId : ${pageViewCubit.state.clubId} , date : ${context.read<CalendarCubit>().state.focusedDay.toString()} , startTime : ${context.read<CalendarCubit>().state.selectedTime} , endTime : ${context.read<CalendarCubit>().state.selectedTimeEnd.toString()}");
                                       context
                                           .read<AddBookingCubit>()
                                           .addBooking(
@@ -119,8 +121,7 @@ class _BookingDetailsState extends State<BookingDetails> {
                                             endTime: context
                                                 .read<CalendarCubit>()
                                                 .state
-                                                .selectedTimeEnd
-                                                .toString(),
+                                                .selectedTimeEnd!,
                                           );
                                     },
                                   ),

@@ -49,8 +49,8 @@ class _HomeViewState extends State<HomeView> {
                 children: [
                   BuildHeaderHome(layoutCubit: layoutCubit),
                   const SizedBox(height: 10),
-                  const BuildLocationRow(),
-                  const SizedBox(height: 10),
+                  // const BuildLocationRow(),
+                  // const SizedBox(height: 10),
                   Row(
                     children: [
                       GestureDetector(
