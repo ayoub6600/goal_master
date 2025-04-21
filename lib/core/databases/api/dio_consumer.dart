@@ -23,7 +23,7 @@ class DioConsumer extends ApiConsumer {
 
     dio.interceptors.addAll([
       TokenInterceptor(dio), // إرفاق الـ Interceptor للتعامل مع التوكن
-      ChuckerDioInterceptor(),
+      // ChuckerDioInterceptor(),
       PrettyDioLogger(
         requestBody: true,
         responseBody: true,

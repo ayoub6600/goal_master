@@ -1,5 +1,5 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.example.goal_master">
+    package="com.ayoub.goalmaster">
 
     <!-- 🔹 السماح باستخدام الإنترنت -->
     <uses-permission android:name="android.permission.INTERNET"/>
