@@ -49,8 +49,13 @@ class ClubSelection extends StatelessWidget {
                               margin: const EdgeInsets.all(8.0),
                               color: Colors.white,
                               elevation: 4,
+                              shadowColor: Colors.grey,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(12),
+                                side: BorderSide(
+                                  color: Colors.grey[200]!,
+                                  width: 1,
+                                ),
                               ),
                               child: InkWell(
                                 borderRadius: BorderRadius.circular(12),
@@ -136,38 +141,59 @@ class ClubSelection extends StatelessWidget {
                                                 await launch(url);
                                               }
                                             },
-                                            child: Container(
-                                              padding: EdgeInsets.symmetric(
-                                                  horizontal: 16.w,
-                                                  vertical: 8.h),
-                                              decoration: BoxDecoration(
-                                                borderRadius:
-                                                    BorderRadius.circular(12.r),
-                                                color: AppColors.primary,
-                                                border: Border.all(
-                                                  color: AppColors.primary,
-                                                ),
-                                              ),
-                                              alignment: Alignment.centerRight,
-                                              child: Row(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment.center,
-                                                children: [
-                                                  Icon(
-                                                    Icons.location_on,
-                                                    color: AppColors.white,
-                                                  ),
-                                                  SizedBox(width: 8.w),
-                                                  Text(
-                                                    'عرض على الخريطة',
-                                                    style: AppTextStyles
-                                                        .font14Regular
-                                                        .copyWith(
-                                                      color: AppColors.white,
+                                            child: Row(
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: [
+                                                Expanded(
+                                                  child: Container(
+                                                    // margin:
+                                                    //     EdgeInsets.symmetric(
+                                                    //         horizontal: 16.w),
+
+                                                    padding:
+                                                        EdgeInsets.symmetric(
+                                                            horizontal: 10.w,
+                                                            vertical: 8.h),
+                                                    decoration: BoxDecoration(
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              12.r),
+                                                      color: AppColors.primary,
+                                                      border: Border.all(
+                                                        color:
+                                                            AppColors.primary,
+                                                      ),
+                                                    ),
+                                                    alignment:
+                                                        Alignment.centerRight,
+                                                    child: Row(
+                                                      mainAxisSize:
+                                                          MainAxisSize.min,
+                                                      mainAxisAlignment:
+                                                          MainAxisAlignment
+                                                              .center,
+                                                      children: [
+                                                        Icon(
+                                                          Icons.location_on,
+                                                          color:
+                                                              AppColors.white,
+                                                        ),
+                                                        SizedBox(width: 8.w),
+                                                        Text(
+                                                          "مكان الملعب",
+                                                          style: AppTextStyles
+                                                              .font14Regular
+                                                              .copyWith(
+                                                            color:
+                                                                AppColors.white,
+                                                          ),
+                                                        ),
+                                                      ],
                                                     ),
                                                   ),
-                                                ],
-                                              ),
+                                                ),
+                                                Expanded(child: Container()),
+                                              ],
                                             ),
                                           )
                                       ],

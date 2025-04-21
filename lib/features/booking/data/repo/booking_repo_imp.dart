@@ -5,6 +5,7 @@ import 'package:goal_master/core/databases/api/api_consumer_extension.dart';
 import 'package:goal_master/core/databases/api/end_points.dart';
 import 'package:goal_master/core/errors/failure.dart';
 import 'package:goal_master/features/booking/data/model/booking_history_response.dart';
+import 'package:goal_master/features/booking/data/model/cancel_booking_response.dart';
 import 'package:goal_master/features/booking/data/model/category_model.dart';
 import 'package:goal_master/features/booking/data/model/club_responce.dart';
 import 'package:goal_master/features/booking/data/model/employe/employe.dart';
@@ -38,7 +39,7 @@ class BookingRepoImp extends BookingRepo {
   }
 
   @override
-  Future<Either<Failure, Booking>> cancelBooking(int id) {
+  Future<Either<Failure, CancelBookingResponse>> cancelBooking(int id) {
     return apiConsumer.handleRequest(
       () => apiConsumer.post(
         EndPoints.cancelBooking,
@@ -46,7 +47,7 @@ class BookingRepoImp extends BookingRepo {
           'id': id,
         },
       ),
-      (data) => Booking.fromJson(data['data']),
+      (data) => CancelBookingResponse.fromJson(data),
     );
   }
 

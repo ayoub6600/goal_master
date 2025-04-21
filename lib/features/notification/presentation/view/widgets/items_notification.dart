@@ -38,12 +38,13 @@ class ItemsNotification extends StatelessWidget {
             ),
             WidthSpace(12.w),
             Expanded(
+              flex: 1,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [
                   Text(
-                    " تم تأكيد حجزك في ${booking.branch} يوم ${booking.date} ",
+                    "  حجزك في ${booking.branch} يوم ${booking.date} ",
                     style: AppTextStyles.font14SemiBold,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
@@ -59,8 +60,11 @@ class ItemsNotification extends StatelessWidget {
               ),
             ),
             WidthSpace(12.w),
-            StatusContainer(
-              status: booking.status,
+            Expanded(
+              flex: 1,
+              child: StatusContainer(
+                status: booking.status,
+              ),
             ),
           ],
         ),

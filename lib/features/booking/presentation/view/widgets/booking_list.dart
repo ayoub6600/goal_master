@@ -20,7 +20,9 @@ class BookingList extends StatelessWidget {
       builder: (context, state) {
         if (state is BookingSuccess) {
           return PagedListView<int, Booking>.separated(
-            padding: EdgeInsets.zero,
+            padding: EdgeInsets.only(
+              bottom: 100.h,
+            ),
             pagingController: state.pagingController,
             builderDelegate: PagedChildBuilderDelegate<Booking>(
               itemBuilder: (context, booking, index) {

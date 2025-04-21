@@ -141,20 +141,36 @@ class _AddNewBookingState extends State<AddNewBooking> {
                       ],
                     ),
                   ),
-                  EventCard(
-                    date: widget.booking.date,
-                    startTime: widget.booking.startTime,
-                    endTime: widget.booking.endTime,
-                    club: widget.booking.club,
-                    categoryName: widget.booking.categoryName,
-                    serviceTitle: widget.booking.serviceTitle,
-                    address: widget.booking.address,
-                  ),
+                  if (state.currentPage > 0)
+                    EventCard(
+                      date: widget.booking.date,
+                      startTime: widget.booking.startTime,
+                      endTime: widget.booking.endTime,
+                      club: widget.booking.club,
+                      categoryName: widget.booking.categoryName,
+                      serviceTitle: widget.booking.serviceTitle,
+                      address: widget.booking.address,
+                    ),
                   if (state.currentPage > 0)
                     Padding(
                       padding: EdgeInsets.all(16.w),
                       child: Row(
                         children: [
+                          Expanded(
+                            child: ButtonApp(
+                              backGround: AppColors.grey,
+                              text: "رجوع",
+                              onTap: () {
+                                pageViewCubit.previousPage();
+                                _controller.previousPage(
+                                  duration: Duration(milliseconds: 300),
+                                  curve: Curves.ease,
+                                );
+                              },
+                            ),
+                          ),
+                          SizedBox(width: 8.w),
+
                           //  if (state.currentPage == 2)
                           BlocConsumer<AddBookingCubit, AddBookingState>(
                             listener: (context, state) {
@@ -189,20 +205,6 @@ class _AddNewBookingState extends State<AddNewBooking> {
                               );
                             },
                           ),
-                          SizedBox(width: 8.w),
-                          Expanded(
-                            child: ButtonApp(
-                              backGround: AppColors.grey,
-                              text: "رجوع",
-                              onTap: () {
-                                pageViewCubit.previousPage();
-                                _controller.previousPage(
-                                  duration: Duration(milliseconds: 300),
-                                  curve: Curves.ease,
-                                );
-                              },
-                            ),
-                          )
                         ],
                       ),
                     ),

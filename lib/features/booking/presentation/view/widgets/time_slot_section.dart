@@ -75,36 +75,69 @@ class TimeSlotSection extends StatelessWidget {
                             .read<CalendarCubit>()
                             .selectTimeEnd(parsedTime.add(Duration(hours: 1)));
                       },
-                      child: Container(
-                        margin: EdgeInsets.symmetric(
-                            horizontal: 4.w, vertical: 4.h),
-                        padding: EdgeInsets.all(12.h),
-                        decoration: BoxDecoration(
-                          color: isSelected ? Colors.green : Colors.white,
-                          borderRadius: BorderRadius.circular(12.r),
-                          border: Border.all(
-                            color: times[index].isAvailable == 0
-                                ? Colors.grey
-                                : isSelected
-                                    ? Colors.green
-                                    : AppColors.primary,
+                      child: Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          Container(
+                            margin: EdgeInsets.symmetric(
+                                horizontal: 4.w, vertical: 4.h),
+                            padding: EdgeInsets.all(12.h),
+                            decoration: BoxDecoration(
+                              color: isSelected ? Colors.green : Colors.white,
+                              borderRadius: BorderRadius.circular(12.r),
+                              border: Border.all(
+                                color: times[index].isAvailable == 0
+                                    ? Colors
+                                        .grey // ✅ جعل اللون أحمر في حال غير متاح
+                                    : isSelected
+                                        ? Colors.green
+                                        : AppColors.primary,
+                              ),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  "${formatToHour(time)} ",
+                                  textAlign: TextAlign.center,
+                                  textDirection: TextDirection.ltr,
+                                  style: AppTextStyles.font16Bold.copyWith(
+                                    color: times[index].isAvailable == 0
+                                        ? Colors.grey
+                                        : isSelected
+                                            ? Colors.white
+                                            : const Color(0xff204523),
+                                    // decoration: times[index].isAvailable == 0
+                                    //     ? TextDecoration.lineThrough
+                                    //     : TextDecoration.none,
+                                  ),
+                                ),
+                                Text(
+                                  " _ ${formatToHour(times[index].endTime)}  ",
+                                  textAlign: TextAlign.center,
+                                  textDirection: TextDirection.rtl,
+                                  style: AppTextStyles.font16Bold.copyWith(
+                                    color: times[index].isAvailable == 0
+                                        ? Colors.grey
+                                        : isSelected
+                                            ? Colors.white
+                                            : const Color(0xff204523),
+                                    // decoration: times[index].isAvailable == 0
+                                    //     ? TextDecoration.lineThrough
+                                    //     : TextDecoration.none,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
-                        ),
-                        child: Text(
-                          formatToHour(time),
-                          textAlign: TextAlign.center,
-                          textDirection: TextDirection.ltr,
-                          style: AppTextStyles.font16Bold.copyWith(
-                            color: times[index].isAvailable == 0
-                                ? Colors.grey
-                                : isSelected
-                                    ? Colors.white
-                                    : Color(0xff204523),
-                            decoration: times[index].isAvailable == 0
-                                ? TextDecoration.lineThrough
-                                : TextDecoration.none,
-                          ),
-                        ),
+                          times[index].isAvailable == 0
+                              ? Container(
+                                  height: 1.h,
+                                  width: 100.w,
+                                  color: Colors.red,
+                                )
+                              : const SizedBox.shrink(),
+                        ],
                       ),
                     );
                   }),

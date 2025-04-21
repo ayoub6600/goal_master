@@ -46,7 +46,7 @@ class StatusContainer extends StatelessWidget {
       child: Center(
         child: Text(
           statusText,
-          // "في إنتظار قبول الطلب",
+          //  "في إنتظار قبول الطلب",
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
           style: TextStyle(

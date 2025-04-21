@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:goal_master/core/styles/app_colors.dart';
 import 'package:goal_master/core/styles/app_text_styles.dart';
-import 'package:goal_master/core/styles/spaces.dart';
 import 'package:goal_master/features/home/data/model/analysis_model.dart';
 
 class SectionPlay extends StatelessWidget {
@@ -20,21 +19,21 @@ class SectionPlay extends StatelessWidget {
       runSpacing: 8.h,
       children: [
         CornerStatCard(
-          title: 'قيد الانتظار',
+          title: "الغير خالص",
           value: analysis.pending,
           icon: Icons.schedule,
           bgColor: AppColors.grey.withOpacity(0.2),
           iconColor: AppColors.grey,
         ),
         CornerStatCard(
-          title: 'قيد المعالجة',
+          title: "بإنتظار قبول الطلب",
           value: analysis.processing,
           icon: Icons.sync,
           bgColor: Colors.yellow.withOpacity(0.2),
           iconColor: Colors.orange,
         ),
         CornerStatCard(
-          title: 'تمت الموافقة',
+          title: "حجوزات مقبوله",
           value: analysis.approved,
           icon: Icons.check_circle,
           bgColor: Colors.green.withOpacity(0.2),
@@ -48,7 +47,7 @@ class SectionPlay extends StatelessWidget {
           iconColor: Colors.red,
         ),
         CornerStatCard(
-          title: 'إتمام الحجز',
+          title: "الحجوزات المدفوعه",
           value: analysis.done,
           icon: Icons.done_all,
           bgColor: Colors.blue.withOpacity(0.2),
@@ -113,6 +112,8 @@ class CornerStatCard extends StatelessWidget {
               children: [
                 Text(
                   title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                   style: AppTextStyles.font16Bold.copyWith(
                     color: AppColors.black,
                   ),

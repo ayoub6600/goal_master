@@ -2,6 +2,7 @@ import 'package:dartz/dartz.dart';
 import 'package:goal_master/core/components/paginated_response.dart';
 import 'package:goal_master/core/errors/failure.dart';
 import 'package:goal_master/features/booking/data/model/booking_history_response.dart';
+import 'package:goal_master/features/booking/data/model/cancel_booking_response.dart';
 import 'package:goal_master/features/booking/data/model/category_model.dart';
 import 'package:goal_master/features/booking/data/model/club_responce.dart';
 import 'package:goal_master/features/booking/data/model/employe/employe.dart';
@@ -14,7 +15,7 @@ abstract class BookingRepo {
     int page,
     bool now,
   );
-  Future<Either<Failure, Booking>> cancelBooking(
+  Future<Either<Failure, CancelBookingResponse>> cancelBooking(
     int id,
   );
   Future<Either<Failure, List<Location>>> listZone();

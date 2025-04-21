@@ -223,6 +223,7 @@ class BookingItems extends StatelessWidget {
                     CustomSuccessToast(toastText: state.message);
 
                     context.read<BookingCubit>().refresh();
+                    push(RoutesKeys.kHome, context);
                   } else if (state is CancelBookingFailure) {
                     CustomFailureToastWidget(toastText: state.message);
                   }
@@ -234,7 +235,9 @@ class BookingItems extends StatelessWidget {
                       children: [
                         Expanded(
                           child: ButtonApp(
-                            text: "الغاء الحجز",
+                            text: state is CancelBookingLoading
+                                ? "جاري الغاء الحجز"
+                                : "الغاء الحجز",
                             textColor: Colors.white,
                             backGround: AppColors.redcolor,
                             onTap: () {
