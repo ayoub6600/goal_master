@@ -74,7 +74,9 @@ class ServiceSelection extends StatelessWidget {
                     ),
                     onTap: () {
                       final clubId = context.read<PageViewCubit>().state.clubId;
-                      context.read<PageViewCubit>().setServiceId(service.id);
+                      context
+                          .read<PageViewCubit>()
+                          .setServiceId(service.id, service.title);
                       context.read<PageViewCubit>().nextPage();
                       context.read<EmployeeCubit>().listEmployee(clubId ?? 0);
 

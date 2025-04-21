@@ -61,9 +61,9 @@ class CategorySelection extends StatelessWidget {
                       final clubId = context.read<PageViewCubit>().state.clubId;
 
                       if (clubId != null) {
-                        context.read<PageViewCubit>().setCategoryId(
-                              cat.id,
-                            );
+                        context
+                            .read<PageViewCubit>()
+                            .setCategoryId(cat.id, cat.name);
                         context.read<ServiceCubit>().listService(
                               categoryId: cat.id,
                               branchId: clubId,

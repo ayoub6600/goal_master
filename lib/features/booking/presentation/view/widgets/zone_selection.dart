@@ -28,9 +28,8 @@ class ZoneSelection extends StatelessWidget {
                   itemCount: state.location.length,
                   itemBuilder: (context, index) => GestureDetector(
                     onTap: () {
-                      context
-                          .read<PageViewCubit>()
-                          .setZoneId(state.location[index].id);
+                      context.read<PageViewCubit>().setZoneId(
+                          state.location[index].id, state.location[index].name);
                       context
                           .read<ClubCubit>()
                           .listClub(state.location[index].id);

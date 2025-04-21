@@ -55,9 +55,8 @@ class ClubSelection extends StatelessWidget {
                               child: InkWell(
                                 borderRadius: BorderRadius.circular(12),
                                 onTap: () {
-                                  context
-                                      .read<PageViewCubit>()
-                                      .setClubId(club.id); // حفظ فقط الـ id
+                                  context.read<PageViewCubit>().setClubId(
+                                      club.id, club.name); // حفظ فقط الـ id
                                   context.read<CategoryCubit>().listCategory(
                                         branchId:
                                             club.id, // استخدم ID الخاص بالفرع

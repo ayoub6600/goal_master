@@ -65,11 +65,11 @@ class FilterCubit extends Cubit<FilterState> {
       1, // Page number for initial request
     );
 
-    result.fold(
-      (failure) => emit(FilterError(failure.errMessage)),
-      (bookingSlotsResponse) =>
-          emit(FilterLoaded(bookingSlotsResponse, _pagingController)),
-    );
+    result.fold((failure) => emit(FilterError(failure.errMessage)),
+        (bookingSlotsResponse) {
+      emit(FilterLoaded(bookingSlotsResponse, _pagingController));
+      _pagingController.refresh();
+    });
   }
 
   Future<void> _fetchPage(int pageKey) async {

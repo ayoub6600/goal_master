@@ -18,24 +18,26 @@ class PageViewCubit extends Cubit<PageViewState> {
     }
   }
 
-  void setClubId(int id) {
-    emit(state.copyWith(clubId: id));
+  void setClubId(int id, String title) {
+    emit(state.copyWith(clubId: id, clubTitle: title));
   }
 
-  void setZoneId(int id) {
-    emit(state.copyWith(zoneId: id));
+  void setZoneId(int id, String title) {
+    emit(state.copyWith(zoneId: id, zoneTitle: title));
   }
 
-  void setCategoryId(int id) {
-    emit(state.copyWith(categoryId: id));
+  void setCategoryId(int id, String title) {
+    emit(state.copyWith(categoryId: id, categoryTitle: title));
   }
 
-  void setEmployeeId(int id) {
+  void setEmployeeId(
+    int id,
+  ) {
     emit(state.copyWith(employeeId: id));
   }
 
-  void setServiceId(int id) {
-    emit(state.copyWith(serviceId: id));
+  void setServiceId(int id, String title) {
+    emit(state.copyWith(serviceId: id, serviceTitle: title));
   }
 
   void setDate(String date) {

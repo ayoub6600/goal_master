@@ -197,16 +197,20 @@ class BookingItems extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                StatusContainer(
-                  status: booking.status,
+                Expanded(
+                  child: StatusContainer(
+                    status: booking.status,
+                  ),
                 ),
                 WidthSpace(12.w),
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Text("السعر  : ${booking.serviceAmount} دينار",
-                      style: AppTextStyles.font18Bold.copyWith(
-                        color: AppColors.primary,
-                      )),
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Text("السعر  : ${booking.serviceAmount} دينار",
+                        style: AppTextStyles.font18Bold.copyWith(
+                          color: AppColors.primary,
+                        )),
+                  ),
                 ),
               ],
             ),

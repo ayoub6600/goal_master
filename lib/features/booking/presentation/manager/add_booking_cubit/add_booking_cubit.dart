@@ -23,16 +23,16 @@ class AddBookingCubit extends Cubit<AddBookingState> {
     required int zoneId,
     required int clubId,
     required String date,
-    required DateTime startTime, // change to DateTime
-    required DateTime endTime, // change to DateTime
+    required dynamic startTime, // String or DateTime
+    required dynamic endTime, // String or DateTime
   }) async {
     emit(AddBookingLoading());
 
     String formattedDate = _formatDate(date);
 
-    // Convert startTime and endTime to "HH:mm:ss"
-    String formattedStartTime = DateFormat("HH:mm:ss").format(startTime);
-    String formattedEndTime = DateFormat("HH:mm:ss").format(endTime);
+    // Convert time to "HH:mm:ss" based on type
+    String formattedStartTime = _formatTime(startTime);
+    String formattedEndTime = _formatTime(endTime);
 
     print("startTime: $formattedStartTime");
     print("endTime: $formattedEndTime");
@@ -43,8 +43,8 @@ class AddBookingCubit extends Cubit<AddBookingState> {
       zoneId: zoneId,
       clubId: clubId,
       date: formattedDate,
-      startTime: formattedStartTime,
-      endTime: formattedEndTime,
+      startTime: startTime,
+      endTime: endTime,
     )) return;
 
     String fullname = SharedPreferenceUtil.getString(PrefKey.fullName);
@@ -69,7 +69,18 @@ class AddBookingCubit extends Cubit<AddBookingState> {
     );
   }
 
-  // تنسيق التاريخ إلى yyyy-MM-dd
+  /// Format time if it's DateTime, otherwise return as-is.
+  String _formatTime(dynamic time) {
+    if (time is String) {
+      return time;
+    } else if (time is DateTime) {
+      return DateFormat("HH:mm:ss").format(time);
+    } else {
+      throw FormatException("Invalid time format");
+    }
+  }
+
+  /// Format date to yyyy-MM-dd
   String _formatDate(String date) {
     try {
       final parsedDate = DateTime.parse(date);
@@ -85,17 +96,16 @@ class AddBookingCubit extends Cubit<AddBookingState> {
     required int zoneId,
     required int clubId,
     required String date,
-    required String startTime,
-    required String endTime,
+    required dynamic startTime,
+    required dynamic endTime,
   }) {
     if (employeeId == 0 || serviceId == 0 || zoneId == 0 || clubId == 0) {
       emit(
-        const AddBookingFailure(massage: "يرجى اختيار جميع الحقول المطلوبة"),
-      );
+          const AddBookingFailure(massage: "يرجى اختيار جميع الحقول المطلوبة"));
       return false;
     }
 
-    if (date.isEmpty || startTime.isEmpty || endTime.isEmpty) {
+    if (date.isEmpty || startTime == null || endTime == null) {
       emit(const AddBookingFailure(massage: "يرجى اختيار التاريخ والوقت"));
       return false;
     }
@@ -105,10 +115,14 @@ class AddBookingCubit extends Cubit<AddBookingState> {
       return false;
     }
 
-    // التحقق من أن المدة ساعة على الأقل
     try {
-      final start = DateFormat("HH:mm:ss").parse(startTime);
-      final end = DateFormat("HH:mm:ss").parse(endTime);
+      DateTime start = (startTime is DateTime)
+          ? startTime
+          : DateFormat("HH:mm:ss").parse(startTime);
+      DateTime end = (endTime is DateTime)
+          ? endTime
+          : DateFormat("HH:mm:ss").parse(endTime);
+
       final difference = end.difference(start);
 
       if (difference.inMinutes < 60) {

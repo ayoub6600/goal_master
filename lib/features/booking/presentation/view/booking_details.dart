@@ -19,6 +19,8 @@ import 'package:goal_master/features/booking/presentation/view/widgets/employee_
 import 'package:goal_master/features/booking/presentation/view/widgets/service_selection.dart';
 import 'package:goal_master/features/booking/presentation/view/widgets/time_slot_section.dart';
 import 'package:goal_master/features/booking/presentation/view/widgets/zone_selection.dart';
+import 'package:goal_master/features/home/presentation/view/widgets/event_card.dart';
+import 'package:intl/intl.dart';
 
 class BookingDetails extends StatefulWidget {
   const BookingDetails({super.key});
@@ -59,6 +61,30 @@ class _BookingDetailsState extends State<BookingDetails> {
                       ],
                     ),
                   ),
+                  if (state.currentPage == 7)
+                    EventCard(
+                      date: formatDateString(context
+                          .read<CalendarCubit>()
+                          .state
+                          .selectedTimeEnd
+                          .toString()), // Format the date
+                      startTime: formatTimeString(context
+                          .read<CalendarCubit>()
+                          .state
+                          .selectedTime
+                          .toString()), // Format the time
+                      endTime: formatTimeString(context
+                          .read<CalendarCubit>()
+                          .state
+                          .selectedTimeEnd
+                          .toString()), // Format the time
+                      club: pageViewCubit.state.clubTitle.toString(),
+                      categoryName:
+                          pageViewCubit.state.categoryTitle.toString(),
+                      serviceTitle: pageViewCubit.state.serviceTitle.toString(),
+                      address: pageViewCubit.state.zoneTitle
+                          .toString(), // Address as needed
+                    ),
                   if (state.currentPage > 0)
                     Padding(
                       padding: EdgeInsets.all(16.w),
@@ -94,8 +120,6 @@ class _BookingDetailsState extends State<BookingDetails> {
                                   child: ButtonApp(
                                     text: "تأكيد الحجز",
                                     onTap: () {
-                                      print(
-                                          "employeeId : ${pageViewCubit.state.employeeId} , serviceId : ${pageViewCubit.state.serviceId} , zoneId : ${pageViewCubit.state.zoneId} , clubId : ${pageViewCubit.state.clubId} , date : ${context.read<CalendarCubit>().state.focusedDay.toString()} , startTime : ${context.read<CalendarCubit>().state.selectedTime} , endTime : ${context.read<CalendarCubit>().state.selectedTimeEnd.toString()}");
                                       context
                                           .read<AddBookingCubit>()
                                           .addBooking(
@@ -151,5 +175,28 @@ class _BookingDetailsState extends State<BookingDetails> {
         ),
       ],
     );
+  }
+}
+
+String formatDateString(String dateString) {
+  try {
+    DateTime dateTime =
+        DateTime.parse(dateString); // Parse the date string to DateTime
+    return DateFormat('yyyy-MM-dd')
+        .format(dateTime); // Format as date only (e.g., "2025-04-23")
+  } catch (e) {
+    return ''; // Return empty string if the date format is invalid
+  }
+}
+
+// Format the time only
+String formatTimeString(String dateString) {
+  try {
+    DateTime dateTime =
+        DateTime.parse(dateString); // Parse the date string to DateTime
+    return DateFormat('HH:mm')
+        .format(dateTime); // Format as time only (e.g., "23:00")
+  } catch (e) {
+    return ''; // Return empty string if the time format is invalid
   }
 }

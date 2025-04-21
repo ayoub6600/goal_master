@@ -17,6 +17,8 @@ import 'package:goal_master/features/booking/presentation/view/widgets/choose_pa
 import 'package:goal_master/features/booking/presentation/view/widgets/step_title.dart';
 import 'package:goal_master/features/home/data/model/booking_slots_response.dart';
 import 'package:goal_master/features/home/presentation/manager/page_view_new_booking_cubit/page_view_new_booking_cubit.dart';
+import 'package:goal_master/features/home/presentation/view/widgets/employee_selection_new.dart';
+import 'package:goal_master/features/home/presentation/view/widgets/event_card.dart';
 import 'package:goal_master/features/home/presentation/view/widgets/format_time.dart';
 
 class BookingItem extends StatelessWidget {
@@ -83,6 +85,12 @@ class BookingItem extends StatelessWidget {
                     ],
                   ),
                   HeightSpace(16.h),
+                  ButtonApp(
+                      text: "حجز",
+                      onTap: () {
+                        push(RoutesKeys.kAddNewBooking, context,
+                            extra: booking);
+                      })
                 ],
               ),
             ),
@@ -128,12 +136,19 @@ class _AddNewBookingState extends State<AddNewBooking> {
                       controller: _controller,
                       physics: NeverScrollableScrollPhysics(),
                       children: [
-                        // Text("page 1"),
-                        // Text("page 2"),
                         EmployeeSelectionNew(controller: _controller),
                         ChoosePayment(controller: _controller),
                       ],
                     ),
+                  ),
+                  EventCard(
+                    date: widget.booking.date,
+                    startTime: widget.booking.startTime,
+                    endTime: widget.booking.endTime,
+                    club: widget.booking.club,
+                    categoryName: widget.booking.categoryName,
+                    serviceTitle: widget.booking.serviceTitle,
+                    address: widget.booking.address,
                   ),
                   if (state.currentPage > 0)
                     Padding(
@@ -155,6 +170,8 @@ class _AddNewBookingState extends State<AddNewBooking> {
                                 child: ButtonApp(
                                   text: "تأكيد الحجز",
                                   onTap: () {
+                                    print(
+                                        "employeeId ${pageViewCubit.state.employeeId} serviceId ${widget.booking.serviceId} zoneId ${pageViewCubit.state.zoneId} clubId ${widget.booking.clubId} date ${widget.booking.date} startTime ${widget.booking.startTime} endTime ${widget.booking.endTime}");
                                     context.read<AddBookingCubit>().addBooking(
                                           employeeId:
                                               pageViewCubit.state.employeeId ??
@@ -164,11 +181,8 @@ class _AddNewBookingState extends State<AddNewBooking> {
                                               pageViewCubit.state.zoneId ?? 12,
                                           clubId: widget.booking.clubId,
                                           date: widget.booking.date,
-                                          startTime: DateTime.parse(widget
-                                              .booking
-                                              .startTime), // تحويل startTime إلى DateTime
-                                          endTime: DateTime.parse(widget.booking
-                                              .endTime), // تحويل endTime إلى DateTime
+                                          startTime: widget.booking.startTime,
+                                          endTime: widget.booking.endTime,
                                         );
                                   },
                                 ),
@@ -211,80 +225,6 @@ class _AddNewBookingState extends State<AddNewBooking> {
           },
         ),
       ],
-    );
-  }
-}
-
-class EmployeeSelectionNew extends StatelessWidget {
-  final PageController controller;
-
-  const EmployeeSelectionNew({Key? key, required this.controller})
-      : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return BlocBuilder<EmployeeCubit, EmployeeState>(
-      builder: (context, state) {
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            StepTitle(
-                title: "اختر الحجز",
-                description: "اختر الحجز المناسب للحجز الذي تريده"),
-            HeightSpace(8.h),
-            if (state is EmployeeSuccess)
-              ...state.employees.map((emp) => ListTile(
-                    title: Card(
-                        margin: const EdgeInsets.all(8.0),
-                        color: Colors.white,
-                        elevation: 4,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Container(
-                            padding: const EdgeInsets.symmetric(
-                                vertical: 16, horizontal: 8.0),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
-                                  children: [
-                                    Icon(
-                                      Icons.watch_later,
-                                      size: 24.w,
-                                      color: AppColors.primary,
-                                    ),
-                                    WidthSpace(8.w),
-                                    Text(
-                                      emp.fullName ?? "",
-                                      style: AppTextStyles.font16Bold,
-                                    ),
-                                  ],
-                                ),
-                                HeightSpace(8.h),
-                                Text(
-                                  emp.designation?.name ?? "",
-                                  style: AppTextStyles.font16Medium,
-                                ),
-                              ],
-                            ))),
-                    onTap: () {
-                      context
-                          .read<PageViewNewBookingCubit>()
-                          .setEmployeeId(emp.id ?? 0);
-
-                      context.read<PageViewNewBookingCubit>().nextPage();
-                      controller.nextPage(
-                          duration: Duration(milliseconds: 300),
-                          curve: Curves.ease);
-                    },
-                  )),
-            if (state is EmployeeLoading)
-              Center(child: CircularProgressIndicator()),
-            if (state is EmployeeFailure) Text('خطأ: ${state.message}'),
-          ],
-        );
-      },
     );
   }
 }
