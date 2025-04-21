@@ -17,6 +17,7 @@ import 'package:goal_master/features/booking/presentation/view/widgets/category_
 import 'package:goal_master/features/booking/presentation/view/widgets/club_selection.dart';
 import 'package:goal_master/features/booking/presentation/view/widgets/employee_selection.dart';
 import 'package:goal_master/features/booking/presentation/view/widgets/service_selection.dart';
+import 'package:goal_master/features/booking/presentation/view/widgets/time_slot_section.dart';
 import 'package:goal_master/features/booking/presentation/view/widgets/zone_selection.dart';
 
 class BookingDetails extends StatefulWidget {
@@ -53,6 +54,7 @@ class _BookingDetailsState extends State<BookingDetails> {
                         ServiceSelection(controller: _controller),
                         EmployeeSelection(controller: _controller),
                         CustomCalder(controller: _controller),
+                        TimeSlotSection(controller: _controller),
                         ChoosePayment(controller: _controller),
                       ],
                     ),
@@ -62,7 +64,21 @@ class _BookingDetailsState extends State<BookingDetails> {
                       padding: EdgeInsets.all(16.w),
                       child: Row(
                         children: [
-                          if (state.currentPage == 6)
+                          Expanded(
+                            child: ButtonApp(
+                              backGround: AppColors.grey,
+                              text: "رجوع",
+                              onTap: () {
+                                pageViewCubit.previousPage();
+                                _controller.previousPage(
+                                  duration: Duration(milliseconds: 300),
+                                  curve: Curves.ease,
+                                );
+                              },
+                            ),
+                          ),
+                          SizedBox(width: 8.w),
+                          if (state.currentPage == 7)
                             BlocConsumer<AddBookingCubit, AddBookingState>(
                               listener: (context, state) {
                                 if (state is AddBookingSuccess) {
@@ -103,27 +119,14 @@ class _BookingDetailsState extends State<BookingDetails> {
                                             endTime: context
                                                 .read<CalendarCubit>()
                                                 .state
-                                                .selectedTime,
+                                                .selectedTimeEnd
+                                                .toString(),
                                           );
                                     },
                                   ),
                                 );
                               },
                             ),
-                          SizedBox(width: 8.w),
-                          Expanded(
-                            child: ButtonApp(
-                              backGround: AppColors.grey,
-                              text: "رجوع",
-                              onTap: () {
-                                pageViewCubit.previousPage();
-                                _controller.previousPage(
-                                  duration: Duration(milliseconds: 300),
-                                  curve: Curves.ease,
-                                );
-                              },
-                            ),
-                          )
                         ],
                       ),
                     ),

@@ -34,6 +34,11 @@ class CustomCalder extends StatelessWidget {
                     isSameDay(state.selectedDay, day),
                 locale: 'ar_SA',
                 onDaySelected: (selectedDay, focusedDay) {
+                  context.read<PageViewCubit>().nextPage();
+                  controller.nextPage(
+                    duration: Duration(milliseconds: 300),
+                    curve: Curves.ease,
+                  );
                   calendarCubit.updateSelectedDay(selectedDay, focusedDay);
 
                   final clubId = context.read<PageViewCubit>().state.clubId;
@@ -77,7 +82,7 @@ class CustomCalder extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 16),
-              TimeSlotSection(state: state, controller: controller),
+              //  TimeSlotSection(state: state, controller: controller),
             ],
           ),
         );

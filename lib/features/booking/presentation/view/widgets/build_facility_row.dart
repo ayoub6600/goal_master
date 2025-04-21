@@ -33,6 +33,18 @@ class BuildFacilityRow extends StatelessWidget {
           label: '',
           value: ' ${formatToHour(booking.endTime)}',
         ),
+        HeightSpace(6.h),
+        _buildInfoRow(
+          icon: Assets.imagesPngImageWallet2,
+          label: '',
+          value:
+              'طريقة الدفع ${booking.paymentType == "User Balance" ? 'محفظة' : 'كاش'}  ',
+        ),
+        //partially_paid مدفوعة جزئيا
+        //paid مدفوع
+        //pending  غير مدفوع
+        //
+
         HeightSpace(20.h),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -49,11 +61,22 @@ class BuildFacilityRow extends StatelessWidget {
                   ),
                 ),
                 HeightSpace(8.h),
-                Text(
-                  "دينار${booking.serviceAmount}",
-                  style: AppTextStyles.font16Bold.copyWith(
-                    color: AppColors.primary,
-                  ),
+                Row(
+                  children: [
+                    Text(
+                      "دينار${booking.serviceAmount}",
+                      style: AppTextStyles.font16Bold.copyWith(
+                        color: AppColors.primary,
+                      ),
+                    ),
+                    WidthSpace(8.w),
+                    Text(
+                      "( ${_getPaymentStatusText(booking.paymentStatus)} )",
+                      style: AppTextStyles.font16Bold.copyWith(
+                        color: _getPaymentStatusColor(booking.paymentStatus),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -72,7 +95,11 @@ class BuildFacilityRow extends StatelessWidget {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Image.asset(icon, width: 20.w),
+        Image.asset(
+          icon,
+          width: 20.w,
+          color: AppColors.primary,
+        ),
         WidthSpace(8.w),
         Expanded(
           child: Row(
@@ -97,5 +124,31 @@ class BuildFacilityRow extends StatelessWidget {
         ),
       ],
     );
+  }
+
+  String _getPaymentStatusText(String status) {
+    switch (status) {
+      case 'partially_paid':
+        return 'مدفوعة جزئياً';
+      case 'paid':
+        return 'مدفوع';
+      case 'pending':
+        return 'غير مدفوع';
+      default:
+        return status; // Fallback to raw status if not matched
+    }
+  }
+
+  Color _getPaymentStatusColor(String status) {
+    switch (status) {
+      case 'partially_paid':
+        return Colors.orange; // لون برتقالي للمدفوعة جزئياً
+      case 'paid':
+        return Colors.green; // أخضر للمدفوع
+      case 'pending':
+        return Colors.red; // أحمر لغير المدفوع
+      default:
+        return AppColors.fontColor; // اللون الافتراضي
+    }
   }
 }

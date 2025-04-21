@@ -40,18 +40,29 @@ class BookingItems extends StatelessWidget {
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 12.w),
               child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
-                    "# رقم الحجز" " : ",
-                    style: AppTextStyles.font16Bold.copyWith(
-                      color: AppColors.fontColor,
-                    ),
+                  Row(
+                    children: [
+                      Text(
+                        "# رقم الحجز" " : ",
+                        style: AppTextStyles.font16Bold.copyWith(
+                          color: AppColors.fontColor,
+                        ),
+                      ),
+                      WidthSpace(10.w),
+                      Text(
+                        booking.id.toString(),
+                        style: AppTextStyles.font16Bold.copyWith(
+                          color: AppColors.fontColor,
+                        ),
+                      ),
+                    ],
                   ),
-                  WidthSpace(10.w),
                   Text(
-                    booking.id.toString(),
+                    "( ${_getPaymentStatusText(booking.paymentStatus)} )",
                     style: AppTextStyles.font16Bold.copyWith(
-                      color: AppColors.fontColor,
+                      color: _getPaymentStatusColor(booking.paymentStatus),
                     ),
                   ),
                 ],
@@ -298,5 +309,31 @@ class BookingItems extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  String _getPaymentStatusText(String status) {
+    switch (status) {
+      case 'partially_paid':
+        return 'مدفوعة جزئياً';
+      case 'paid':
+        return 'مدفوع';
+      case 'pending':
+        return 'غير مدفوع';
+      default:
+        return status; // Fallback to raw status if not matched
+    }
+  }
+
+  Color _getPaymentStatusColor(String status) {
+    switch (status) {
+      case 'partially_paid':
+        return Colors.orange; // لون برتقالي للمدفوعة جزئياً
+      case 'paid':
+        return Colors.green; // أخضر للمدفوع
+      case 'pending':
+        return Colors.red; // أحمر لغير المدفوع
+      default:
+        return AppColors.fontColor; // اللون الافتراضي
+    }
   }
 }

@@ -32,16 +32,6 @@ class BookingItem extends StatelessWidget {
         color: Color(0xfff5f7fa),
         child: Row(
           children: [
-            //display image
-            // ClipRRect(
-            //   borderRadius: BorderRadius.circular(8.r),
-            //   child: Image.asset(
-            //     Assets.imagesPngImage1,
-            //     fit: BoxFit.cover,
-            //     width: 80.w,
-            //     // height: 80.h,
-            //   ),
-            // ),
             WidthSpace(8.w),
             Expanded(
               child: Column(
@@ -49,7 +39,7 @@ class BookingItem extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [
                   Text(
-                    "${booking.serviceTitle}",
+                    "${booking.serviceTitle}" "( ${booking.club} )",
                     style: AppTextStyles.font16Bold,
                   ),
                   HeightSpace(8.h),
@@ -93,15 +83,6 @@ class BookingItem extends StatelessWidget {
                     ],
                   ),
                   HeightSpace(16.h),
-                  ButtonApp(
-                    text: "حجز",
-                    onTap: () {
-                      push(RoutesKeys.kAddNewBooking, context, extra: booking);
-                      context
-                          .read<EmployeeCubit>()
-                          .listEmployee(booking.clubId);
-                    },
-                  ),
                 ],
               ),
             ),

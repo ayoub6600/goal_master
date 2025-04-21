@@ -29,7 +29,8 @@ class AddBookingCubit extends Cubit<AddBookingState> {
     emit(AddBookingLoading());
 
     String formattedDate = _formatDate(date);
-
+    print("formattedDate: $startTime");
+    print("formattedDate: $endTime");
     if (!_validateBookingData(
       employeeId: employeeId,
       serviceId: serviceId,

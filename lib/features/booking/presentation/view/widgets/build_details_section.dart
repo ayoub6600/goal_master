@@ -28,6 +28,31 @@ class BuildDetailsSection extends StatelessWidget {
             booking: booking,
           ),
           HeightSpace(8.h),
+          Row(
+            children: [
+              Text(
+                "رقم الحجز :",
+                style: AppTextStyles.font16Bold.copyWith(
+                  color: AppColors.fontColor,
+                ),
+              ),
+              Container(
+                margin: EdgeInsets.symmetric(horizontal: 4.w),
+                padding: EdgeInsets.symmetric(horizontal: 8.w),
+                decoration: BoxDecoration(
+                  color: Color(0xffDADEE3),
+                  borderRadius: BorderRadius.circular(12.r),
+                ),
+                child: Text(
+                  " #${booking.id}",
+                  style: AppTextStyles.font24Bold.copyWith(
+                    color: AppColors.obsidianBlack,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          HeightSpace(8.h),
           Text(
             " ${booking.remarks}",
             style: AppTextStyles.font16Bold.copyWith(

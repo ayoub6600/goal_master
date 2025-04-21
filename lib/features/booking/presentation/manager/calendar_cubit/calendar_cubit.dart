@@ -67,6 +67,10 @@ class CalendarCubit extends Cubit<CalendarState> {
     emit(state.copyWith(selectedTime: time));
   }
 
+  void selectTimeEnd(DateTime endTime) {
+    emit(state.copyWith(selectedTimeEnd: endTime));
+  }
+
   void addEvent(DateTime day, dynamic event) {
     final newEvents = Map<DateTime, List<dynamic>>.from(state.selectedEvents);
     if (!newEvents.containsKey(day)) {

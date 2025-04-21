@@ -150,6 +150,10 @@ class Assets {
   /// assets/images/png_image/Soccer_Ball.png
   static const String imagesPngImageSoccerBall = "assets/images/png_image/Soccer_Ball.png";
 
+  /// Assets for imagesPngImageSoccerPlayer
+  /// assets/images/png_image/soccer-player.png
+  static const String imagesPngImageSoccerPlayer = "assets/images/png_image/soccer-player.png";
+
   /// Assets for imagesPngImageStar
   /// assets/images/png_image/star.png
   static const String imagesPngImageStar = "assets/images/png_image/star.png";

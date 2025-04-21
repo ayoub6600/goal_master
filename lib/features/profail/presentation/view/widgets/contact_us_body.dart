@@ -32,7 +32,7 @@ class ContactUsBody extends StatelessWidget {
             ),
             HeightSpace(16.h),
             ProfileItem(
-              title: "+2180916776600",
+              title: "+218916771600",
               icon: Assets.imagesPngImageCallCalling,
               onTap: () async {
                 final Uri phoneUri = Uri(scheme: 'tel', path: '+218916776600');
@@ -64,7 +64,7 @@ class ContactUsBody extends StatelessWidget {
             ),
             HeightSpace(16.h),
             ProfileItem(
-              title: "www.goalmasters.online",
+              title: "web.goalmasters.online",
               icon: Assets.imagesPngImageGlobalRefresh,
               onTap: () => _openWebsite("https://web.goalmasters.online"),
               child: SizedBox(),

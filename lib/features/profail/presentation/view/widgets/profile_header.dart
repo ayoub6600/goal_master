@@ -4,7 +4,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:goal_master/core/components/keys_values.dart';
 import 'package:goal_master/core/components/preference_utility.dart';
-import 'package:goal_master/core/manager/user_info_cubit/user_info_cubit.dart';
+import 'package:goal_master/core/routing/route_utils.dart';
+import 'package:goal_master/core/routing/routes_keys.dart';
 import 'package:goal_master/core/styles/app_text_styles.dart';
 import 'package:goal_master/core/styles/assets.dart';
 import 'package:goal_master/core/styles/spaces.dart';
@@ -23,7 +24,12 @@ class ProfileHeader extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Image.asset(Assets.imagesPngImageProfailIcon),
+          Image.asset(
+            Assets.imagesPngImageSoccerPlayer,
+            width: 50.w,
+            height: 50.h,
+            fit: BoxFit.cover,
+          ),
           WidthSpace(16.w),
           Expanded(
             child: BlocBuilder<ProfileCubit, ProfileState>(
@@ -82,34 +88,39 @@ class ProfileHeader extends StatelessWidget {
                 style: AppTextStyles.font12SemiBold
                     .copyWith(color: Color(0xff6D7580)),
               ),
-              Container(
-                padding: EdgeInsets.all(18.w),
-                decoration:
-                    BoxDecoration(shape: BoxShape.circle, color: Colors.white),
-                child: BlocBuilder<BalanceCubit, BalanceState>(
-                  builder: (context, state) {
-                    if (state is BalanceLoading) {
-                      return Text(
-                        "...",
-                        style: AppTextStyles.font16SemiBold,
-                      );
-                    } else if (state is BalanceLoaded) {
-                      return Center(
-                        child: Text(
-                          state.balance.toString() + "\nدينار",
+              GestureDetector(
+                onTap: () {
+                  push(RoutesKeys.kCard, context);
+                },
+                child: Container(
+                  padding: EdgeInsets.all(18.w),
+                  decoration: BoxDecoration(
+                      shape: BoxShape.circle, color: Colors.white),
+                  child: BlocBuilder<BalanceCubit, BalanceState>(
+                    builder: (context, state) {
+                      if (state is BalanceLoading) {
+                        return Text(
+                          "...",
                           style: AppTextStyles.font16SemiBold,
-                        ),
-                      );
-                    } else if (state is BalanceError) {
-                      return Center(
-                        child: Text(
-                          "Error: ${state.errMessage}",
-                          style: TextStyle(color: Colors.red),
-                        ),
-                      );
-                    }
-                    return Center(child: Text("No Data"));
-                  },
+                        );
+                      } else if (state is BalanceLoaded) {
+                        return Center(
+                          child: Text(
+                            state.balance.toString() + "\nدينار",
+                            style: AppTextStyles.font16SemiBold,
+                          ),
+                        );
+                      } else if (state is BalanceError) {
+                        return Center(
+                          child: Text(
+                            "Error: ${state.errMessage}",
+                            style: TextStyle(color: Colors.red),
+                          ),
+                        );
+                      }
+                      return Center(child: Text("No Data"));
+                    },
+                  ),
                 ),
               ),
             ],

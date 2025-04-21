@@ -74,6 +74,7 @@ class _UpdateProfileBodyState extends State<UpdateProfileBody> {
               hint: SharedPreferenceUtil.getString(PrefKey.phone),
               controller: cubit.phoneController,
               inputType: TextInputType.emailAddress,
+              enabled: false,
             ),
             HeightSpace(70.h),
             BlocConsumer<UpdateProfileCubit, UpdateProfileState>(
