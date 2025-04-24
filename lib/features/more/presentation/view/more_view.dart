@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:goal_master/core/components/page_wrapper.dart';
-
+import 'package:goal_master/core/styles/app_text_styles.dart';
 import 'package:goal_master/core/styles/assets.dart';
 import 'package:goal_master/core/styles/spaces.dart';
 import 'package:goal_master/features/more/presentation/view/widgets/information_to_app_view.dart';
@@ -29,7 +29,6 @@ class MoreView extends StatelessWidget {
                 Navigator.push(context, MaterialPageRoute(builder: (context) {
                   return InformationToAppView();
                 }));
-                // push(RoutesKeys.kUpdateProfile, context);
               },
             ),
             Container(
@@ -45,8 +44,6 @@ class MoreView extends StatelessWidget {
                 Navigator.push(context, MaterialPageRoute(builder: (context) {
                   return TermAndConditionView();
                 }));
-
-                // push(RoutesKeys.kUpdateProfile, context);
               },
             ),
             Container(
@@ -55,12 +52,30 @@ class MoreView extends StatelessWidget {
               height: 1.h,
             ),
             HeightSpace(8.h),
-            ProfileItem(
-              title: "مشاركة التطبيق",
-              icon: Assets.imagesPngImageSend2,
-              onTap: () {
-                Share.share('جرّب تطبيقنا الرائع! 📲\nhttps://example.com');
-              },
+            LayoutBuilder(
+              builder: (context, constraints) => ProfileItem(
+                title: "مشاركة التطبيق",
+                icon: Assets.imagesPngImageSend2,
+                onTap: () {
+                  final RenderBox? box =
+                      context.findRenderObject() as RenderBox?;
+                  if (box != null) {
+                    final offset = box.localToGlobal(Offset.zero);
+                    final size = box.size;
+
+                    print("Offset: $offset, Size: $size");
+
+                    if (size.width > 0 && size.height > 0) {
+                      Share.share(
+                        'جرّب تطبيق Goal Master الآن وحقق أهدافك! 🏆📲\n'
+                        'على Android:\nhttps://play.google.com/store/apps/details?id=com.ayoub.goalmaster\n'
+                        'على iOS:\nhttps://apps.apple.com/app/id6744951483\n',
+                        sharePositionOrigin: offset & size,
+                      );
+                    }
+                  }
+                },
+              ),
             ),
             Container(
               width: double.infinity,
