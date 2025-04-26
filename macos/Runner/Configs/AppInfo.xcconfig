@@ -8,7 +8,7 @@
 PRODUCT_NAME = goal_master
 
 // The application's bundle identifier
-PRODUCT_BUNDLE_IDENTIFIER = com.example.goalMaster
+PRODUCT_BUNDLE_IDENTIFIER = com.ayoub.goalmaster
 
 // The copyright displayed in application information
 PRODUCT_COPYRIGHT = Copyright © 2025 com.example. All rights reserved.

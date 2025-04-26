@@ -10,6 +10,10 @@ class Assets {
   /// assets/images/png_image/action_on_professional.png
   static const String imagesPngImageActionOnProfessional = "assets/images/png_image/action_on_professional.png";
 
+  /// Assets for imagesPngImageAddMoneyLogo
+  /// assets/images/png_image/add_money_logo.jpeg
+  static const String imagesPngImageAddMoneyLogo = "assets/images/png_image/add_money_logo.jpeg";
+
   /// Assets for imagesPngImageAlbums
   /// assets/images/png_image/Albums.png
   static const String imagesPngImageAlbums = "assets/images/png_image/Albums.png";
@@ -89,6 +93,10 @@ class Assets {
   /// Assets for imagesPngImageLockersSvgrepoCom
   /// assets/images/png_image/lockers-svgrepo-com.png
   static const String imagesPngImageLockersSvgrepoCom = "assets/images/png_image/lockers-svgrepo-com.png";
+
+  /// Assets for imagesPngImageLogoAddMo
+  /// assets/images/png_image/logo_add_mo.jpeg
+  static const String imagesPngImageLogoAddMo = "assets/images/png_image/logo_add_mo.jpeg";
 
   /// Assets for imagesPngImageLogout
   /// assets/images/png_image/logout.png

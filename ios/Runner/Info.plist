@@ -2,8 +2,8 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-<key>NSKeychainUsageDescription</key>
-<string>Your description for using Keychain</string>
+	<key>CADisableMinimumFrameDurationOnPhone</key>
+	<true/>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
@@ -26,6 +26,14 @@
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>NSKeychainUsageDescription</key>
+	<string>Your description for using Keychain</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>نحتاج الوصول إلى موقعك لتقديم خدمات دقيقة</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>نحتاج الوصول إلى موقعك لتقديم تجربة أفضل</string>
+	<key>UIApplicationSupportsIndirectInputEvents</key>
+	<true/>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>
@@ -43,17 +51,5 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
-	<key>CADisableMinimumFrameDurationOnPhone</key>
-	<true/>
-	<key>UIApplicationSupportsIndirectInputEvents</key>
-	<true/>
-	<!-- موقع الجهاز عند استخدام التطبيق -->
-<key>NSLocationWhenInUseUsageDescription</key>
-<string>نحتاج الوصول إلى موقعك لتقديم تجربة أفضل</string>
-
-<!-- موقع الجهاز دائمًا (إذا كنت تحتاج العمل في الخلفية) -->
-<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-<string>نحتاج الوصول إلى موقعك لتقديم خدمات دقيقة</string>
-
 </dict>
 </plist>

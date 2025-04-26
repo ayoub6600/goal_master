@@ -40,7 +40,7 @@ class _BookingDetailsState extends State<BookingDetails> {
       children: [
         PageWrapper(
           title: "إضافة الحجز",
-          allowBack: false,
+          allowBack: true,
           child: BlocBuilder<PageViewCubit, PageViewState>(
             builder: (context, state) {
               return Column(

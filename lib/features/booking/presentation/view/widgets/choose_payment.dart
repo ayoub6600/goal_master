@@ -41,11 +41,11 @@ class _ChoosePaymentState extends State<ChoosePayment> {
           description: "قم باختيار الطريقة التي ترغب بالدفع من خلالها",
         ),
         HeightSpace(16.h),
-        _buildPaymentOption(
-          title: "الدفع عندالوصل",
-          icon: Icons.attach_money,
-          type: 1,
-        ),
+        // _buildPaymentOption(
+        //   title: "الدفع عندالوصل",
+        //   icon: Icons.attach_money,
+        //   type: 1,
+        // ),
         _buildPaymentOption(
           title: "رصيد المستخدم",
           icon: Icons.wallet,

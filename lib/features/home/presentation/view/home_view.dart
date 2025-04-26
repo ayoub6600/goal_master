@@ -28,10 +28,10 @@ class _HomeViewState extends State<HomeView> {
   void initState() {
     super.initState();
     layoutCubit = context.read<LayoutCubit>();
-    if (layoutCubit.state.isUpdate) {
-      layoutCubit.changeIsUpdate(false);
-      layoutCubit.initUserLocation();
-    }
+    // if (layoutCubit.state.isUpdate) {
+    //   layoutCubit.changeIsUpdate(false);
+    //   layoutCubit.initUserLocation();
+    // }
   }
 
   @override
