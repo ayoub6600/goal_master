@@ -51,5 +51,21 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+
+	<!-- 👇 يسمح بالتحقق من روابط http/https -->
+	<key>LSApplicationQueriesSchemes</key>
+	<array>
+		<string>http</string>
+		<string>https</string>
+	</array>
+
+	<!-- 👇 لو بتستخدم روابط غير https (اختياري جداً) -->
+	<!--
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsArbitraryLoads</key>
+		<true/>
+	</dict>
+	-->
 </dict>
 </plist>

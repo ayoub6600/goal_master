@@ -1,28 +1,30 @@
 class Slide {
   final int id;
   final String name;
-  final String image;
-  final String status;
-  final String description;
-  final String url;
+  final String? image;
+  final String? status;
+  final String? description;
+  final String? url;
 
   Slide({
     required this.id,
     required this.name,
-    required this.image,
-    required this.status,
-    required this.description,
-    required this.url,
+    this.image,
+    this.status,
+    this.description,
+    this.url,
   });
 
   factory Slide.fromJson(Map<String, dynamic> json) {
     return Slide(
       id: json['id'],
       name: json['name'],
-      image: json['image'],
-      status: json['status'],
-      description: json['description'],
-      url: json['url'],
+      image: json.containsKey('image') ? json['image'] as String? : null,
+      status: json.containsKey('status') ? json['status'] as String? : null,
+      description: json.containsKey('description')
+          ? json['description'] as String?
+          : null,
+      url: json.containsKey('url') ? json['url'] as String? : null,
     );
   }
 
@@ -41,17 +43,12 @@ class Slide {
 class SlideData {
   final List<Slide> data;
 
-  SlideData({
-    required this.data,
-  });
+  SlideData({required this.data});
 
   factory SlideData.fromJson(Map<String, dynamic> json) {
-    var list = json['data'] as List;
-    List<Slide> slides = list.map((i) => Slide.fromJson(i)).toList();
-
-    return SlideData(
-      data: slides,
-    );
+    var list = json['data'] as List? ?? [];
+    List<Slide> slides = list.map((item) => Slide.fromJson(item)).toList();
+    return SlideData(data: slides);
   }
 
   Map<String, dynamic> toJson() {

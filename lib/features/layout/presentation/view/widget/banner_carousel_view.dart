@@ -113,7 +113,7 @@ class _BannerCarouselScreenState extends State<BannerCarouselScreen> {
                   fit: StackFit.expand,
                   children: [
                     Image.network(
-                      slide.image,
+                      slide.image ?? "",
                       fit: BoxFit.contain,
                       loadingBuilder: (context, child, loadingProgress) {
                         if (loadingProgress == null) return child;
@@ -167,7 +167,7 @@ class _BannerCarouselScreenState extends State<BannerCarouselScreen> {
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              slide.description,
+                              slide.description ?? "",
                               style: TextStyle(
                                 color: Colors.white.withOpacity(0.9),
                                 fontSize: 14,
