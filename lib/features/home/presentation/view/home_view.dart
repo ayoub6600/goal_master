@@ -8,11 +8,13 @@ import 'package:goal_master/core/styles/app_colors.dart';
 import 'package:goal_master/core/styles/app_text_styles.dart';
 import 'package:goal_master/core/styles/assets.dart';
 import 'package:goal_master/core/styles/spaces.dart';
+import 'package:goal_master/features/balance/presentation/cubit/balance_cubit.dart';
+import 'package:goal_master/features/home/presentation/manager/get_services_info_cubit/get_services_info_cubit.dart';
 import 'package:goal_master/features/home/presentation/view/widgets/build_header_home.dart';
-import 'package:goal_master/features/home/presentation/view/widgets/build_location_row.dart';
 import 'package:goal_master/features/home/presentation/view/widgets/list_section_play.dart';
 import 'package:goal_master/features/layout/presentation/manager/layout_cubit.dart';
 import 'package:goal_master/features/layout/presentation/manager/layout_state.dart';
+import 'package:goal_master/features/layout/presentation/view/widget/banner_carousel_view.dart';
 
 class HomeView extends StatefulWidget {
   const HomeView({super.key});
@@ -28,10 +30,6 @@ class _HomeViewState extends State<HomeView> {
   void initState() {
     super.initState();
     layoutCubit = context.read<LayoutCubit>();
-    // if (layoutCubit.state.isUpdate) {
-    //   layoutCubit.changeIsUpdate(false);
-    //   layoutCubit.initUserLocation();
-    // }
   }
 
   @override
@@ -51,6 +49,7 @@ class _HomeViewState extends State<HomeView> {
                   const SizedBox(height: 10),
                   // const BuildLocationRow(),
                   // const SizedBox(height: 10),
+
                   Row(
                     children: [
                       GestureDetector(
@@ -96,15 +95,8 @@ class _HomeViewState extends State<HomeView> {
                     ],
                   ),
                   const SizedBox(height: 10),
-                  //carousel_slider
-                  Container(
-                    // width: double.infinity,
-                    height: 180.h,
-                    decoration: BoxDecoration(
-                        image: DecorationImage(
-                      image: AssetImage(Assets.imagesPngImageHomeTest),
-                    )),
-                  ),
+                  BannerCarouselScreen(),
+
                   HeightSpace(20.h),
 
                   ButtonApp(
@@ -114,6 +106,7 @@ class _HomeViewState extends State<HomeView> {
                       }),
 
                   HeightSpace(24.h),
+                  SizedBox(height: 200.h, child: ServicesInfoView()),
 
                   HeightSpace(8.h),
                   ListSectionPlay(),
@@ -126,6 +119,67 @@ class _HomeViewState extends State<HomeView> {
           },
         ),
       ),
+    );
+  }
+}
+
+class ServicesInfoView extends StatelessWidget {
+  const ServicesInfoView({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocBuilder<GetServicesInfoCubit, GetServicesInfoState>(
+      builder: (context, state) {
+        if (state is GetServicesInfoLoading) {
+          return const Center(child: CircularProgressIndicator());
+        } else if (state is GetServicesInfoError) {
+          return Center(child: Text('خطأ: ${state.errMessage}'));
+        } else if (state is GetServicesInfoSuccess) {
+          final services = state.services;
+          if (services.isEmpty) {
+            return const Center(child: Text('لا توجد خدمات متاحة'));
+          }
+          return ListView.separated(
+            separatorBuilder: (context, index) => WidthSpace(16.w),
+            itemCount: services.length,
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.all(16),
+            itemBuilder: (context, index) {
+              final service = services[index];
+              return Card(
+                  margin: const EdgeInsets.only(bottom: 12),
+                  elevation: 2,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Container(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(8),
+                          child: Image.network(
+                            service.imageUrl ?? '',
+                            height: 80,
+                            width: 80,
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          service.title,
+                          style: AppTextStyles.font16Bold,
+                        ),
+                        const SizedBox(height: 8),
+                      ],
+                    ),
+                  ));
+            },
+          );
+        }
+        return const SizedBox.shrink();
+      },
     );
   }
 }

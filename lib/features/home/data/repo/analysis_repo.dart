@@ -1,11 +1,16 @@
 import 'package:dartz/dartz.dart';
 import 'package:goal_master/core/errors/failure.dart';
-import 'package:goal_master/features/booking/data/model/employe/branch.dart';
 import 'package:goal_master/features/home/data/model/analysis_model.dart';
+import 'package:goal_master/features/home/data/model/banner_model.dart';
 import 'package:goal_master/features/home/data/model/booking_slots_response.dart';
+import 'package:goal_master/features/home/data/model/service_model.dart';
 
 abstract class AnalysisRepo {
   Future<Either<Failure, Analysis>> getAnalysis();
+  Future<Either<Failure, List<ServiceModel>>> getService();
+
+  Future<Either<Failure, List<Slide>>> getBanner();
+
   Future<Either<Failure, BookingSlotsResponse>> filterBooking(
     String bookingStart,
     String bookingEnd,

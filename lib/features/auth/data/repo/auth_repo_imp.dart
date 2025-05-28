@@ -163,4 +163,16 @@ class AuthRepoImpl implements AuthRepo {
       },
     );
   }
+
+  @override
+  Future<Either<Failure, Unit>> deleteAccount() {
+    return consumer.handleRequest(
+      () => consumer.delete(
+        EndPoints.deleteAccount,
+      ),
+      (p0) {
+        return unit;
+      },
+    );
+  }
 }

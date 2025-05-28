@@ -7,14 +7,18 @@ class EndPoints {
 
   //# parent
   static String login = 'login';
-
+  static String getServices = 'get-service-info';
   static String sendOTP = 'resend-otp';
 
   static String verifyOTP = 'verify';
 
   static String update = 'user/update';
 
+  static String banner = "list/slider";
+
   static String register = 'register';
+
+  static String deleteAccount = 'user/delete';
 
   static String changePassword = 'change-password';
 

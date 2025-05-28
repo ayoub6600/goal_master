@@ -38,4 +38,5 @@ abstract class AuthRepo {
     required String token,
   });
   Future<Either<Failure, String>> profile();
+  Future<Either<Failure, Unit>> deleteAccount();
 }

@@ -4,7 +4,9 @@ import 'package:goal_master/core/databases/api/api_consumer_extension.dart';
 import 'package:goal_master/core/databases/api/end_points.dart';
 import 'package:goal_master/core/errors/failure.dart';
 import 'package:goal_master/features/home/data/model/analysis_model.dart';
+import 'package:goal_master/features/home/data/model/banner_model.dart';
 import 'package:goal_master/features/home/data/model/booking_slots_response.dart';
+import 'package:goal_master/features/home/data/model/service_model.dart';
 import 'package:goal_master/features/home/data/repo/analysis_repo.dart';
 
 class AnalysisRepoImp extends AnalysisRepo {
@@ -40,7 +42,23 @@ class AnalysisRepoImp extends AnalysisRepo {
       (data) => BookingSlotsResponse.fromJson(data),
     );
   }
+
+  @override
+  Future<Either<Failure, List<Slide>>> getBanner() {
+    return consumer.handleRequest(
+      () => consumer.get(EndPoints.banner),
+      (data) => SlideData.fromJson({'data': data["data"]}).data,
+    );
+  }
+
+  Future<Either<Failure, List<ServiceModel>>> getService() {
+    return consumer.handleRequest(
+      () => consumer.post(EndPoints.getServices),
+      (data) => ServiceResponse.fromJson(data).data,
+    );
+  }
 }
+//getServicesInfo
 // var data = FormData.fromMap({
 //   'branch': '12',
 //   'start_time': '20:00:00',

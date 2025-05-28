@@ -15,6 +15,8 @@ import 'package:goal_master/features/booking/presentation/view/booking_view.dart
 import 'package:goal_master/features/home/data/model/analysis_model.dart';
 import 'package:goal_master/features/home/data/repo/analysis_repo_imp.dart';
 import 'package:goal_master/features/home/presentation/manager/analysis_cubit/analysis_cubit.dart';
+import 'package:goal_master/features/home/presentation/manager/banner_cubit/banner_cubit_cubit.dart';
+import 'package:goal_master/features/home/presentation/manager/get_services_info_cubit/get_services_info_cubit.dart';
 import 'package:goal_master/features/home/presentation/view/home_view.dart';
 import 'package:goal_master/features/layout/presentation/manager/layout_cubit.dart';
 import 'package:goal_master/features/layout/presentation/manager/layout_state.dart';
@@ -45,10 +47,35 @@ class _HomeLayoutViewState extends State<HomeLayoutView> {
           return Stack(
             children: [
               if (state.activeScreen == NavBarElement.home)
-                BlocProvider(
-                  create: (context) => AnalysisCubit(
-                    getIt<AnalysisRepoImp>(),
-                  )..getAnalysis(),
+                MultiBlocProvider(
+                  providers: [
+                    BlocProvider(
+                      create: (context) => AnalysisCubit(
+                        getIt<AnalysisRepoImp>(),
+                      )..getAnalysis(),
+                    ),
+                    //BannerCubitCubit
+                    BlocProvider(
+                      create: (context) => BannerCubitCubit(
+                        getIt<AnalysisRepoImp>(),
+                      )..getBanner(),
+                    ),
+                    //BalanceCubit
+                    BlocProvider(
+                      create: (context) => BalanceCubit(
+                        getIt<BalanceRepoImp>(),
+                      )..getBalance(),
+                    ),
+                    //GetServicesInfoCubit
+                    BlocProvider(
+                      create: (context) => GetServicesInfoCubit(
+                        getIt<AnalysisRepoImp>(),
+                      )..getServicesInfo(),
+                    ),
+                  ],
+                  // create: (context) => AnalysisCubit(
+                  //   getIt<AnalysisRepoImp>(),
+                  // )..getAnalysis(),
                   child: const HomeView(),
                 ),
               if (state.activeScreen == NavBarElement.booking)

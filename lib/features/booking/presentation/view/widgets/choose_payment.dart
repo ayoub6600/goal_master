@@ -24,11 +24,6 @@ class _ChoosePaymentState extends State<ChoosePayment> {
     });
     context.read<AddBookingCubit>().setPaymentType(type);
     print("تم اختيار وسيلة الدفع: $type");
-    // لو عايز تنتقل للصفحة التالية مباشرة:
-    // widget.controller.nextPage(
-    //   duration: Duration(milliseconds: 300),
-    //   curve: Curves.ease,
-    // );
   }
 
   @override
@@ -41,15 +36,15 @@ class _ChoosePaymentState extends State<ChoosePayment> {
           description: "قم باختيار الطريقة التي ترغب بالدفع من خلالها",
         ),
         HeightSpace(16.h),
-        // _buildPaymentOption(
-        //   title: "الدفع عندالوصل",
-        //   icon: Icons.attach_money,
-        //   type: 1,
-        // ),
         _buildPaymentOption(
           title: "رصيد المستخدم",
           icon: Icons.wallet,
           type: 4,
+        ),
+        _buildPaymentOption(
+          title: "الدفع عندالوصل",
+          icon: Icons.attach_money,
+          type: 1,
         ),
       ],
     );

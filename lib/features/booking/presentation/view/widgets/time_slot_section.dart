@@ -30,7 +30,7 @@ class TimeSlotSection extends StatelessWidget {
         } else if (state is TimeSuccess) {
           final times = state.time;
           return Padding(
-            padding: const EdgeInsets.all(16.0),
+            padding: const EdgeInsets.all(8.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [

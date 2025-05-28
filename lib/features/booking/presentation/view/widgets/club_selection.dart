@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -60,12 +61,12 @@ class ClubSelection extends StatelessWidget {
                               child: InkWell(
                                 borderRadius: BorderRadius.circular(12),
                                 onTap: () {
-                                  context.read<PageViewCubit>().setClubId(
-                                      club.id, club.name); // حفظ فقط الـ id
-                                  context.read<CategoryCubit>().listCategory(
-                                        branchId:
-                                            club.id, // استخدم ID الخاص بالفرع
-                                      );
+                                  context
+                                      .read<PageViewCubit>()
+                                      .setClubId(club.id, club.name);
+                                  context
+                                      .read<CategoryCubit>()
+                                      .listCategory(branchId: club.id);
                                   context.read<PageViewCubit>().nextPage();
                                   controller.nextPage(
                                       duration: Duration(milliseconds: 300),
@@ -73,131 +74,133 @@ class ClubSelection extends StatelessWidget {
                                 },
                                 child: Container(
                                   width: double.infinity,
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(12),
-                                    color: Colors.white,
-                                  ),
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(16.0),
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          club.name,
-                                          style: TextStyle(
-                                            fontSize: 20,
-                                            fontWeight: FontWeight.bold,
+                                  padding: const EdgeInsets.all(16.0),
+                                  child: Column(
+                                    children: [
+                                      ClipRRect(
+                                        borderRadius: BorderRadius.circular(12),
+                                        child: CachedNetworkImage(
+                                          imageUrl: club.imageUrl ??
+                                              'https://via.placeholder.com/120',
+                                          width: double.infinity,
+                                          height: 150,
+                                          fit: BoxFit.cover,
+                                          placeholder: (context, url) =>
+                                              Container(
+                                            width: double.infinity,
+                                            height: 150,
+                                            color: Colors.grey[200],
+                                            child: Center(
+                                                child:
+                                                    CircularProgressIndicator()),
+                                          ),
+                                          errorWidget: (context, url, error) =>
+                                              Container(
+                                            width: 120,
+                                            height: 150,
+                                            color: Colors.grey[300],
+                                            child: Icon(Icons.broken_image,
+                                                size: 48, color: Colors.grey),
                                           ),
                                         ),
-                                        SizedBox(height: 6),
-                                        if (club.phone != null)
+                                      ),
+                                      SizedBox(height: 8),
+                                      Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            club.name,
+                                            style: TextStyle(
+                                                fontSize: 20,
+                                                fontWeight: FontWeight.bold),
+                                          ),
+                                          SizedBox(height: 6),
                                           Row(
                                             children: [
-                                              Row(
-                                                children: [
-                                                  Icon(
-                                                    Icons.phone,
-                                                    color: AppColors.primary,
+                                              if (club.phone != null)
+                                                Expanded(
+                                                  child: Row(
+                                                    children: [
+                                                      Icon(Icons.phone,
+                                                          color: AppColors
+                                                              .primary),
+                                                      SizedBox(width: 8.w),
+                                                      Text(' ${club.phone}',
+                                                          style: AppTextStyles
+                                                              .font14Regular),
+                                                    ],
                                                   ),
-                                                  SizedBox(width: 8.w),
-                                                  Text(
-                                                    ' ${club.phone}',
-                                                    style: AppTextStyles
-                                                        .font14Regular,
-                                                  ),
-                                                ],
-                                              ),
-                                              SizedBox(
-                                                width: 12.w,
-                                              ),
+                                                ),
                                               if (club.address != null)
-                                                Row(
-                                                  children: [
-                                                    Icon(
-                                                      Icons.location_on,
-                                                      color: AppColors.primary,
-                                                    ),
-                                                    SizedBox(width: 8.w),
-                                                    Text(
-                                                      '${club.address ?? "بدون عنوان"}',
-                                                      style: AppTextStyles
-                                                          .font14Regular,
-                                                    ),
-                                                  ],
+                                                Expanded(
+                                                  child: Row(
+                                                    children: [
+                                                      Icon(Icons.location_on,
+                                                          color: AppColors
+                                                              .primary),
+                                                      SizedBox(width: 8.w),
+                                                      Expanded(
+                                                        child: Text(
+                                                          '${club.address ?? "بدون عنوان"}',
+                                                          style: AppTextStyles
+                                                              .font14Regular,
+                                                          overflow: TextOverflow
+                                                              .ellipsis,
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
                                                 ),
                                             ],
                                           ),
-                                        SizedBox(
-                                          height: 12.h,
-                                        ),
-                                        if (club.lat != null &&
-                                            club.long != null)
-                                          GestureDetector(
-                                            onTap: () async {
-                                              final url =
-                                                  'https://www.google.com/maps/search/?api=1&query=${club.lat},${club.long}';
-                                              if (await canLaunch(url)) {
-                                                await launch(url);
-                                              }
-                                            },
-                                            child: Row(
-                                              mainAxisSize: MainAxisSize.min,
-                                              children: [
-                                                Expanded(
-                                                  child: Container(
-                                                    // margin:
-                                                    //     EdgeInsets.symmetric(
-                                                    //         horizontal: 16.w),
-
-                                                    padding:
-                                                        EdgeInsets.symmetric(
-                                                            horizontal: 10.w,
-                                                            vertical: 8.h),
-                                                    decoration: BoxDecoration(
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                              12.r),
-                                                      color: AppColors.primary,
-                                                      border: Border.all(
-                                                        color:
-                                                            AppColors.primary,
-                                                      ),
-                                                    ),
-                                                    alignment:
-                                                        Alignment.centerRight,
-                                                    child: Row(
-                                                      mainAxisSize:
-                                                          MainAxisSize.min,
-                                                      mainAxisAlignment:
-                                                          MainAxisAlignment
-                                                              .center,
-                                                      children: [
-                                                        Icon(
-                                                          Icons.location_on,
-                                                          color:
-                                                              AppColors.white,
-                                                        ),
-                                                        SizedBox(width: 8.w),
-                                                        Text(
-                                                          "مكان الملعب",
-                                                          style: AppTextStyles
-                                                              .font14Regular
-                                                              .copyWith(
-                                                            color:
-                                                                AppColors.white,
-                                                          ),
-                                                        ),
-                                                      ],
-                                                    ),
-                                                  ),
+                                          if (club.lat != null &&
+                                              club.long != null)
+                                            GestureDetector(
+                                              onTap: () async {
+                                                final url =
+                                                    'https://www.google.com/maps/search/?api=1&query=${club.lat},${club.long}';
+                                                if (await canLaunch(url)) {
+                                                  await launch(url);
+                                                }
+                                              },
+                                              child: Container(
+                                                margin: EdgeInsets.only(top: 8),
+                                                padding: EdgeInsets.symmetric(
+                                                    horizontal: 10.w,
+                                                    vertical: 8.h),
+                                                decoration: BoxDecoration(
+                                                  borderRadius:
+                                                      BorderRadius.circular(
+                                                          12.r),
+                                                  color: AppColors.primary,
+                                                  border: Border.all(
+                                                      color: AppColors.primary),
                                                 ),
-                                                Expanded(child: Container()),
-                                              ],
+                                                child: Row(
+                                                  mainAxisSize:
+                                                      MainAxisSize.min,
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment.center,
+                                                  children: [
+                                                    Icon(Icons.location_on,
+                                                        color: AppColors.white),
+                                                    SizedBox(width: 8.w),
+                                                    Text(
+                                                      "مكان الملعب",
+                                                      style: AppTextStyles
+                                                          .font14Regular
+                                                          .copyWith(
+                                                              color: AppColors
+                                                                  .white),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
                                             ),
-                                          )
-                                      ],
-                                    ),
+                                        ],
+                                      ),
+                                    ],
                                   ),
                                 ),
                               ),

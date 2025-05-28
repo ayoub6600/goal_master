@@ -14,7 +14,6 @@ import 'package:goal_master/core/styles/spaces.dart';
 import 'package:goal_master/features/booking/presentation/manager/add_booking_cubit/add_booking_cubit.dart';
 import 'package:goal_master/features/booking/presentation/manager/employee_cubit/employee_cubit.dart';
 import 'package:goal_master/features/booking/presentation/view/widgets/choose_payment.dart';
-import 'package:goal_master/features/booking/presentation/view/widgets/step_title.dart';
 import 'package:goal_master/features/home/data/model/booking_slots_response.dart';
 import 'package:goal_master/features/home/presentation/manager/page_view_new_booking_cubit/page_view_new_booking_cubit.dart';
 import 'package:goal_master/features/home/presentation/view/widgets/employee_selection_new.dart';
@@ -131,83 +130,82 @@ class _AddNewBookingState extends State<AddNewBooking> {
             builder: (context, state) {
               return Column(
                 children: [
-                  Expanded(
-                    child: PageView(
-                      controller: _controller,
-                      physics: NeverScrollableScrollPhysics(),
-                      children: [
-                        EmployeeSelectionNew(controller: _controller),
-                        ChoosePayment(controller: _controller),
-                      ],
-                    ),
+                  Expanded(child: ChoosePayment(controller: _controller)),
+                  // Expanded(
+                  //   child: PageView(
+                  //     controller: _controller,
+                  //     physics: NeverScrollableScrollPhysics(),
+                  //     children: [
+                  //       // EmployeeSelectionNew(controller: _controller),
+                  //       ChoosePayment(controller: _controller),
+                  //     ],
+                  //   ),
+                  // ),
+                  //  if (state.currentPage > 0)
+                  EventCard(
+                    date: widget.booking.date,
+                    startTime: widget.booking.startTime,
+                    endTime: widget.booking.endTime,
+                    club: widget.booking.club,
+                    categoryName: widget.booking.categoryName,
+                    serviceTitle: widget.booking.serviceTitle,
+                    address: widget.booking.address,
                   ),
-                  if (state.currentPage > 0)
-                    EventCard(
-                      date: widget.booking.date,
-                      startTime: widget.booking.startTime,
-                      endTime: widget.booking.endTime,
-                      club: widget.booking.club,
-                      categoryName: widget.booking.categoryName,
-                      serviceTitle: widget.booking.serviceTitle,
-                      address: widget.booking.address,
-                    ),
-                  if (state.currentPage > 0)
-                    Padding(
-                      padding: EdgeInsets.all(16.w),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: ButtonApp(
-                              backGround: AppColors.grey,
-                              text: "رجوع",
-                              onTap: () {
-                                pageViewCubit.previousPage();
-                                _controller.previousPage(
-                                  duration: Duration(milliseconds: 300),
-                                  curve: Curves.ease,
-                                );
-                              },
-                            ),
-                          ),
-                          SizedBox(width: 8.w),
-
-                          //  if (state.currentPage == 2)
-                          BlocConsumer<AddBookingCubit, AddBookingState>(
-                            listener: (context, state) {
-                              if (state is AddBookingSuccess) {
-                                showCustomSuccessToast("تم اضافة الحجز بنجاح");
-                                pushReplacement(RoutesKeys.kHome, context);
-                              } else if (state is AddBookingFailure) {
-                                showCustomFailureToast(state.massage);
-                              }
-                            },
-                            builder: (context, state) {
-                              return Expanded(
-                                child: ButtonApp(
-                                  text: "تأكيد الحجز",
-                                  onTap: () {
-                                    print(
-                                        "employeeId ${pageViewCubit.state.employeeId} serviceId ${widget.booking.serviceId} zoneId ${pageViewCubit.state.zoneId} clubId ${widget.booking.clubId} date ${widget.booking.date} startTime ${widget.booking.startTime} endTime ${widget.booking.endTime}");
-                                    context.read<AddBookingCubit>().addBooking(
-                                          employeeId:
-                                              pageViewCubit.state.employeeId ??
-                                                  0,
-                                          serviceId: widget.booking.serviceId,
-                                          zoneId:
-                                              pageViewCubit.state.zoneId ?? 12,
-                                          clubId: widget.booking.clubId,
-                                          date: widget.booking.date,
-                                          startTime: widget.booking.startTime,
-                                          endTime: widget.booking.endTime,
-                                        );
-                                  },
-                                ),
+                  //  if (state.currentPage > 0)
+                  Padding(
+                    padding: EdgeInsets.all(16.w),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: ButtonApp(
+                            backGround: AppColors.grey,
+                            text: "رجوع",
+                            onTap: () {
+                              pageViewCubit.previousPage();
+                              _controller.previousPage(
+                                duration: Duration(milliseconds: 300),
+                                curve: Curves.ease,
                               );
                             },
                           ),
-                        ],
-                      ),
+                        ),
+                        SizedBox(width: 8.w),
+
+                        //  if (state.currentPage == 2)
+                        BlocConsumer<AddBookingCubit, AddBookingState>(
+                          listener: (context, state) {
+                            if (state is AddBookingSuccess) {
+                              showCustomSuccessToast("تم اضافة الحجز بنجاح");
+                              pushReplacement(RoutesKeys.kHome, context);
+                            } else if (state is AddBookingFailure) {
+                              showCustomFailureToast(state.massage);
+                            }
+                          },
+                          builder: (context, state) {
+                            return Expanded(
+                              child: ButtonApp(
+                                text: "تأكيد الحجز",
+                                onTap: () {
+                                  print(
+                                      "employeeId ${pageViewCubit.state.employeeId} serviceId ${widget.booking.serviceId} zoneId ${pageViewCubit.state.zoneId} clubId ${widget.booking.clubId} date ${widget.booking.date} startTime ${widget.booking.startTime} endTime ${widget.booking.endTime}");
+                                  context.read<AddBookingCubit>().addBooking(
+                                        employeeId: 1,
+                                        serviceId: widget.booking.serviceId,
+                                        zoneId:
+                                            pageViewCubit.state.zoneId ?? 12,
+                                        clubId: widget.booking.clubId,
+                                        date: widget.booking.date,
+                                        startTime: widget.booking.startTime,
+                                        endTime: widget.booking.endTime,
+                                      );
+                                },
+                              ),
+                            );
+                          },
+                        ),
+                      ],
                     ),
+                  ),
                 ],
               );
             },

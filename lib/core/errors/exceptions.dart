@@ -36,16 +36,22 @@ class ServerFailure extends Failure {
         statusCode == 403 ||
         statusCode == 405 ||
         statusCode == 422) {
-      return ServerFailure(errMessage: response['message']);
+      if (response is Map<String, dynamic> && response.containsKey('errors')) {
+        final errors = response['errors'] as Map<String, dynamic>;
+        final messages = errors.values
+            .expand((e) => e as List)
+            .join('\n'); // دمج كل الرسائل مع فواصل أسطر
+        return ServerFailure(errMessage: messages);
+      }
+      return ServerFailure(errMessage: response['message'] ?? 'خطأ غير متوقع');
     } else if (statusCode == 404) {
       return ServerFailure(
-          errMessage: 'Your request not found, Please try again!');
+          errMessage: 'لم يتم العثور على الطلب، يرجى المحاولة مرة أخرى!');
     } else if (statusCode == 500) {
       return ServerFailure(
-          errMessage: 'Internal Server error, Please try later!');
+          errMessage: 'خطأ في الخادم الداخلي، يرجى المحاولة لاحقًا!');
     } else {
-      return ServerFailure(
-          errMessage: 'Opps there was an error, Please try again!');
+      return ServerFailure(errMessage: 'حدث خطأ، يرجى المحاولة مرة أخرى!');
     }
   }
 }

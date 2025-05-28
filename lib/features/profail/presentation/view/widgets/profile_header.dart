@@ -82,6 +82,8 @@ class ProfileHeader extends StatelessWidget {
             ),
           ),
           Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text(
                 "رصيد المحفظة",
@@ -93,6 +95,7 @@ class ProfileHeader extends StatelessWidget {
                   push(RoutesKeys.kCard, context);
                 },
                 child: Container(
+                  alignment: Alignment.center,
                   padding: EdgeInsets.all(18.w),
                   decoration: BoxDecoration(
                       shape: BoxShape.circle, color: Colors.white),
@@ -105,9 +108,17 @@ class ProfileHeader extends StatelessWidget {
                         );
                       } else if (state is BalanceLoaded) {
                         return Center(
-                          child: Text(
-                            state.balance.toString() + "\nدينار",
-                            style: AppTextStyles.font16SemiBold,
+                          child: Column(
+                            children: [
+                              Text(
+                                state.balance.toString(),
+                                style: AppTextStyles.font16SemiBold,
+                              ),
+                              Text(
+                                "دينار",
+                                style: AppTextStyles.font16SemiBold,
+                              ),
+                            ],
                           ),
                         );
                       } else if (state is BalanceError) {

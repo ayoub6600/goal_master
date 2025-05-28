@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:goal_master/core/components/custom_failure_toast.dart';
 import 'package:goal_master/core/components/page_wrapper.dart';
 import 'package:goal_master/core/styles/app_text_styles.dart';
 import 'package:goal_master/core/styles/assets.dart';
@@ -35,12 +36,30 @@ class ContactUsBody extends StatelessWidget {
               title: "+218916771600",
               icon: Assets.imagesPngImageCallCalling,
               onTap: () async {
-                final Uri phoneUri = Uri(scheme: 'tel', path: '+218916776600');
-                if (await canLaunchUrl(phoneUri)) {
-                  await launchUrl(phoneUri);
-                } else {
-                  // مثلاً تعرض Toast أو رسالة
-                  print('لا يمكن إجراء الاتصال');
+                try {
+                  // تحضير رابط الاتصال مع التحقق من الصيغة
+                  const String phoneNumber = '+218916776600';
+                  final Uri phoneUri = Uri(
+                    scheme: 'tel',
+                    path: phoneNumber,
+                  );
+
+                  // التحقق من إمكانية فتح الرابط وإجراء المكالمة
+                  final bool canLaunch = await canLaunchUrl(phoneUri);
+
+                  if (canLaunch) {
+                    await launchUrl(phoneUri);
+                  } else {
+                    // في حالة عدم القدرة على إجراء المكالمة
+                    showCustomFailureToast('تعذر فتح تطبيق الهاتف');
+                    // أو استخدام: throw Exception('لا يمكن إجراء الاتصال');
+                  }
+                } on FormatException catch (e) {
+                  showCustomFailureToast('رقم الهاتف غير صالح');
+                  debugPrint('Format Error: ${e.toString()}');
+                } catch (e) {
+                  showCustomFailureToast('حدث خطأ غير متوقع');
+                  debugPrint('Error: ${e.toString()}');
                 }
               },
               child: SizedBox(),

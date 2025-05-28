@@ -5,10 +5,10 @@ class InputValidator {
     String? fieldName,
   }) {
     if (name == null || name.trim().isEmpty) {
-      return '${fieldName ?? 'Name'} cannot be empty';
+      return '${fieldName ?? 'الاسم'} لا يمكن أن يكون فارغًا';
     }
     if (name.trim().length < minLength) {
-      return '${fieldName ?? 'Name'} must be at least $minLength characters long';
+      return '${fieldName ?? 'الاسم'} يجب أن يكون على الأقل $minLength حروفًا';
     }
     return null;
   }
@@ -19,7 +19,7 @@ class InputValidator {
     }
     const emailRegex = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$';
     if (!RegExp(emailRegex).hasMatch(email.trim())) {
-      return 'Enter a valid email address';
+      return 'أدخل عنوان بريد إلكتروني صالحًا';
     }
     return null;
   }
@@ -30,14 +30,14 @@ class InputValidator {
     int maxLength = 15,
   }) {
     if (phone == null || phone.trim().isEmpty) {
-      return 'Phone number cannot be empty';
+      return 'رقم الهاتف لا يمكن أن يكون فارغًا';
     }
     final cleanedPhone = phone.replaceAll(RegExp(r'[^0-9+]'), '');
     if (cleanedPhone.length < minLength || cleanedPhone.length > maxLength) {
       return 'Phone number must be between $minLength and $maxLength digits';
     }
     if (!RegExp(r'^\+?[0-9]+').hasMatch(cleanedPhone)) {
-      return 'Enter a valid phone number';
+      return 'أدخل رقم هاتف صالحًا';
     }
     return null;
   }
