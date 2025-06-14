@@ -17,7 +17,7 @@ import 'package:goal_master/features/auth/presentation/manager/delete_account/de
 import 'package:goal_master/features/auth/presentation/manager/delete_account/delete_account_state.dart';
 import 'package:goal_master/features/more/presentation/view/widgets/information_to_app_view.dart';
 import 'package:goal_master/features/more/presentation/view/widgets/term_and_condition_view.dart';
-import 'package:goal_master/features/profail/presentation/view/widgets/profile_item.dart';
+import 'package:goal_master/features/profile/presentation/view/widgets/profile_item.dart';
 import 'package:share_plus/share_plus.dart';
 
 class MoreView extends StatelessWidget {

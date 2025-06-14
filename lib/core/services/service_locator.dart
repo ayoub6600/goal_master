@@ -4,7 +4,7 @@ import 'package:goal_master/features/auth/data/repo/auth_repo_imp.dart';
 import 'package:goal_master/features/balance/data/repo/balance_repo_imp.dart';
 import 'package:goal_master/features/card/data/repo/card_repo_imp.dart';
 import 'package:goal_master/features/home/data/repo/analysis_repo_imp.dart';
-import 'package:goal_master/features/profail/data/repo/profile_repo_imp.dart';
+import 'package:goal_master/features/profile/data/repo/profile_repo_imp.dart';
 import '../../features/booking/data/repo/booking_repo_imp.dart';
 import '../databases/api/dio_consumer.dart';
 

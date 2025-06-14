@@ -21,7 +21,7 @@ import 'package:goal_master/features/home/presentation/view/home_view.dart';
 import 'package:goal_master/features/layout/presentation/manager/layout_cubit.dart';
 import 'package:goal_master/features/layout/presentation/manager/layout_state.dart';
 import 'package:goal_master/features/layout/presentation/view/widget/home_bottom_nav_bar.dart';
-import 'package:goal_master/features/profail/presentation/view/profile_view.dart';
+import 'package:goal_master/features/profile/presentation/view/profile_view.dart';
 
 class HomeLayoutView extends StatefulWidget {
   const HomeLayoutView({super.key});

@@ -13,8 +13,8 @@ import 'package:goal_master/features/balance/presentation/cubit/balance_cubit.da
 import 'package:goal_master/features/home/data/repo/analysis_repo_imp.dart';
 import 'package:goal_master/features/home/presentation/manager/analysis_cubit/analysis_cubit.dart';
 import 'package:goal_master/features/layout/presentation/manager/layout_cubit.dart';
-import 'package:goal_master/features/profail/data/repo/profile_repo_imp.dart';
-import 'package:goal_master/features/profail/presentation/manager/profile_cubit/profile_cubit.dart';
+import 'package:goal_master/features/profile/data/repo/profile_repo_imp.dart';
+import 'package:goal_master/features/profile/presentation/manager/profile_cubit/profile_cubit.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:oktoast/oktoast.dart';

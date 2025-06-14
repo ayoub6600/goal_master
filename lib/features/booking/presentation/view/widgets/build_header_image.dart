@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:goal_master/core/styles/assets.dart';
-import 'package:goal_master/features/onbording/presentation/view/onboarding_view.dart';
+import 'package:goal_master/features/onboarding/presentation/view/onboarding_view.dart';
 
 class BuildHeaderImage extends StatelessWidget {
   const BuildHeaderImage({super.key});

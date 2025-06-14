@@ -1,6 +1,4 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:goal_master/core/components/build_page_with_default_transition.dart';
 import 'package:goal_master/core/routing/routes_keys.dart';
@@ -31,11 +29,9 @@ import 'package:goal_master/features/booking/presentation/manager/zone_cubit/zon
 import 'package:goal_master/features/booking/presentation/view/booking_details.dart';
 import 'package:goal_master/features/booking/presentation/view/booking_items_details.dart.dart';
 import 'package:goal_master/features/booking/presentation/view/booking_view.dart';
-import 'package:goal_master/features/card/data/repo/card_repo.dart';
 import 'package:goal_master/features/card/data/repo/card_repo_imp.dart';
 import 'package:goal_master/features/card/presentation/manager/cubit/card_cubit.dart';
 import 'package:goal_master/features/card/presentation/view/card_view.dart';
-import 'package:goal_master/features/home/data/model/analysis_model.dart';
 import 'package:goal_master/features/home/data/model/booking_slots_response.dart';
 import 'package:goal_master/features/home/data/repo/analysis_repo_imp.dart';
 import 'package:goal_master/features/home/presentation/manager/filter_cubit/filter_cubit.dart';
@@ -45,16 +41,16 @@ import 'package:goal_master/features/home/presentation/view/widgets/booking_item
 import 'package:goal_master/features/home/presentation/view/widgets/show_all_resulat_filtter.dart';
 import 'package:goal_master/features/layout/presentation/view/home_layout_view.dart';
 import 'package:goal_master/features/notification/presentation/view/notifaction_view.dart';
-import 'package:goal_master/features/onbording/presentation/manager/onboarding_cubit.dart';
-import 'package:goal_master/features/onbording/presentation/view/onboarding_view.dart';
-import 'package:goal_master/features/profail/data/repo/profile_repo_imp.dart';
-import 'package:goal_master/features/profail/presentation/manager/reset_password_cubit/reset_password_cubit.dart';
-import 'package:goal_master/features/profail/presentation/manager/update_profile_cubit/update_profile_cubit.dart';
-import 'package:goal_master/features/profail/presentation/view/change_password_view.dart';
-import 'package:goal_master/features/profail/presentation/view/contact_view.dart';
-import 'package:goal_master/features/profail/presentation/view/profile_view.dart';
-import 'package:goal_master/features/profail/presentation/view/update_profile_view.dart';
-import 'package:goal_master/features/splach/presentation/view/splash_view.dart';
+import 'package:goal_master/features/onboarding/presentation/manager/onboarding_cubit.dart';
+import 'package:goal_master/features/onboarding/presentation/view/onboarding_view.dart';
+import 'package:goal_master/features/profile/data/repo/profile_repo_imp.dart';
+import 'package:goal_master/features/profile/presentation/manager/reset_password_cubit/reset_password_cubit.dart';
+import 'package:goal_master/features/profile/presentation/manager/update_profile_cubit/update_profile_cubit.dart';
+import 'package:goal_master/features/profile/presentation/view/change_password_view.dart';
+import 'package:goal_master/features/profile/presentation/view/contact_view.dart';
+import 'package:goal_master/features/profile/presentation/view/profile_view.dart';
+import 'package:goal_master/features/profile/presentation/view/update_profile_view.dart';
+import 'package:goal_master/features/splash/presentation/view/splash_view.dart';
 
 import 'app_router.dart';
 

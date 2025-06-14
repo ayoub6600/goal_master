@@ -23,10 +23,10 @@ class ServerFailure extends Failure {
         return ServerFailure(errMessage: 'Connection error, Please try again!');
       case DioExceptionType.unknown:
         return ServerFailure(errMessage: 'Unexpected error, Please try again!');
-      default:
-        return ServerFailure(
-            errMessage: dioException.response?.data ??
-                'Unexpected error, Please try again!');
+      // default:
+      //   return ServerFailure(
+      //       errMessage: dioException.response?.data ??
+      //           'Unexpected error, Please try again!');
     }
   }
 

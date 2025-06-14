@@ -1,4 +1,3 @@
-import 'package:chucker_flutter/chucker_flutter.dart';
 import 'package:dio/dio.dart';
 import 'package:goal_master/core/components/keys_values.dart';
 import 'package:goal_master/core/components/preference_utility.dart';
@@ -15,15 +14,13 @@ class DioConsumer extends ApiConsumer {
     dio.options.headers['Accept'] = 'application/json';
     dio.options.headers['Content-Type'] = 'application/json';
 
-    // تم تحميل التوكن عند تهيئة dio لأول مرة
     _setAuthorizationHeader();
 
     dio.options.headers['accept-language'] = 'ar';
     dio.options.followRedirects = false;
 
     dio.interceptors.addAll([
-      TokenInterceptor(dio), // إرفاق الـ Interceptor للتعامل مع التوكن
-      // ChuckerDioInterceptor(),
+      TokenInterceptor(dio),
       PrettyDioLogger(
         requestBody: true,
         responseBody: true,
@@ -34,14 +31,12 @@ class DioConsumer extends ApiConsumer {
     ]);
   }
 
-  // إضافة دالة لتحديث التوكن في الهيدر
   void _setAuthorizationHeader() {
     String token = SharedPreferenceUtil.getString(PrefKey.fcmToken);
     print("Authorization token: $token");
     dio.options.headers['Authorization'] = 'Bearer $token';
   }
 
-  //!POST
   @override
   Future post(
     String path, {
@@ -49,7 +44,7 @@ class DioConsumer extends ApiConsumer {
     Map<String, dynamic>? queryParameters,
     bool isFormData = false,
   }) async {
-    _setAuthorizationHeader(); // تأكد من تحديث التوكن في كل طلب
+    _setAuthorizationHeader();
     var response = await dio.post(
       path,
       data: isFormData ? FormData.fromMap(data) : data,
@@ -58,14 +53,13 @@ class DioConsumer extends ApiConsumer {
     return response.data;
   }
 
-  //!GET
   @override
   Future get(
     String path, {
     Object? data,
     Map<String, dynamic>? queryParameters,
   }) async {
-    _setAuthorizationHeader(); // تأكد من تحديث التوكن في كل طلب
+    _setAuthorizationHeader();
     var res = await dio.get(
       path,
       data: data,
