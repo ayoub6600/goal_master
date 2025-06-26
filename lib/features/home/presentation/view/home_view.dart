@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -25,13 +26,27 @@ class HomeView extends StatefulWidget {
 
 class _HomeViewState extends State<HomeView> {
   late LayoutCubit layoutCubit;
+  List<String> _emojis = ['⚽', '🏀', '🎾', '🏐'];
+  int _emojiIndex = 0;
+  late Timer _emojiTimer;
+  String get _currentEmoji => _emojis[_emojiIndex];
 
   @override
   void initState() {
     super.initState();
     layoutCubit = context.read<LayoutCubit>();
+    _emojiTimer = Timer.periodic(Duration(seconds: 3), (timer) {
+      setState(() {
+        _emojiIndex = (_emojiIndex + 1) % _emojis.length;
+      });
+    });
   }
 
+  @override
+  void dispose() {
+    _emojiTimer.cancel();
+    super.dispose();
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -99,11 +114,58 @@ class _HomeViewState extends State<HomeView> {
 
                   HeightSpace(20.h),
 
-                  ButtonApp(
-                      text: " احجز الان",
-                      onTap: () {
-                        push(RoutesKeys.kBookingDetails, context);
-                      }),
+                  TweenAnimationBuilder<double>(
+                    tween: Tween(begin: 1.0, end: 1.1),
+                    duration: Duration(milliseconds: 800),
+                    curve: Curves.easeInOut,
+                    builder: (context, scale, child) {
+                      return Container(
+                        width: MediaQuery.of(context).size.width * 0.3,
+                        decoration: BoxDecoration(
+                          boxShadow: [
+                            BoxShadow(
+                              color: const Color.fromARGB(255, 70, 189, 118).withOpacity(0.4),
+                              spreadRadius: 1,
+                              blurRadius: 12,
+                              offset: Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        child: Stack(
+                          alignment: Alignment.center,
+                          children: [
+                            AnimatedContainer(
+                              duration: Duration(seconds: 1),
+                              curve: Curves.easeInOut,
+                              width: MediaQuery.of(context).size.width * 0.3 + 20,
+                              height: 60,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.rectangle,
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: const Color.fromARGB(255, 92, 174, 132).withOpacity(0.3),
+                                    blurRadius: 30,
+                                    spreadRadius: 1,
+                                  )
+                                ],
+                              ),
+                            ),
+                            ButtonApp(
+                              text: "احجز الآن $_currentEmoji",
+                              onTap: () {
+                                push(RoutesKeys.kBookingDetails, context);
+                              },
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                    onEnd: () {
+                      setState(() {
+                        _emojiIndex = (_emojiIndex + 1) % _emojis.length;
+                      });
+                    },
+                  ),
 
                   HeightSpace(24.h),
                   SizedBox(height: 200.h, child: ServicesInfoView()),
