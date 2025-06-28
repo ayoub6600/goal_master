@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:goal_master/core/components/custom_error_widget.dart';
 import 'package:goal_master/core/components/keys_values.dart';
 import 'package:goal_master/core/components/preference_utility.dart';
 import 'package:goal_master/core/routing/route_utils.dart';
@@ -28,13 +29,16 @@ class BuildHeaderHome extends StatelessWidget {
               Navigator.push(
                 context,
                 PageRouteBuilder(
-                  pageBuilder: (context, animation, secondaryAnimation) => MoreView(),
-                  transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                  pageBuilder: (context, animation, secondaryAnimation) =>
+                      MoreView(),
+                  transitionsBuilder:
+                      (context, animation, secondaryAnimation, child) {
                     const begin = Offset(1.0, 0.0); // من اليمين
                     const end = Offset.zero;
                     const curve = Curves.easeInOut;
 
-                    final tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+                    final tween = Tween(begin: begin, end: end)
+                        .chain(CurveTween(curve: curve));
                     final offsetAnimation = animation.drive(tween);
 
                     return SlideTransition(
@@ -51,19 +55,22 @@ class BuildHeaderHome extends StatelessWidget {
             children: [
               Text(
                 'مرحبًا بك يا',
-                style: AppTextStyles.font12Medium.copyWith(color: AppColors.fontColor),
+                style: AppTextStyles.font12Medium
+                    .copyWith(color: AppColors.fontColor),
               ),
               SizedBox(height: 2.h),
               Row(
                 children: [
                   Text(
                     '${SharedPreferenceUtil.getString(PrefKey.fullName)}',
-                    style: AppTextStyles.font16Bold.copyWith(color: AppColors.primary),
+                    style: AppTextStyles.font16Bold
+                        .copyWith(color: AppColors.primary),
                   ),
                   SizedBox(width: 4.w),
                   Text(
                     '👋',
-                    style: AppTextStyles.font20Bold.copyWith(color: AppColors.primary),
+                    style: AppTextStyles.font20Bold
+                        .copyWith(color: AppColors.primary),
                   ),
                 ],
               ),
@@ -92,10 +99,12 @@ class BuildHeaderHome extends StatelessWidget {
                     clipBehavior: Clip.none,
                     children: [
                       Container(
-                        padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
+                        padding: EdgeInsets.symmetric(
+                            horizontal: 12.w, vertical: 6.h),
                         decoration: BoxDecoration(
                           color: Colors.white,
-                          border: Border.all(color: AppColors.primary, width: 1.5),
+                          border:
+                              Border.all(color: AppColors.primary, width: 1.5),
                           borderRadius: BorderRadius.circular(30),
                         ),
                         child: Row(
@@ -103,12 +112,14 @@ class BuildHeaderHome extends StatelessWidget {
                           children: [
                             Text(
                               state.balance.toString(),
-                              style: AppTextStyles.font16SemiBold.copyWith(color: AppColors.primary),
+                              style: AppTextStyles.font16SemiBold
+                                  .copyWith(color: AppColors.primary),
                             ),
                             SizedBox(width: 4.w),
                             Text(
                               "دينار",
-                              style: AppTextStyles.font12SemiBold.copyWith(color: AppColors.primary),
+                              style: AppTextStyles.font12SemiBold
+                                  .copyWith(color: AppColors.primary),
                             ),
                           ],
                         ),
@@ -132,11 +143,12 @@ class BuildHeaderHome extends StatelessWidget {
                     ],
                   );
                 } else if (state is BalanceError) {
-                  return Center(
-                    child: Text(
-                      "Error: ${state.errMessage}",
-                      style: TextStyle(color: Colors.red),
-                    ),
+                  return SizedBox(
+                    width: 100.w,
+                    child: Text(" ${state.errMessage}",
+                        maxLines: 2,
+                        style: AppTextStyles.font10Regular
+                            .copyWith(color: Colors.black)),
                   );
                 }
                 return Center(child: Text("No Data"));

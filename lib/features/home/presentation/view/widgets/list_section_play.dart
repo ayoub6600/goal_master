@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:goal_master/core/styles/spaces.dart';
+import 'package:goal_master/core/components/custom_error_widget.dart';
 import 'package:goal_master/features/home/data/model/analysis_model.dart';
 import 'package:goal_master/features/home/presentation/manager/analysis_cubit/analysis_cubit.dart';
 import 'package:goal_master/features/home/presentation/view/widgets/section_play.dart';
@@ -41,8 +40,8 @@ class ListSectionPlay extends StatelessWidget {
             ),
           );
         } else if (state is AnalysisError) {
-          return Center(
-            child: Text(state.message),
+          return CustomErrorWidget(
+            message: state.message,
           );
         } else if (state is AnalysisLoaded) {
           return SectionPlay(

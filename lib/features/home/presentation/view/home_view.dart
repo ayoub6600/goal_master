@@ -3,13 +3,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:goal_master/core/components/button_app.dart';
+import 'package:goal_master/core/components/custom_error_widget.dart';
 import 'package:goal_master/core/routing/route_utils.dart';
 import 'package:goal_master/core/routing/routes_keys.dart';
 import 'package:goal_master/core/styles/app_colors.dart';
 import 'package:goal_master/core/styles/app_text_styles.dart';
 import 'package:goal_master/core/styles/assets.dart';
 import 'package:goal_master/core/styles/spaces.dart';
-import 'package:goal_master/features/balance/presentation/cubit/balance_cubit.dart';
 import 'package:goal_master/features/home/presentation/manager/get_services_info_cubit/get_services_info_cubit.dart';
 import 'package:goal_master/features/home/presentation/view/widgets/build_header_home.dart';
 import 'package:goal_master/features/home/presentation/view/widgets/list_section_play.dart';
@@ -47,6 +47,7 @@ class _HomeViewState extends State<HomeView> {
     _emojiTimer.cancel();
     super.dispose();
   }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -124,7 +125,8 @@ class _HomeViewState extends State<HomeView> {
                         decoration: BoxDecoration(
                           boxShadow: [
                             BoxShadow(
-                              color: const Color.fromARGB(255, 70, 189, 118).withOpacity(0.4),
+                              color: const Color.fromARGB(255, 70, 189, 118)
+                                  .withOpacity(0.4),
                               spreadRadius: 1,
                               blurRadius: 12,
                               offset: Offset(0, 4),
@@ -137,13 +139,16 @@ class _HomeViewState extends State<HomeView> {
                             AnimatedContainer(
                               duration: Duration(seconds: 1),
                               curve: Curves.easeInOut,
-                              width: MediaQuery.of(context).size.width * 0.3 + 20,
+                              width:
+                                  MediaQuery.of(context).size.width * 0.3 + 20,
                               height: 60,
                               decoration: BoxDecoration(
                                 shape: BoxShape.rectangle,
                                 boxShadow: [
                                   BoxShadow(
-                                    color: const Color.fromARGB(255, 92, 174, 132).withOpacity(0.3),
+                                    color:
+                                        const Color.fromARGB(255, 92, 174, 132)
+                                            .withOpacity(0.3),
                                     blurRadius: 30,
                                     spreadRadius: 1,
                                   )
@@ -195,7 +200,9 @@ class ServicesInfoView extends StatelessWidget {
         if (state is GetServicesInfoLoading) {
           return const Center(child: CircularProgressIndicator());
         } else if (state is GetServicesInfoError) {
-          return Center(child: Text('خطأ: ${state.errMessage}'));
+          return CustomErrorWidget(
+            message: state.errMessage,
+          );
         } else if (state is GetServicesInfoSuccess) {
           final services = state.services;
           if (services.isEmpty) {
