@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -21,9 +23,28 @@ class BannerCarouselScreen extends StatefulWidget {
 }
 
 class _BannerCarouselScreenState extends State<BannerCarouselScreen> {
+  late final ValueNotifier<bool> _toggleTextNotifier;
+  late final Timer _toggleTimer;
+
   final CarouselSliderController _carouselController =
       CarouselSliderController();
   int _currentIndex = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _toggleTextNotifier = ValueNotifier(true);
+    _toggleTimer = Timer.periodic(Duration(milliseconds: 1200), (_) {
+      _toggleTextNotifier.value = !_toggleTextNotifier.value;
+    });
+  }
+
+  @override
+  void dispose() {
+    _toggleTimer.cancel();
+    _toggleTextNotifier.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -181,23 +202,41 @@ class _BannerCarouselScreenState extends State<BannerCarouselScreen> {
                                 : GestureDetector(
                                     onTap: () => _handleSlideTap(slide),
                                     child: Container(
-                                      width: 100.w,
-                                      alignment: Alignment.center,
-                                      padding: EdgeInsets.symmetric(
-                                          vertical: 8.h, horizontal: 16.w),
+                                      padding: EdgeInsets.symmetric(vertical: 10.h, horizontal: 20.w),
                                       decoration: BoxDecoration(
-                                        color: Color(0xff418946),
-                                        borderRadius:
-                                            BorderRadius.circular(12.r),
-                                      ),
-                                      child: Center(
-                                        child: Text(
-                                          "اذهب",
-                                          style:
-                                              AppTextStyles.font16Bold.copyWith(
-                                            color: Colors.white,
-                                          ),
+                                        gradient: LinearGradient(
+                                          colors: [Color.fromARGB(255, 77, 129, 53), Color.fromARGB(255, 89, 126, 44)],
+                                          begin: Alignment.topLeft,
+                                          end: Alignment.bottomRight,
                                         ),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: Colors.black.withOpacity(0.2),
+                                            blurRadius: 6,
+                                            offset: Offset(0, 3),
+                                          ),
+                                        ],
+                                        borderRadius: BorderRadius.circular(30.r),
+                                      ),
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        children: [
+                                          Icon(Icons.open_in_new, color: Colors.white, size: 18.sp),
+                                          SizedBox(width: 6.w),
+                                          ValueListenableBuilder<bool>(
+                                            valueListenable: _toggleTextNotifier,
+                                            builder: (_, isGo, __) {
+                                              return Text(
+                                                isGo ? "اذهب" : "حمل الآن",
+                                                style: AppTextStyles.font16Bold.copyWith(
+                                                  color: Colors.white,
+                                                  fontSize: 16.sp,
+                                                ),
+                                              );
+                                            },
+                                          ),
+                                        ],
                                       ),
                                     ),
                                   ),

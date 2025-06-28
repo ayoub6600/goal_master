@@ -156,45 +156,46 @@ class ClubSelection extends StatelessWidget {
                                           ),
                                           if (club.lat != null &&
                                               club.long != null)
-                                            GestureDetector(
-                                              onTap: () async {
-                                                final url =
-                                                    'https://www.google.com/maps/search/?api=1&query=${club.lat},${club.long}';
-                                                if (await canLaunch(url)) {
-                                                  await launch(url);
-                                                }
-                                              },
-                                              child: Container(
-                                                margin: EdgeInsets.only(top: 8),
-                                                padding: EdgeInsets.symmetric(
-                                                    horizontal: 10.w,
-                                                    vertical: 8.h),
-                                                decoration: BoxDecoration(
-                                                  borderRadius:
-                                                      BorderRadius.circular(
-                                                          12.r),
-                                                  color: AppColors.primary,
-                                                  border: Border.all(
-                                                      color: AppColors.primary),
-                                                ),
-                                                child: Row(
-                                                  mainAxisSize:
-                                                      MainAxisSize.min,
-                                                  mainAxisAlignment:
-                                                      MainAxisAlignment.center,
-                                                  children: [
-                                                    Icon(Icons.location_on,
-                                                        color: AppColors.white),
-                                                    SizedBox(width: 8.w),
-                                                    Text(
-                                                      "مكان الملعب",
-                                                      style: AppTextStyles
-                                                          .font14Regular
-                                                          .copyWith(
-                                                              color: AppColors
-                                                                  .white),
-                                                    ),
-                                                  ],
+                                            Align(
+                                              alignment: Alignment.centerLeft,
+                                              child: GestureDetector(
+                                                onTap: () async {
+                                                  final url =
+                                                      'https://www.google.com/maps/search/?api=1&query=${club.lat},${club.long}';
+                                                  if (await canLaunch(url)) {
+                                                    await launch(url);
+                                                  }
+                                                },
+                                                child: Container(
+                                                  margin: EdgeInsets.only(top: 8),
+                                                  padding: EdgeInsets.symmetric(
+                                                      horizontal: 10.w,
+                                                      vertical: 8.h),
+                                                  decoration: BoxDecoration(
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            12.r),
+                                                    color: AppColors.primary,
+                                                    border: Border.all(
+                                                        color: AppColors.primary),
+                                                  ),
+                                                  child: Row(
+                                                    mainAxisSize:
+                                                        MainAxisSize.min,
+                                                    children: [
+                                                      Icon(Icons.location_on,
+                                                          color: AppColors.white),
+                                                      SizedBox(width: 8.w),
+                                                      Text(
+                                                        "مكان الملعب",
+                                                        style: AppTextStyles
+                                                            .font14Regular
+                                                            .copyWith(
+                                                                color: AppColors
+                                                                    .white),
+                                                      ),
+                                                    ],
+                                                  ),
                                                 ),
                                               ),
                                             ),

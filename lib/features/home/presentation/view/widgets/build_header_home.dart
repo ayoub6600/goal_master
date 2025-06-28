@@ -25,22 +25,47 @@ class BuildHeaderHome extends StatelessWidget {
         IconButton(
             icon: Icon(Icons.menu, color: AppColors.primary),
             onPressed: () {
-              Navigator.push(context, MaterialPageRoute(builder: (context) {
-                return MoreView();
-              }));
+              Navigator.push(
+                context,
+                PageRouteBuilder(
+                  pageBuilder: (context, animation, secondaryAnimation) => MoreView(),
+                  transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                    const begin = Offset(1.0, 0.0); // من اليمين
+                    const end = Offset.zero;
+                    const curve = Curves.easeInOut;
+
+                    final tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+                    final offsetAnimation = animation.drive(tween);
+
+                    return SlideTransition(
+                      position: offsetAnimation,
+                      child: child,
+                    );
+                  },
+                ),
+              );
             }),
         Expanded(
-          child: Row(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'مرحبًا بك ',
-                style: AppTextStyles.font16Medium
-                    .copyWith(color: AppColors.fontColor),
+                'مرحبًا بك يا',
+                style: AppTextStyles.font12Medium.copyWith(color: AppColors.fontColor),
               ),
-              Text(
-                ', ${SharedPreferenceUtil.getString(PrefKey.fullName)}',
-                style:
-                    AppTextStyles.font16Bold.copyWith(color: AppColors.primary),
+              SizedBox(height: 2.h),
+              Row(
+                children: [
+                  Text(
+                    '${SharedPreferenceUtil.getString(PrefKey.fullName)}',
+                    style: AppTextStyles.font16Bold.copyWith(color: AppColors.primary),
+                  ),
+                  SizedBox(width: 4.w),
+                  Text(
+                    '👋',
+                    style: AppTextStyles.font20Bold.copyWith(color: AppColors.primary),
+                  ),
+                ],
               ),
             ],
           ),
@@ -63,19 +88,48 @@ class BuildHeaderHome extends StatelessWidget {
                     style: AppTextStyles.font16SemiBold,
                   );
                 } else if (state is BalanceLoaded) {
-                  return Center(
-                    child: Row(
-                      children: [
-                        Text(
-                          state.balance.toString(),
-                          style: AppTextStyles.font16SemiBold,
+                  return Stack(
+                    clipBehavior: Clip.none,
+                    children: [
+                      Container(
+                        padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          border: Border.all(color: AppColors.primary, width: 1.5),
+                          borderRadius: BorderRadius.circular(30),
                         ),
-                        Text(
-                          "دينار",
-                          style: AppTextStyles.font12SemiBold,
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              state.balance.toString(),
+                              style: AppTextStyles.font16SemiBold.copyWith(color: AppColors.primary),
+                            ),
+                            SizedBox(width: 4.w),
+                            Text(
+                              "دينار",
+                              style: AppTextStyles.font12SemiBold.copyWith(color: AppColors.primary),
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
+                      ),
+                      Positioned(
+                        top: -20,
+                        left: 8.w,
+                        child: Container(
+                          padding: EdgeInsets.all(4.w),
+                          decoration: BoxDecoration(
+                            color: AppColors.primary,
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(
+                            Icons.account_balance_wallet,
+                            color: Colors.white,
+                            size: 16,
+                          ),
+                        ),
+                      ),
+                    ],
                   );
                 } else if (state is BalanceError) {
                   return Center(
