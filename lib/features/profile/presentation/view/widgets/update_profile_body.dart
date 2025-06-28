@@ -79,14 +79,12 @@ class _UpdateProfileBodyState extends State<UpdateProfileBody> {
             HeightSpace(70.h),
             BlocConsumer<UpdateProfileCubit, UpdateProfileState>(
               listener: (context, state) {
-                print("state: $state");
                 if (state is UpdateProfileSuccess) {
                   showCustomSuccessToast(
                     "تم تحديث الملف الشخصي بنجاح",
                   );
                   pop(context, true);
                 } else if (state is UpdateProfileError) {
-                  print("error: ${state.errMessage}");
                   showCustomFailureToast(
                     state.errMessage,
                   );

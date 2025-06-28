@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:goal_master/core/components/keys_values.dart';
@@ -34,7 +33,6 @@ class ProfileHeader extends StatelessWidget {
           Expanded(
             child: BlocBuilder<ProfileCubit, ProfileState>(
               builder: (context, state) {
-                print("state: $state");
                 if (state is ProfileLoading) {
                   return Column(
                     crossAxisAlignment: CrossAxisAlignment.start,

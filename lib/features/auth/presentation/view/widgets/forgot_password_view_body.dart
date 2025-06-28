@@ -56,7 +56,7 @@ class ForgotPasswordViewBody extends StatelessWidget {
                     extra: {
                       'phone': cubit.emailController.text,
                       'forget':
-                          true, // ✅ تعيين forget إلى true عند نسيان كلمة المرور
+                          true, 
                     },
                   );
                 } else if (state is VerifyEmailError) {

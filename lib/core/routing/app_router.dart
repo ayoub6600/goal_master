@@ -1,4 +1,3 @@
-import 'package:chucker_flutter/chucker_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:goal_master/core/routing/routes_keys.dart';
@@ -26,7 +25,7 @@ extension GoRouterExtension on GoRouter {
 
 abstract class AppRouter {
   static final router = GoRouter(
-    observers: [ChuckerFlutter.navigatorObserver],
+    // observers: [ChuckerFlutter.navigatorObserver],
     navigatorKey: parentKey,
     routes: appRoutes,
     initialLocation: RoutesKeys.kSplashView,
