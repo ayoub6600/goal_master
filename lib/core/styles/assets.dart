@@ -106,6 +106,10 @@ class Assets {
   /// assets/images/png_image/magicpen.png
   static const String imagesPngImageMagicpen = "assets/images/png_image/magicpen.png";
 
+  /// Assets for imagesPngImageNoInternet
+  /// assets/images/png_image/no-internet.gif
+  static const String imagesPngImageNoInternet = "assets/images/png_image/no-internet.gif";
+
   /// Assets for imagesPngImageNotification
   /// assets/images/png_image/notification.png
   static const String imagesPngImageNotification = "assets/images/png_image/notification.png";

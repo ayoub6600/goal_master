@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:goal_master/core/components/build_page_with_default_transition.dart';
 import 'package:goal_master/core/routing/routes_keys.dart';
 import 'package:goal_master/core/services/service_locator.dart';
+import 'package:goal_master/core/view/no_internet_view.dart';
 import 'package:goal_master/features/auth/data/repo/auth_repo_imp.dart';
 import 'package:goal_master/features/auth/presentation/manager/change_password_cubit/change_password_cubit.dart';
 import 'package:goal_master/features/auth/presentation/manager/login_cubit/login_cubit.dart';
@@ -80,6 +81,16 @@ List<RouteBase> appRoutes = [
         create: (context) => OnboardingCubit(),
         child: const OnboardingView(),
       ),
+    ),
+  ),
+  //kNoInternet
+  GoRoute(
+    parentNavigatorKey: parentKey,
+    path: RoutesKeys.kNoInternet,
+    pageBuilder: (context, state) => buildPageWithDefaultTransition<void>(
+      context: context,
+      state: state,
+      child: const NoInternetView(),
     ),
   ),
   //kLogin
