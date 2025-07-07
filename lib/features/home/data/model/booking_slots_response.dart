@@ -38,6 +38,8 @@ class BookingSlot {
   final String address;
   final String latitude;
   final String longitude;
+  final List<int> employees;
+  final List<String> employeesName;
 
   BookingSlot({
     required this.date,
@@ -52,6 +54,8 @@ class BookingSlot {
     required this.address,
     required this.latitude,
     required this.longitude,
+    required this.employees,
+    required this.employeesName,
   });
 
   factory BookingSlot.fromJson(Map<String, dynamic> json) {
@@ -68,6 +72,8 @@ class BookingSlot {
       address: json['address'],
       latitude: json['latitude'],
       longitude: json['longitude'],
+      employees: List<int>.from(json['employees'] ?? []),
+      employeesName: List<String>.from(json['employees_name'] ?? []),
     );
   }
 }

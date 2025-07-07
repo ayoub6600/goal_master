@@ -189,7 +189,8 @@ class _AddNewBookingState extends State<AddNewBooking> {
                                   print(
                                       "employeeId ${pageViewCubit.state.employeeId} serviceId ${widget.booking.serviceId} zoneId ${pageViewCubit.state.zoneId} clubId ${widget.booking.clubId} date ${widget.booking.date} startTime ${widget.booking.startTime} endTime ${widget.booking.endTime}");
                                   context.read<AddBookingCubit>().addBooking(
-                                        employeeId: 1,
+                                        employeeId:
+                                            widget.booking.employees.first,
                                         serviceId: widget.booking.serviceId,
                                         zoneId:
                                             pageViewCubit.state.zoneId ?? 12,
