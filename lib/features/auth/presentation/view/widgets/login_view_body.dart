@@ -133,6 +133,14 @@ class LoginViewBody extends StatelessWidget {
                     }
                   },
                   builder: (context, state) {
+                    if (state is LoginLoading) {
+                      return const Center(
+                        child: CircularProgressIndicator(
+                          color:
+                              Colors.white, // أو AppColors.primary حسب التصميم
+                        ),
+                      );
+                    }
                     return ButtonApp(
                       text: "تسجيل الدخول",
                       backGround: AppColors.primary,

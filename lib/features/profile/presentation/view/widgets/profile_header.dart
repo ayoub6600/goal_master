@@ -71,7 +71,9 @@ class ProfileHeader extends StatelessWidget {
                   );
                 } else if (state is ProfileError) {
                   return Text(
-                    "Error: ${state.error}",
+                    " ${state.error}",
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                     style: TextStyle(color: Colors.red),
                   );
                 }
@@ -121,9 +123,14 @@ class ProfileHeader extends StatelessWidget {
                         );
                       } else if (state is BalanceError) {
                         return Center(
-                          child: Text(
-                            "Error: ${state.errMessage}",
-                            style: TextStyle(color: Colors.red),
+                          child: SizedBox(
+                            width: 50.w,
+                            child: Text(
+                              " ${state.errMessage}",
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(color: Colors.red),
+                            ),
                           ),
                         );
                       }

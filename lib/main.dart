@@ -16,6 +16,7 @@ import 'package:goal_master/features/layout/presentation/manager/layout_cubit.da
 import 'package:goal_master/features/profile/data/repo/profile_repo_imp.dart';
 import 'package:goal_master/features/profile/presentation/manager/profile_cubit/profile_cubit.dart';
 import 'package:google_fonts/google_fonts.dart';
+// ignore: depend_on_referenced_packages
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:oktoast/oktoast.dart';
 
@@ -82,7 +83,7 @@ class GoalMaster extends StatelessWidget {
               debugShowCheckedModeBanner: false,
               locale: const Locale('ar'),
               supportedLocales: const [
-                Locale('ar'), // دعم اللغة العربية
+                Locale('ar'),
               ],
               localizationsDelegates: const [
                 GlobalMaterialLocalizations.delegate,
