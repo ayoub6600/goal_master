@@ -19,21 +19,21 @@ class LayoutCubit extends Cubit<LayoutState> {
     emit(state.copyWith(isUpdate: value));
   }
 
-  /// ✅ تحميل الموقع الحالي
-  Future<void> initUserLocation() async {
-    emit(state.copyWith(
-        currentLocationStatus: CurrentLocationStatus.submitting));
+  // /// ✅ تحميل الموقع الحالي
+  // Future<void> initUserLocation() async {
+  //   emit(state.copyWith(
+  //       currentLocationStatus: CurrentLocationStatus.submitting));
 
-    try {
-      if (!await _checkLocationService()) return;
-      if (!await _checkLocationPermission()) return;
+  //   try {
+  //     if (!await _checkLocationService()) return;
+  //     if (!await _checkLocationPermission()) return;
 
-      await getMyCurrentLocation();
-    } catch (e) {
-      print("❌ خطأ أثناء تحميل الموقع: $e");
-      emit(state.copyWith(currentLocationStatus: CurrentLocationStatus.error));
-    }
-  }
+  //     await getMyCurrentLocation();
+  //   } catch (e) {
+  //     print("❌ خطأ أثناء تحميل الموقع: $e");
+  //     emit(state.copyWith(currentLocationStatus: CurrentLocationStatus.error));
+  //   }
+  // }
 
   /// ✅ التأكد من تفعيل خدمات الموقع
   Future<bool> _checkLocationService() async {

@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:carousel_slider/carousel_slider.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -202,34 +203,44 @@ class _BannerCarouselScreenState extends State<BannerCarouselScreen> {
                                 : GestureDetector(
                                     onTap: () => _handleSlideTap(slide),
                                     child: Container(
-                                      padding: EdgeInsets.symmetric(vertical: 10.h, horizontal: 20.w),
+                                      padding: EdgeInsets.symmetric(
+                                          vertical: 10.h, horizontal: 20.w),
                                       decoration: BoxDecoration(
                                         gradient: LinearGradient(
-                                          colors: [Color.fromARGB(255, 77, 129, 53), Color.fromARGB(255, 89, 126, 44)],
+                                          colors: [
+                                            Color.fromARGB(255, 77, 129, 53),
+                                            Color.fromARGB(255, 89, 126, 44)
+                                          ],
                                           begin: Alignment.topLeft,
                                           end: Alignment.bottomRight,
                                         ),
                                         boxShadow: [
                                           BoxShadow(
-                                            color: Colors.black.withOpacity(0.2),
+                                            color:
+                                                Colors.black.withOpacity(0.2),
                                             blurRadius: 6,
                                             offset: Offset(0, 3),
                                           ),
                                         ],
-                                        borderRadius: BorderRadius.circular(30.r),
+                                        borderRadius:
+                                            BorderRadius.circular(30.r),
                                       ),
                                       child: Row(
                                         mainAxisSize: MainAxisSize.min,
-                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
                                         children: [
-                                          Icon(Icons.open_in_new, color: Colors.white, size: 18.sp),
+                                          Icon(Icons.open_in_new,
+                                              color: Colors.white, size: 18.sp),
                                           SizedBox(width: 6.w),
                                           ValueListenableBuilder<bool>(
-                                            valueListenable: _toggleTextNotifier,
+                                            valueListenable:
+                                                _toggleTextNotifier,
                                             builder: (_, isGo, __) {
                                               return Text(
-                                                isGo ? "اذهب" : "حمل الآن",
-                                                style: AppTextStyles.font16Bold.copyWith(
+                                                "اذهب",
+                                                style: AppTextStyles.font16Bold
+                                                    .copyWith(
                                                   color: Colors.white,
                                                   fontSize: 16.sp,
                                                 ),
@@ -294,21 +305,23 @@ class _BannerCarouselScreenState extends State<BannerCarouselScreen> {
     try {
       final uri = Uri.parse(url);
 
-      // محاولة فتح الرابط في Chrome بشكل محدد
-      try {
-        const packageName = 'com.android.chrome';
-        final intent = android_intent.AndroidIntent(
-          action: 'action_view',
-          data: url,
-          package: packageName,
-        );
-        await intent.launch();
-        return;
-      } catch (e) {
-        print('Failed to open in Chrome, falling back to default: $e');
+      // خاص بـ Android: محاولة فتح الرابط في Chrome
+      if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android) {
+        try {
+          const packageName = 'com.android.chrome';
+          final intent = android_intent.AndroidIntent(
+            action: 'action_view',
+            data: url,
+            package: packageName,
+          );
+          await intent.launch();
+          return;
+        } catch (e) {
+          print('Failed to open in Chrome, falling back to default: $e');
+        }
       }
 
-      // إذا فشل فتح في Chrome، نستخدم الطريقة العادية
+      // إذا فشل Chrome أو الجهاز هو iOS/Web، نستخدم launchUrl
       if (!await canLaunchUrl(uri)) {
         showCustomFailureToast("لا يوجد تطبيق متاح لفتح هذا الرابط");
         return;
@@ -345,10 +358,3 @@ Future<void> launchCustomTab(String url) async {
     // يمكنك عرض رسالة خطأ للمستخدم هنا
   }
 }
-
-// // طريقة الاستخدام
-// void _handleSlideTap(Slide slide) async {
-//   if (slide.url?.isNotEmpty ?? false) {
-//     await launchCustomTab(slide.url!);
-//   }
-// }

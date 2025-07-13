@@ -24,7 +24,7 @@ class _ChangeLocationViewState extends State<ChangeLocationView> {
   void initState() {
     super.initState();
     layoutCubit = context.read<LayoutCubit>();
-    layoutCubit.initUserLocation();
+    // layoutCubit.initUserLocation();
   }
 
   /// ✅ تحريك الكاميرا إلى الموقع الجديد مع Animation
