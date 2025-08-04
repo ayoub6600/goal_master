@@ -39,6 +39,18 @@ class BookingRepoImp extends BookingRepo {
   }
 
   @override
+  Future<Either<Failure, Booking>> getBookingInfo(int id) {
+    return apiConsumer.handleRequest(
+      () => apiConsumer.post(
+        EndPoints.getBookingInfo(id),
+      ),
+      (data) {
+        return Booking.fromJson(data['data'] as Map<String, dynamic>);
+      },
+    );
+  }
+
+  @override
   Future<Either<Failure, CancelBookingResponse>> cancelBooking(int id) {
     return apiConsumer.handleRequest(
       () => apiConsumer.post(
@@ -191,6 +203,7 @@ class BookingRepoImp extends BookingRepo {
           'full_name': fullName,
           'phone_no': phone,
           'state': "1",
+          'paid_amount': "0",
         },
       ),
       (data) {

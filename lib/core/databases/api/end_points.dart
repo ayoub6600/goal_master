@@ -10,6 +10,8 @@ class EndPoints {
   static String getServices = 'get-service-info';
   static String sendOTP = 'resend-otp';
 
+  static String getBookingInfo(int id) => 'user/booking/get-info/?id=$id';
+
   static String verifyOTP = 'verify';
 
   static String update = 'user/update';
@@ -54,6 +56,12 @@ class EndPoints {
 
   static String fillterNewBooking(int id) =>
       'user/booking/fillter-new-booking?page=$id';
+  static String markNotificationAsRead(String notificationId) =>
+      'user/notifications/read-notification/$notificationId';
+
+  static String markAllNotificationsAsRead =
+      'user/notifications/read-all-notification';
+  static String notification = 'user/notifications/get-notification';
 }
 
 //doctors/top-ratings

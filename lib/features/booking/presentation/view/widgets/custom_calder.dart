@@ -15,8 +15,7 @@ class CustomCalder extends StatelessWidget {
     return BlocBuilder<CalendarCubit, CalendarState>(
       builder: (context, state) {
         final calendarCubit = context.read<CalendarCubit>();
-        final lastDay =
-            DateTime.now().add(Duration(days: 60)); // Two months later
+        final lastDay = DateTime.now().add(Duration(days: 30));
 
         return SingleChildScrollView(
           padding: const EdgeInsets.all(16),

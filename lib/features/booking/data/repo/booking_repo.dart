@@ -15,9 +15,13 @@ abstract class BookingRepo {
     int page,
     bool now,
   );
+  Future<Either<Failure, Booking>> getBookingInfo(
+    int id,
+  );
   Future<Either<Failure, CancelBookingResponse>> cancelBooking(
     int id,
   );
+
   Future<Either<Failure, List<Location>>> listZone();
   Future<Either<Failure, List<ClubResponce>>> listClub(
     int zoneId,

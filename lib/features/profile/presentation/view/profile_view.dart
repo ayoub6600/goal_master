@@ -117,6 +117,7 @@ class ProfileView extends StatelessWidget {
                       title: "خروج",
                       icon: Assets.imagesPngImageLogout,
                       onTap: () async {
+
                         showModalBottomSheet(
                           context: context,
                           shape: RoundedRectangleBorder(
@@ -175,6 +176,8 @@ class ProfileView extends StatelessWidget {
                             );
                           },
                         );
+                      
+                      
                       },
                       child: SizedBox(),
                     ),

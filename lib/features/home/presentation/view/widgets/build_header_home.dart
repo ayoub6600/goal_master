@@ -13,6 +13,7 @@ import 'package:goal_master/core/styles/spaces.dart';
 import 'package:goal_master/features/balance/presentation/cubit/balance_cubit.dart';
 import 'package:goal_master/features/layout/presentation/manager/layout_cubit.dart';
 import 'package:goal_master/features/more/presentation/view/more_view.dart';
+import 'package:goal_master/features/notification/manager/notification_cubit/notification_cubit.dart';
 
 class BuildHeaderHome extends StatelessWidget {
   const BuildHeaderHome({super.key, required this.layoutCubit});
@@ -173,14 +174,74 @@ class BuildHeaderHome extends StatelessWidget {
         //   width: 10,
         // ),
 
-        GestureDetector(
-          onTap: () {
-            push(RoutesKeys.kNotification, context);
-          },
-          child: Image.asset(Assets.imagesPngImageNotification),
-        ),
+        BlocConsumer<NotificationCubit, NotificationState>(
+          listener: (context, state) {
+            print('[🔔 Listener] Notification state: $state');
 
-        //push(RoutesKeys.kCard, context);
+            if (state is NotificationLoadSuccess) {
+              print('[🔔 Listener] Unread count: ${state.unreadCount}');
+            } else if (state is NotificationUnreadUpdated) {
+              print('[🔔 Listener] Updated unread count: ${state.unreadCount}');
+            }
+          },
+          builder: (context, state) {
+            print(
+                '[🔁 Builder] Notification state: $state'); // ✅ هيتطبع كل 15 ثانية لما يحصل poll
+
+            int unreadCount = 0;
+            print("------->unreadCount $unreadCount");
+
+            if (state is NotificationLoadSuccess) {
+              unreadCount = state.unreadCount;
+            } else if (state is NotificationUnreadUpdated) {
+              unreadCount = state.unreadCount;
+            }
+            print(
+                "-----ss-->unreadCount $unreadCount"); // ✅ بعد تعيين القيمة الفعلية
+
+            final hasUnread = unreadCount > 0;
+
+            return GestureDetector(
+              onTap: () => push(RoutesKeys.kNotification, context),
+              child: Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  Image.asset(
+                    Assets.imagesPngImageNotification,
+                    width: 24.w,
+                    height: 24.h,
+                  ),
+                  if (hasUnread)
+                    Positioned(
+                      top: -4,
+                      right: -4,
+                      child: Container(
+                        padding: EdgeInsets.all(4.r),
+                        decoration: const BoxDecoration(
+                          color: Colors.red,
+                          shape: BoxShape.circle,
+                        ),
+                        constraints: BoxConstraints(
+                          minWidth: 16.w,
+                          minHeight: 16.h,
+                        ),
+                        child: Center(
+                          child: Text(
+                            unreadCount > 9 ? '9+' : unreadCount.toString(),
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 10.sp,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            );
+          },
+        ),
       ],
     );
   }

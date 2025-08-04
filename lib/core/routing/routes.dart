@@ -1,6 +1,8 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:goal_master/core/components/build_page_with_default_transition.dart';
+import 'package:goal_master/core/components/keys_values.dart';
+import 'package:goal_master/core/components/preference_utility.dart';
 import 'package:goal_master/core/routing/routes_keys.dart';
 import 'package:goal_master/core/services/service_locator.dart';
 import 'package:goal_master/core/view/no_internet_view.dart';
@@ -16,6 +18,7 @@ import 'package:goal_master/features/auth/presentation/view/register_view.dart';
 import 'package:goal_master/features/auth/presentation/view/login_view.dart';
 import 'package:goal_master/features/booking/data/model/booking_history_response.dart';
 import 'package:goal_master/features/booking/data/repo/booking_repo_imp.dart';
+import 'package:goal_master/features/booking/presentation/manager/%20booking_details_cubit/booking_details_cubit.dart';
 import 'package:goal_master/features/booking/presentation/manager/booking_cubit/booking_cubit.dart';
 import 'package:goal_master/features/booking/presentation/manager/calendar_cubit/calendar_cubit.dart';
 import 'package:goal_master/features/booking/presentation/manager/cancel_booking_cubit/cancel_booking_cubit.dart';
@@ -41,7 +44,10 @@ import 'package:goal_master/features/home/presentation/view/fillter_view.dart';
 import 'package:goal_master/features/home/presentation/view/widgets/booking_item.dart';
 import 'package:goal_master/features/home/presentation/view/widgets/show_all_resulat_filtter.dart';
 import 'package:goal_master/features/layout/presentation/view/home_layout_view.dart';
+import 'package:goal_master/features/notification/data/repo/notifaction_repo.dart';
+import 'package:goal_master/features/notification/manager/notification_logic/notification_logic_cubit.dart';
 import 'package:goal_master/features/notification/presentation/view/notifaction_view.dart';
+import 'package:goal_master/features/notification/presentation/view/widgets/notification_items_details.dart.dart';
 import 'package:goal_master/features/onboarding/presentation/manager/onboarding_cubit.dart';
 import 'package:goal_master/features/onboarding/presentation/view/onboarding_view.dart';
 import 'package:goal_master/features/profile/data/repo/profile_repo_imp.dart';
@@ -372,13 +378,46 @@ List<RouteBase> appRoutes = [
       context: context,
       state: state,
       child: BlocProvider(
-        create: (context) => BookingCubit(
-          bookingRepo: getIt<BookingRepoImp>(),
+        create: (_) => NotificationFetchCubit(
+          notificationRepo: getIt<NotificationRepo>(),
+          userId: SharedPreferenceUtil.getInt(PrefKey.userId) ?? 0,
         ),
         child: const NotificationView(),
       ),
     ),
   ),
+  GoRoute(
+    parentNavigatorKey: parentKey,
+    path: RoutesKeys.kNotificationItemsDetails,
+    pageBuilder: (context, state) {
+      final bookingId = state.extra as int;
+
+      return buildPageWithDefaultTransition<void>(
+        context: context,
+        state: state,
+        child: MultiBlocProvider(
+          providers: [
+            BlocProvider(
+              create: (context) => BookingDetailsCubit(
+                getIt<BookingRepoImp>(),
+                bookingId,
+              )..getBookingInfo(),
+            ),
+            BlocProvider(
+              create: (context) => CancelBookingCubit(
+                getIt<BookingRepoImp>(),
+              ),
+            ),
+            BlocProvider(
+              create: (context) => ToggleCubit(),
+            ),
+          ],
+          child: NotificationItemsDetails(),
+        ),
+      );
+    },
+  ),
+
   //BookingItemsDetails
   GoRoute(
       parentNavigatorKey: parentKey,
