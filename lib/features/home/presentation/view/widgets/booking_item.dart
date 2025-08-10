@@ -56,12 +56,32 @@ class BookingItem extends StatelessWidget {
                               color: AppColors.primary,
                             ),
                             WidthSpace(8.w),
-                            Text(
-                              "${formatTime(booking.startTime)} - ${formatTime(booking.endTime)}",
-                              textDirection: TextDirection.ltr,
-                              style: AppTextStyles.font14Bold.copyWith(
-                                color: AppColors.fontColor,
-                              ),
+                            Row(
+                              children: [
+                                Text(
+                                  "${formatTime(booking.startTime)} ",
+                                  textDirection: TextDirection.ltr,
+                                  style: AppTextStyles.font14Bold.copyWith(
+                                    color: AppColors.fontColor,
+                                  ),
+                                ),
+                                WidthSpace(2.w),
+                                Text(
+                                  " - ",
+                                  textDirection: TextDirection.ltr,
+                                  style: AppTextStyles.font14Bold.copyWith(
+                                    color: AppColors.fontColor,
+                                  ),
+                                ),
+                                WidthSpace(2.w),
+                                Text(
+                                  "${formatTime(booking.endTime)}",
+                                  textDirection: TextDirection.ltr,
+                                  style: AppTextStyles.font14Bold.copyWith(
+                                    color: AppColors.fontColor,
+                                  ),
+                                ),
+                              ],
                             ),
                           ]),
                       Row(

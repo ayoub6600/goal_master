@@ -128,7 +128,7 @@ class GoalMaster extends StatelessWidget {
                   styleInformation: BigPictureStyleInformation(
                     DrawableResourceAndroidBitmap('app_notifiction'),
                     largeIcon: DrawableResourceAndroidBitmap('app_notifiction'),
-                    contentTitle: '📣 مدير الملعب',
+                    contentTitle: '📣 Goal Master' ,
                     summaryText: null, // ممكن تمرّر الرسالة هنا لو حابب
                   ),
                 );
@@ -143,7 +143,7 @@ class GoalMaster extends StatelessWidget {
 
                 await flutterLocalNotificationsPlugin.show(
                   0,
-                  '📣 مدير الملعب',
+                  '📣 Goal Master' ,
                   notification.data.message,
                   const NotificationDetails(
                     android: androidDetails,

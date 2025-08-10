@@ -78,7 +78,11 @@ class MoreView extends StatelessWidget {
 
                     if (size.width > 0 && size.height > 0) {
                       Share.share(
-                        'جرّب تطبيق Goal Master الآن وحقق أهدافك! 🏆📲\n'
+                        '\n Goal Master جول ماستر !\n 🎯 احجز ملعبك في ثواني مع '
+                        'تطبيقك الأول لحجز ملاعب الكرة بكل سهولة وسرعة 💥⚽\n'
+                        'اختر الملعب، حدد الوقت، وادفع مباشرة من جوالك – وابدأ اللعب!\n'
+                        'سواء مع أصحابك أو فريقك، نظم مبارياتك بكل احترافية 🕒📍\n\n'
+                        '📲 حمّل التطبيق الآن وعيش أجواء اللعب:\n'
                         'على Android:\nhttps://play.google.com/store/apps/details?id=com.ayoub.goalmaster\n'
                         'على iOS:\nhttps://apps.apple.com/app/id6744951483\n',
                         sharePositionOrigin: offset & size,
