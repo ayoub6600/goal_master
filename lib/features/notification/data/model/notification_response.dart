@@ -1,11 +1,55 @@
 import 'dart:convert';
 
+/// ========= Helpers =========
+bool asBool(dynamic v, {bool defaultValue = false}) {
+  if (v == null) return defaultValue;
+  if (v is bool) return v;
+  if (v is String) return v.toLowerCase() == 'true' || v == '1';
+  if (v is num) return v != 0;
+  return defaultValue;
+}
+
+int asInt(dynamic v, {int defaultValue = 0}) {
+  if (v == null) return defaultValue;
+  if (v is int) return v;
+  if (v is num) return v.toInt();
+  if (v is String) return int.tryParse(v) ?? defaultValue;
+  return defaultValue;
+}
+
+double asDouble(dynamic v, {double defaultValue = 0.0}) {
+  if (v == null) return defaultValue;
+  if (v is double) return v;
+  if (v is num) return v.toDouble();
+  if (v is String) return double.tryParse(v) ?? defaultValue;
+  return defaultValue;
+}
+
+String asString(dynamic v, {String defaultValue = ''}) {
+  if (v == null) return defaultValue;
+  return v.toString();
+}
+
+DateTime? asDateTime(dynamic v) {
+  if (v == null) return null;
+  if (v is DateTime) return v;
+  if (v is String) return DateTime.tryParse(v);
+  return null;
+}
+
+List<T> asList<T>(dynamic v, T Function(dynamic) mapItem) {
+  if (v is List) return v.map(mapItem).toList();
+  return <T>[];
+}
+
+/// ========= Top-level converters =========
 NotificationResponse notificationResponseFromJson(String str) =>
     NotificationResponse.fromJson(json.decode(str));
 
 String notificationResponseToJson(NotificationResponse data) =>
     json.encode(data.toJson());
 
+/// ========= Models =========
 class NotificationResponse {
   final bool status;
   final NotificationData data;
@@ -17,13 +61,13 @@ class NotificationResponse {
 
   factory NotificationResponse.fromJson(Map<String, dynamic> json) =>
       NotificationResponse(
-        status: json["status"] == "true",
-        data: NotificationData.fromJson(json["data"]),
+        status: asBool(json['status']),
+        data: NotificationData.fromJson(json['data'] ?? const {}),
       );
 
   Map<String, dynamic> toJson() => {
-        "status": status,
-        "data": data.toJson(),
+        'status': status,
+        'data': data.toJson(),
       };
 }
 
@@ -31,15 +75,15 @@ class NotificationData {
   final int currentPage;
   final List<NotificationItem> data;
   final String? firstPageUrl;
-  final int from;
+  final int? from; // قد تكون null لو القائمة فاضية
   final int lastPage;
   final String? lastPageUrl;
   final List<Link> links;
-  final String? nextPageUrl;
+  final String? nextPageUrl; // قد تكون null
   final String path;
-  final int perPage;
-  final dynamic prevPageUrl;
-  final int to;
+  final int perPage; // قد تأتي String من Laravel
+  final String? prevPageUrl; // قد تكون null
+  final int? to; // قد تكون null
   final int total;
 
   NotificationData({
@@ -60,36 +104,35 @@ class NotificationData {
 
   factory NotificationData.fromJson(Map<String, dynamic> json) =>
       NotificationData(
-        currentPage: json["current_page"],
-        data: List<NotificationItem>.from(
-            json["data"].map((x) => NotificationItem.fromJson(x))),
-        firstPageUrl: json["first_page_url"],
-        from: json["from"],
-        lastPage: json["last_page"],
-        lastPageUrl: json["last_page_url"],
-        links: List<Link>.from(json["links"].map((x) => Link.fromJson(x))),
-        nextPageUrl: json["next_page_url"],
-        path: json["path"],
-        perPage: json["per_page"],
-        prevPageUrl: json["prev_page_url"],
-        to: json["to"],
-        total: json["total"],
+        currentPage: asInt(json['current_page']),
+        data: asList(json['data'], (x) => NotificationItem.fromJson(x)),
+        firstPageUrl: json['first_page_url'],
+        from: json['from'] == null ? null : asInt(json['from']),
+        lastPage: asInt(json['last_page']),
+        lastPageUrl: json['last_page_url'],
+        links: asList(json['links'], (x) => Link.fromJson(x)),
+        nextPageUrl: json['next_page_url'],
+        path: asString(json['path']),
+        perPage: asInt(json['per_page']), // يقبل string/num
+        prevPageUrl: json['prev_page_url'],
+        to: json['to'] == null ? null : asInt(json['to']),
+        total: asInt(json['total']),
       );
 
   Map<String, dynamic> toJson() => {
-        "current_page": currentPage,
-        "data": List<dynamic>.from(data.map((x) => x.toJson())),
-        "first_page_url": firstPageUrl,
-        "from": from,
-        "last_page": lastPage,
-        "last_page_url": lastPageUrl,
-        "links": List<dynamic>.from(links.map((x) => x.toJson())),
-        "next_page_url": nextPageUrl,
-        "path": path,
-        "per_page": perPage,
-        "prev_page_url": prevPageUrl,
-        "to": to,
-        "total": total,
+        'current_page': currentPage,
+        'data': data.map((x) => x.toJson()).toList(),
+        'first_page_url': firstPageUrl,
+        'from': from,
+        'last_page': lastPage,
+        'last_page_url': lastPageUrl,
+        'links': links.map((x) => x.toJson()).toList(),
+        'next_page_url': nextPageUrl,
+        'path': path,
+        'per_page': perPage,
+        'prev_page_url': prevPageUrl,
+        'to': to,
+        'total': total,
       };
 }
 
@@ -114,30 +157,43 @@ class NotificationItem {
     required this.updatedAt,
   });
 
-  factory NotificationItem.fromJson(Map<String, dynamic> json) =>
-      NotificationItem(
-        id: json["id"],
-        type: json["type"],
-        notifiableType: json["notifiable_type"],
-        notifiableId: json["notifiable_id"],
-        data: NotificationInnerData.fromJson(json["data"]),
-        readAt: json["read_at"],
-        createdAt: DateTime.tryParse(json["created_at"]) ?? DateTime.now(),
-        updatedAt: DateTime.tryParse(json["updated_at"]) ?? DateTime.now(),
-      );
+  factory NotificationItem.fromJson(Map<String, dynamic> json) {
+    // `data` في جدول notifications أحيانًا بتكون String JSON
+    final dynamic rawData = json['data'];
+    Map<String, dynamic> dataMap;
+    if (rawData is String) {
+      try {
+        dataMap = jsonDecode(rawData) as Map<String, dynamic>;
+      } catch (_) {
+        dataMap = <String, dynamic>{};
+      }
+    } else {
+      dataMap = (rawData ?? {}) as Map<String, dynamic>;
+    }
+
+    return NotificationItem(
+      id: asString(json['id']),
+      type: asString(json['type']),
+      notifiableType: asString(json['notifiable_type']),
+      notifiableId: asInt(json['notifiable_id']),
+      data: NotificationInnerData.fromJson(dataMap),
+      readAt: json['read_at'],
+      createdAt: asDateTime(json['created_at']) ?? DateTime.now(),
+      updatedAt: asDateTime(json['updated_at']) ?? DateTime.now(),
+    );
+  }
 
   Map<String, dynamic> toJson() => {
-        "id": id,
-        "type": type,
-        "notifiable_type": notifiableType,
-        "notifiable_id": notifiableId,
-        "data": data.toJson(),
-        "read_at": readAt,
-        "created_at": createdAt.toIso8601String(),
-        "updated_at": updatedAt.toIso8601String(),
+        'id': id,
+        'type': type,
+        'notifiable_type': notifiableType,
+        'notifiable_id': notifiableId,
+        'data': data.toJson(),
+        'read_at': readAt,
+        'created_at': createdAt.toIso8601String(),
+        'updated_at': updatedAt.toIso8601String(),
       };
 
-  // دالة copyWith المحدثة
   NotificationItem copyWith({
     String? id,
     String? type,
@@ -160,10 +216,8 @@ class NotificationItem {
     );
   }
 
-  // دالة مساعدة للتحقق من حالة القراءة
   bool get isRead => readAt != null;
 
-  // Override لدوال المساواة والتجزئة
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -174,50 +228,6 @@ class NotificationItem {
   @override
   int get hashCode => id.hashCode;
 }
-// class NotificationItem {
-//   final String id;
-//   final String type;
-//   final String notifiableType;
-//   final int notifiableId;
-//   final NotificationInnerData data;
-//   final String? readAt;
-//   final DateTime createdAt;
-//   final DateTime updatedAt;
-
-//   NotificationItem({
-//     required this.id,
-//     required this.type,
-//     required this.notifiableType,
-//     required this.notifiableId,
-//     required this.data,
-//     required this.readAt,
-//     required this.createdAt,
-//     required this.updatedAt,
-//   });
-
-//   factory NotificationItem.fromJson(Map<String, dynamic> json) =>
-//       NotificationItem(
-//         id: json["id"],
-//         type: json["type"],
-//         notifiableType: json["notifiable_type"],
-//         notifiableId: json["notifiable_id"],
-//         data: NotificationInnerData.fromJson(json["data"]),
-//         readAt: json["read_at"],
-//         createdAt: DateTime.parse(json["created_at"]),
-//         updatedAt: DateTime.parse(json["updated_at"]),
-//       );
-
-//   Map<String, dynamic> toJson() => {
-//         "id": id,
-//         "type": type,
-//         "notifiable_type": notifiableType,
-//         "notifiable_id": notifiableId,
-//         "data": data.toJson(),
-//         "read_at": readAt,
-//         "created_at": createdAt.toIso8601String(),
-//         "updated_at": updatedAt.toIso8601String(),
-//       };
-// }
 
 class NotificationInnerData {
   final String message;
@@ -230,13 +240,13 @@ class NotificationInnerData {
 
   factory NotificationInnerData.fromJson(Map<String, dynamic> json) =>
       NotificationInnerData(
-        message: json["message"],
-        id: json["id"],
+        message: asString(json['message']),
+        id: asInt(json['id']), // ← آمن ضد null/String
       );
 
   Map<String, dynamic> toJson() => {
-        "message": message,
-        "id": id,
+        'message': message,
+        'id': id,
       };
 }
 
@@ -252,14 +262,14 @@ class Link {
   });
 
   factory Link.fromJson(Map<String, dynamic> json) => Link(
-        url: json["url"],
-        label: json["label"],
-        active: json["active"],
+        url: json['url'],
+        label: asString(json['label']),
+        active: asBool(json['active']),
       );
 
   Map<String, dynamic> toJson() => {
-        "url": url,
-        "label": label,
-        "active": active,
+        'url': url,
+        'label': label,
+        'active': active,
       };
 }

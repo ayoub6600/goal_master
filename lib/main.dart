@@ -12,7 +12,7 @@ import 'package:goal_master/core/styles/app_colors.dart';
 import 'package:goal_master/core/utils/storage_service.dart';
 import 'package:goal_master/features/auth/data/repo/auth_repo_imp.dart';
 import 'package:goal_master/features/balance/data/repo/balance_repo_imp.dart';
-import 'package:goal_master/features/balance/presentation/cubit/balance_cubit.dart';
+import 'package:goal_master/features/balance/presentation/balance_cubit/balance_cubit.dart';
 import 'package:goal_master/features/home/data/repo/analysis_repo_imp.dart';
 import 'package:goal_master/features/home/presentation/manager/analysis_cubit/analysis_cubit.dart';
 import 'package:goal_master/features/layout/presentation/manager/layout_cubit.dart';
@@ -128,7 +128,7 @@ class GoalMaster extends StatelessWidget {
                   styleInformation: BigPictureStyleInformation(
                     DrawableResourceAndroidBitmap('app_notifiction'),
                     largeIcon: DrawableResourceAndroidBitmap('app_notifiction'),
-                    contentTitle: '📣 Goal Master' ,
+                    contentTitle: '📣 Goal Master',
                     summaryText: null, // ممكن تمرّر الرسالة هنا لو حابب
                   ),
                 );
@@ -143,7 +143,7 @@ class GoalMaster extends StatelessWidget {
 
                 await flutterLocalNotificationsPlugin.show(
                   0,
-                  '📣 Goal Master' ,
+                  '📣 Goal Master',
                   notification.data.message,
                   const NotificationDetails(
                     android: androidDetails,

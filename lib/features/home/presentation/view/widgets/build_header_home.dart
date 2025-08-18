@@ -10,7 +10,7 @@ import 'package:goal_master/core/styles/app_colors.dart';
 import 'package:goal_master/core/styles/app_text_styles.dart';
 import 'package:goal_master/core/styles/assets.dart';
 import 'package:goal_master/core/styles/spaces.dart';
-import 'package:goal_master/features/balance/presentation/cubit/balance_cubit.dart';
+import 'package:goal_master/features/balance/presentation/balance_cubit/balance_cubit.dart';
 import 'package:goal_master/features/layout/presentation/manager/layout_cubit.dart';
 import 'package:goal_master/features/more/presentation/view/more_view.dart';
 import 'package:goal_master/features/notification/manager/notification_cubit/notification_cubit.dart';
@@ -78,10 +78,13 @@ class BuildHeaderHome extends StatelessWidget {
             ],
           ),
         ),
-
         GestureDetector(
-          onTap: () {
-            push(RoutesKeys.kCard, context);
+          onTap: () async {
+            final result = await push(RoutesKeys.kCard, context);
+            // لو الشاشة رجّعت true (بعد شحن/تحويل)، حدّث الرصيد هنا
+            if (result == true) {
+              context.read<BalanceCubit>().getBalance();
+            }
           },
           child: Container(
             alignment: Alignment.center,
@@ -158,22 +161,6 @@ class BuildHeaderHome extends StatelessWidget {
           ),
         ),
         WidthSpace(10.w),
-        // GestureDetector(
-        //   onTap: () {
-        //     push(RoutesKeys.kCard, context);
-        //   },
-        //   child: Image.asset(
-        //     Assets.imagesPngImageWallet2,
-        //     fit: BoxFit.cover,
-        //     color: AppColors.primary,
-        //     width: 25,
-        //     height: 25,
-        //   ),
-        // ),
-        // const SizedBox(
-        //   width: 10,
-        // ),
-
         BlocConsumer<NotificationCubit, NotificationState>(
           listener: (context, state) {
             print('[🔔 Listener] Notification state: $state');

@@ -16,6 +16,7 @@ class AppBarContent extends StatelessWidget {
   final Color? backIconColor;
   final Color? backBorderColor;
   final EdgeInsets? padding;
+
   const AppBarContent({
     super.key,
     this.title,
@@ -50,6 +51,7 @@ class AppBarContent extends StatelessWidget {
                         borderColor: backBorderColor,
                         iconColor: backIconColor,
                         bgColor: backBgColor,
+                        onTap: () => Navigator.pop(context, true),
                       ),
                   if (trailing != null) trailing!,
                   titleWidget ??

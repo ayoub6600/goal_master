@@ -12,6 +12,7 @@ import 'package:goal_master/core/styles/app_colors.dart';
 import 'package:goal_master/core/styles/app_text_styles.dart';
 import 'package:goal_master/core/styles/assets.dart';
 import 'package:goal_master/core/styles/spaces.dart';
+import 'package:goal_master/features/balance/presentation/balance_cubit/balance_cubit.dart';
 import 'package:goal_master/features/profile/data/repo/profile_repo.dart';
 import 'package:goal_master/features/profile/data/repo/profile_repo_imp.dart';
 import 'package:goal_master/features/profile/presentation/manager/profile_cubit/profile_cubit.dart';
@@ -77,8 +78,12 @@ class ProfileView extends StatelessWidget {
                     ProfileItem(
                       title: "شحن الرصيد",
                       icon: Assets.imagesPngImageWallet2,
-                      onTap: () {
-                        push(RoutesKeys.kCard, context);
+                      onTap: () async {
+                        final result = await push(RoutesKeys.kCard, context);
+                        // لو الشاشة رجّعت true (بعد شحن/تحويل)، حدّث الرصيد هنا
+                        if (result == true) {
+                          context.read<BalanceCubit>().getBalance();
+                        }
                       },
                     ),
                     Container(
@@ -117,7 +122,6 @@ class ProfileView extends StatelessWidget {
                       title: "خروج",
                       icon: Assets.imagesPngImageLogout,
                       onTap: () async {
-
                         showModalBottomSheet(
                           context: context,
                           shape: RoundedRectangleBorder(
@@ -176,8 +180,6 @@ class ProfileView extends StatelessWidget {
                             );
                           },
                         );
-                      
-                      
                       },
                       child: SizedBox(),
                     ),

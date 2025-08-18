@@ -5,14 +5,13 @@ import 'package:goal_master/core/services/service_locator.dart';
 import 'package:goal_master/core/styles/app_colors.dart';
 import 'package:goal_master/core/styles/assets.dart';
 import 'package:goal_master/features/balance/data/repo/balance_repo_imp.dart';
-import 'package:goal_master/features/balance/presentation/cubit/balance_cubit.dart';
+import 'package:goal_master/features/balance/presentation/balance_cubit/balance_cubit.dart';
 import 'package:goal_master/features/booking/data/repo/booking_repo_imp.dart';
 import 'package:goal_master/features/booking/presentation/manager/booking_cubit/booking_cubit.dart';
 import 'package:goal_master/features/booking/presentation/manager/cancel_booking_cubit/cancel_booking_cubit.dart';
 import 'package:goal_master/features/booking/presentation/manager/toggle_booking/booking_toggle_cubit.dart';
 
 import 'package:goal_master/features/booking/presentation/view/booking_view.dart';
-import 'package:goal_master/features/home/data/model/analysis_model.dart';
 import 'package:goal_master/features/home/data/repo/analysis_repo_imp.dart';
 import 'package:goal_master/features/home/presentation/manager/analysis_cubit/analysis_cubit.dart';
 import 'package:goal_master/features/home/presentation/manager/banner_cubit/banner_cubit_cubit.dart';

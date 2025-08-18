@@ -1,6 +1,7 @@
 import 'package:get_it/get_it.dart';
 import 'package:dio/dio.dart';
 import 'package:goal_master/features/auth/data/repo/auth_repo_imp.dart';
+import 'package:goal_master/features/balance/data/repo/balance_repo.dart';
 import 'package:goal_master/features/balance/data/repo/balance_repo_imp.dart';
 import 'package:goal_master/features/card/data/repo/card_repo_imp.dart';
 import 'package:goal_master/features/home/data/repo/analysis_repo_imp.dart';
@@ -38,5 +39,9 @@ void setupServiceLocator() {
   );
   getIt.registerSingleton<NotificationRepo>(
     NotificationRepoImp(getIt.get<DioConsumer>()),
+  );
+  //BalanceRepo
+  getIt.registerSingleton<BalanceRepo>(
+    BalanceRepoImp(getIt.get<DioConsumer>()),
   );
 }

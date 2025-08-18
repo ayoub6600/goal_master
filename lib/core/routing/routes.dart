@@ -16,6 +16,9 @@ import 'package:goal_master/features/auth/presentation/view/new_password_view.da
 import 'package:goal_master/features/auth/presentation/view/otp_view.dart';
 import 'package:goal_master/features/auth/presentation/view/register_view.dart';
 import 'package:goal_master/features/auth/presentation/view/login_view.dart';
+import 'package:goal_master/features/balance/data/repo/balance_repo.dart';
+import 'package:goal_master/features/balance/presentation/send_money_cubit/send_money_cubit.dart';
+import 'package:goal_master/features/balance/presentation/transaction_cubit/transaction_cubit.dart';
 import 'package:goal_master/features/booking/data/model/booking_history_response.dart';
 import 'package:goal_master/features/booking/data/repo/booking_repo_imp.dart';
 import 'package:goal_master/features/booking/presentation/manager/%20booking_details_cubit/booking_details_cubit.dart';
@@ -362,10 +365,25 @@ List<RouteBase> appRoutes = [
     pageBuilder: (context, state) => buildPageWithDefaultTransition<void>(
       context: context,
       state: state,
-      child: BlocProvider(
-        create: (context) => CardCubit(
-          getIt<CardRepoImp>(),
-        ),
+      child: MultiBlocProvider(
+        providers: [
+          BlocProvider(
+            create: (context) => CardCubit(
+              getIt<CardRepoImp>(),
+            ),
+          ),
+          BlocProvider(
+            create: (context) => TransactionCubit(
+              getIt<BalanceRepo>(),
+            ),
+          ),
+          //SendMoneyCubit
+          BlocProvider(
+            create: (context) => SendMoneyCubit(
+              getIt<BalanceRepo>(),
+            ),
+          ),
+        ],
         child: const CardView(),
       ),
     ),

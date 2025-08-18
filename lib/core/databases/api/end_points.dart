@@ -17,6 +17,12 @@ class EndPoints {
   static String update = 'user/update';
 
   static String banner = "list/slider";
+  //sendMoney
+
+  static String sendMoney = 'user/wallet/send-money';
+  //transaction
+
+  static String transaction(int id) => 'user/wallet/transaction?page=$id';
 
   static String register = 'register';
 

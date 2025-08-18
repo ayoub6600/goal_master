@@ -8,7 +8,7 @@ import 'package:goal_master/core/routing/routes_keys.dart';
 import 'package:goal_master/core/styles/app_text_styles.dart';
 import 'package:goal_master/core/styles/assets.dart';
 import 'package:goal_master/core/styles/spaces.dart';
-import 'package:goal_master/features/balance/presentation/cubit/balance_cubit.dart';
+import 'package:goal_master/features/balance/presentation/balance_cubit/balance_cubit.dart';
 import 'package:goal_master/features/profile/presentation/manager/profile_cubit/profile_cubit.dart';
 
 class ProfileHeader extends StatelessWidget {
@@ -91,8 +91,12 @@ class ProfileHeader extends StatelessWidget {
                     .copyWith(color: Color(0xff6D7580)),
               ),
               GestureDetector(
-                onTap: () {
-                  push(RoutesKeys.kCard, context);
+                onTap: () async {
+                  final result = await push(RoutesKeys.kCard, context);
+                  // لو الشاشة رجّعت true (بعد شحن/تحويل)، حدّث الرصيد هنا
+                  if (result == true) {
+                    context.read<BalanceCubit>().getBalance();
+                  }
                 },
                 child: Container(
                   alignment: Alignment.center,
