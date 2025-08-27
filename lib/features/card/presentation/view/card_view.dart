@@ -15,6 +15,7 @@ import 'package:goal_master/features/card/presentation/manager/cubit/card_cubit.
 import 'package:goal_master/features/card/presentation/view/send_money_view.dart';
 import 'package:goal_master/features/card/presentation/view/transaction_item.dart';
 import 'package:goal_master/features/card/presentation/view/widgets/top_up_sheet.dart';
+import 'package:goal_master/features/card/presentation/view/widgets/top_up_sheet_visa.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 
 class CardView extends StatelessWidget {
@@ -115,7 +116,7 @@ class CardView extends StatelessWidget {
                                 Expanded(
                                   child: ButtonApp(
                                     icon: Icons.card_membership,
-                                    text: " شحن محفظة",
+                                    text: "كرت",
                                     backGround: AppColors.white,
                                     textColor: AppColors.primary,
                                     onTap: () async {
@@ -145,7 +146,41 @@ class CardView extends StatelessWidget {
                                     },
                                   ),
                                 ),
-                                WidthSpace(16.w),
+                                WidthSpace(4.w),
+                                Expanded(
+                                  child: ButtonApp(
+                                    icon: Icons.card_membership,
+                                    text: 'فيزا',
+                                    backGround: AppColors.white,
+                                    textColor: AppColors.primary,
+                                    onTap: () async {
+                                      final cardCubit =
+                                          context.read<CardCubit>();
+                                      final txCubit =
+                                          context.read<TransactionCubit>();
+                                      final balanceCubit =
+                                          context.read<BalanceCubit>();
+
+                                      final shouldReload =
+                                          await baseBottomSheet(
+                                        context: context,
+                                        title: "شحن الرصيد",
+                                        hideNavBar: false,
+                                        showDragHandle: false,
+                                        child: BlocProvider.value(
+                                          value: cardCubit,
+                                          child: const TopUpSheetVisa(),
+                                        ),
+                                      );
+
+                                      if (shouldReload == true) {
+                                        txCubit.refresh();
+                                        balanceCubit.getBalance();
+                                      }
+                                    },
+                                  ),
+                                ),
+                                WidthSpace(4.w),
                                 Expanded(
                                   child: ButtonApp(
                                     icon: Icons.transfer_within_a_station,

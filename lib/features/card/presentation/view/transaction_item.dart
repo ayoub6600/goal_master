@@ -12,7 +12,7 @@ class TransactionItem extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    final isCredit = transaction.balanceType == 0; // 0 = إضافة، 1 = خصم
+    final isCredit = transaction.balanceType == 1; // 0 = إضافة، 1 = خصم
     final amountColor = isCredit ? Colors.green : Colors.red;
     final icon =
         isCredit ? Icons.arrow_downward_rounded : Icons.arrow_upward_rounded;

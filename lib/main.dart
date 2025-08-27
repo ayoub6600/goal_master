@@ -69,24 +69,12 @@ Future<void> _initializeNotifications() async {
   );
 }
 
-// Future<void> _initializeNotifications() async {
-//   const AndroidInitializationSettings androidInitSettings =
-//       AndroidInitializationSettings('@mipmap/ic_launcher');
-
-//   const InitializationSettings initSettings = InitializationSettings(
-//     android: androidInitSettings,
-//   );
-
-//   await flutterLocalNotificationsPlugin.initialize(initSettings);
-// }
 Future<void> requestNotificationPermission() async {
-  // أندرويد 13+ (الإذن الجديد على أندرويد)
   final status = await Permission.notification.status;
   if (!status.isGranted) {
     await Permission.notification.request();
   }
 
-  // iOS: لازم تطلب من خلال المكتبة نفسها
   await flutterLocalNotificationsPlugin
       .resolvePlatformSpecificImplementation<
           IOSFlutterLocalNotificationsPlugin>()
@@ -96,13 +84,6 @@ Future<void> requestNotificationPermission() async {
         sound: true,
       );
 }
-
-// Future<void> requestNotificationPermission() async {
-//   final status = await Permission.notification.status;
-//   if (!status.isGranted) {
-//     await Permission.notification.request();
-//   }
-// }
 
 class GoalMaster extends StatelessWidget {
   const GoalMaster({super.key});
@@ -185,7 +166,6 @@ class GoalMaster extends StatelessWidget {
             return cubit;
           },
         ),
-
         BlocProvider(
           create: (context) => LayoutCubit(),
         ),
@@ -204,7 +184,6 @@ class GoalMaster extends StatelessWidget {
             getIt<ProfileRepoImp>(),
           )..getProfile(),
         ),
-        //BalanceCubit
         BlocProvider(
           create: (context) => BalanceCubit(
             getIt<BalanceRepoImp>(),

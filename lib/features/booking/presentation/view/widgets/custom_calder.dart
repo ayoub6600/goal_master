@@ -1,87 +1,104 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:table_calendar/table_calendar.dart';
+
 import 'package:goal_master/features/booking/presentation/manager/calendar_cubit/calendar_cubit.dart';
 import 'package:goal_master/features/booking/presentation/manager/calendar_cubit/calendar_state.dart';
 import 'package:goal_master/features/booking/presentation/manager/page_view_cubit/page_view_cubit_cubit.dart';
 import 'package:goal_master/features/booking/presentation/view/widgets/step_title.dart';
-import 'package:goal_master/features/booking/presentation/view/widgets/time_slot_section.dart';
-import 'package:table_calendar/table_calendar.dart';
 
 class CustomCalder extends StatelessWidget {
   const CustomCalder({super.key, required this.controller});
   final PageController controller;
+
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<CalendarCubit, CalendarState>(
       builder: (context, state) {
         final calendarCubit = context.read<CalendarCubit>();
-        final lastDay = DateTime.now().add(Duration(days: 30));
+
+        final now = DateTime.now();
+        final today = DateTime(now.year, now.month, now.day);
+
+        // الشهر الحالي + الشهر اللي بعده
+        final firstOfMonth = DateTime(now.year, now.month, 1);
+        final lastOfNextMonth = DateTime(now.year, now.month + 2, 0);
 
         return SingleChildScrollView(
           padding: const EdgeInsets.all(16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              StepTitle(
-                  title: "تاريخ الحجز",
-                  description: "اختر التاريخ المناسب للحجز الذي تريده"),
+              const StepTitle(
+                title: "تاريخ الحجز",
+                description: "اختر التاريخ المناسب للحجز الذي تريده",
+              ),
               TableCalendar(
-                firstDay: DateTime.now(),
-                lastDay: lastDay,
-                focusedDay: state.focusedDay,
+                firstDay: firstOfMonth,
+                lastDay: lastOfNextMonth,
+                focusedDay: _clamp(
+                  state.focusedDay,
+                  firstOfMonth,
+                  lastOfNextMonth,
+                ),
+                locale: 'ar_SA',
                 selectedDayPredicate: (day) =>
                     isSameDay(state.selectedDay, day),
-                locale: 'ar_SA',
+                enabledDayPredicate: (day) {
+                  // يمنع الأيام الماضية
+                  return !day.isBefore(today);
+                },
                 onDaySelected: (selectedDay, focusedDay) {
+                  if (selectedDay.isBefore(today)) return;
+
+                  calendarCubit.updateSelectedDay(
+                    DateTime(
+                        selectedDay.year, selectedDay.month, selectedDay.day),
+                    DateTime(
+                        selectedDay.year, selectedDay.month, selectedDay.day),
+                  );
+
                   context.read<PageViewCubit>().nextPage();
                   controller.nextPage(
-                    duration: Duration(milliseconds: 300),
+                    duration: const Duration(milliseconds: 300),
                     curve: Curves.ease,
                   );
-                  calendarCubit.updateSelectedDay(selectedDay, focusedDay);
 
-                  final clubId = context.read<PageViewCubit>().state.clubId;
-                  final employeeId =
-                      context.read<PageViewCubit>().state.employeeId;
-                  final serviceId =
-                      context.read<PageViewCubit>().state.serviceId;
-
+                  final pv = context.read<PageViewCubit>().state;
                   calendarCubit.listTimeslot(
-                    branchId: clubId ?? 0,
-                    employeeId: employeeId ?? 0,
-                    serviceId: serviceId ?? 0,
+                    branchId: pv.clubId ?? 0,
+                    employeeId: pv.employeeId ?? 0,
+                    serviceId: pv.serviceId ?? 0,
                   );
                 },
                 calendarBuilders: CalendarBuilders(
-                  outsideBuilder: (context, day, focusedDay) => Container(
-                    margin: EdgeInsets.all(6),
-                    alignment: Alignment.center,
-                    child: Text(
-                      '${day.day}',
-                      style: TextStyle(color: Colors.grey),
-                    ),
-                  ),
+                  outsideBuilder: (context, day, focusedDay) =>
+                      _outsideCell(day),
                   todayBuilder: (context, day, focusedDay) =>
-                      buildDayCell(day, isToday: true),
+                      _dayCell(day, isToday: true),
                   selectedBuilder: (context, day, focusedDay) =>
-                      buildDayCell(day, isSelected: true),
+                      _dayCell(day, isSelected: true),
                   defaultBuilder: (context, day, focusedDay) {
-                    return buildDayCell(
-                      day,
-                      isToday: isSameDay(day, DateTime.now()),
-                      isSelected: isSameDay(day, state.selectedDay),
-                    );
+                    final isToday = isSameDay(day, today);
+                    final isSelected = isSameDay(day, state.selectedDay);
+                    return _dayCell(day,
+                        isToday: isToday, isSelected: isSelected);
                   },
+                  disabledBuilder: (context, day, focusedDay) =>
+                      _disabledCell(day),
                 ),
-                headerStyle: HeaderStyle(
+                headerStyle: const HeaderStyle(
                   formatButtonVisible: false,
                   titleCentered: true,
                   leftChevronIcon: Icon(Icons.chevron_left),
                   rightChevronIcon: Icon(Icons.chevron_right),
                 ),
+                calendarStyle: const CalendarStyle(
+                  isTodayHighlighted: false,
+                  outsideDaysVisible: true,
+                ),
               ),
               const SizedBox(height: 16),
-              //  TimeSlotSection(state: state, controller: controller),
             ],
           ),
         );
@@ -89,27 +106,64 @@ class CustomCalder extends StatelessWidget {
     );
   }
 
-  Widget buildDayCell(DateTime day,
-      {bool isToday = false, bool isSelected = false}) {
-    Color bgColor = Colors.transparent;
-    Color textColor = Colors.black;
+  static DateTime _clamp(DateTime focused, DateTime first, DateTime last) {
+    if (focused.isBefore(first)) return first;
+    if (focused.isAfter(last)) return last;
+    return focused;
+  }
+
+  static Widget _dayCell(
+    DateTime day, {
+    bool isToday = false,
+    bool isSelected = false,
+  }) {
+    Color bg = Colors.transparent;
+    Color text = Colors.black;
 
     if (isSelected) {
-      bgColor = Colors.green;
-      textColor = Colors.white;
+      bg = const Color(0xFF2ECC71);
+      text = Colors.white;
     } else if (isToday) {
-      bgColor = Colors.blue;
-      textColor = Colors.black;
+      bg = const Color(0xFF3498DB).withOpacity(0.2);
+      text = const Color(0xFF3498DB);
     }
 
     return Container(
-      margin: EdgeInsets.all(6),
+      margin: const EdgeInsets.all(6),
       decoration: BoxDecoration(
-        color: bgColor,
+        color: bg,
         shape: BoxShape.circle,
       ),
       alignment: Alignment.center,
-      child: Text('${day.day}', style: TextStyle(color: textColor)),
+      child: Text(
+        '${day.day}',
+        style: TextStyle(
+          color: text,
+          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+        ),
+      ),
+    );
+  }
+
+  static Widget _outsideCell(DateTime day) {
+    return Container(
+      margin: const EdgeInsets.all(6),
+      alignment: Alignment.center,
+      child: Text(
+        '${day.day}',
+        style: const TextStyle(color: Colors.grey),
+      ),
+    );
+  }
+
+  static Widget _disabledCell(DateTime day) {
+    return Container(
+      margin: const EdgeInsets.all(6),
+      alignment: Alignment.center,
+      child: Text(
+        '${day.day}',
+        style: TextStyle(color: Colors.grey.withOpacity(0.5)),
+      ),
     );
   }
 }
