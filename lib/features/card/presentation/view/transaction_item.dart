@@ -20,6 +20,7 @@ class TransactionItem extends StatelessWidget {
     final formattedDate =
         DateFormat("dd MMM yyyy • hh:mm a").format(transaction.createdAt);
     final user = transaction.user;
+    final referenceUser = transaction.referenceUser;
 
     return Stack(
       children: [
@@ -105,28 +106,44 @@ class TransactionItem extends StatelessWidget {
           left: 0,
           child: GestureDetector(
             onTap: () {
-              if (user != null) {
-                showDialog(
-                  context: context,
-                  builder: (_) => AlertDialog(
-                    title: const Text('معلومات المستخدم'),
-                    content: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        _infoRow('الاسم:', user.name),
-                        _infoRow('اسم المستخدم:', user.username),
-                        _infoRow('رقم الهاتف:', user.phoneNumber),
+              if (user == null) {
+                return;
+              }
+              showDialog(
+                context: context,
+                builder: (_) => AlertDialog(
+                  title: const Text('تفاصيل المستخدم'),
+                  content: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _infoRow('الاسم الكامل:', user.name),
+                      _infoRow('اسم الدخول:', user.username),
+                      _infoRow('رقم الجوال:', user.phoneNumber),
+                      if (referenceUser != null) ...[
+                        const Divider(height: 24),
+                        const Text(
+                          'معلومات ',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        _infoRow('الاسم الكامل:', referenceUser.name),
+                        _infoRow('اسم الدخول:', referenceUser.username),
+                        _infoRow('رقم الجوال:', referenceUser.phoneNumber),
                       ],
-                    ),
-                    actions: [
-                      TextButton(
-                        onPressed: () => Navigator.pop(context),
-                        child: const Text('إغلاق'),
-                      ),
                     ],
                   ),
-                );
-              }
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: const Text('إغلاق النافذة'),
+                    ),
+                  ],
+                ),
+              );
             },
             child: Icon(
               Icons.info_rounded,

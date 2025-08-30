@@ -105,6 +105,7 @@ class Transaction {
   final DateTime createdAt;
   final DateTime updatedAt;
   final TxUser? user;
+  final TxUser? referenceUser;
 
   Transaction({
     required this.id,
@@ -117,6 +118,7 @@ class Transaction {
     required this.createdAt,
     required this.updatedAt,
     this.user,
+    this.referenceUser,
   });
 
   factory Transaction.fromJson(Map<String, dynamic> json) {
@@ -133,6 +135,9 @@ class Transaction {
       user: json['user'] is Map<String, dynamic>
           ? TxUser.fromJson(json['user'])
           : null,
+      referenceUser: json['reference_user'] is Map<String, dynamic>
+          ? TxUser.fromJson(json['reference_user'])
+          : null,
     );
   }
 
@@ -147,6 +152,7 @@ class Transaction {
         'created_at': createdAt.toIso8601String(),
         'updated_at': updatedAt.toIso8601String(),
         'user': user?.toJson(),
+        'reference_user': referenceUser?.toJson(),
       };
 
   static int _asInt(dynamic v) {
