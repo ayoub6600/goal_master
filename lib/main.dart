@@ -10,6 +10,8 @@ import 'package:goal_master/core/routing/routes_keys.dart';
 import 'package:goal_master/core/services/service_locator.dart';
 import 'package:goal_master/core/styles/app_colors.dart';
 import 'package:goal_master/core/utils/storage_service.dart';
+import 'package:goal_master/core/view/connection_cubit.dart';
+import 'package:goal_master/core/view/no_internet_view.dart';
 import 'package:goal_master/features/auth/data/repo/auth_repo_imp.dart';
 import 'package:goal_master/features/balance/data/repo/balance_repo_imp.dart';
 import 'package:goal_master/features/balance/presentation/balance_cubit/balance_cubit.dart';
@@ -90,139 +92,112 @@ class GoalMaster extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MultiBlocProvider(
-      providers: [
-        BlocProvider(
-          create: (_) {
-            final cubit = NotificationCubit(
-              notificationRepo: getIt<NotificationRepo>(),
-              userId: SharedPreferenceUtil.getInt(PrefKey.userId) ?? 0,
-              onVisualNotification: (notification) async {
-                const androidDetails = AndroidNotificationDetails(
-                  'goal_channel_id',
-                  'Goal Notifications',
-                  channelDescription: 'Notifications from Goal Master Admin',
-                  importance: Importance.max,
-                  priority: Priority.high,
-                  playSound: true,
-                  icon: '@mipmap/ic_launcher',
-                  styleInformation: BigPictureStyleInformation(
-                    DrawableResourceAndroidBitmap('app_notifiction'),
-                    largeIcon: DrawableResourceAndroidBitmap('app_notifiction'),
-                    contentTitle: '📣 Goal Master',
-                    summaryText: null, // ممكن تمرّر الرسالة هنا لو حابب
-                  ),
-                );
-
-                const iosDetails = DarwinNotificationDetails(
-                  presentAlert:
-                      true, // يظهر تنبيه حتى لو الآب في الـ foreground
-                  presentBadge: true,
-                  presentSound: true,
-                  threadIdentifier: 'goal_notifications',
-                );
-
-                await flutterLocalNotificationsPlugin.show(
-                  0,
-                  '📣 Goal Master',
-                  notification.data.message,
-                  const NotificationDetails(
-                    android: androidDetails,
-                    iOS: iosDetails,
-                  ),
-                  payload: RoutesKeys.kNotification,
-                );
-              },
-
-              // onVisualNotification: (notification) async {
-              //   await flutterLocalNotificationsPlugin.show(
-              //     0,
-              //     '📣 مدير الملعب',
-              //     notification.data.message,
-              //     NotificationDetails(
-              //       android: AndroidNotificationDetails(
-              //         'goal_channel_id',
-              //         'Goal Notifications',
-              //         channelDescription:
-              //             'Notifications from Goal Master Admin',
-              //         importance: Importance.max,
-              //         priority: Priority.high,
-              //         playSound: true,
-              //         icon: '@mipmap/ic_launcher',
-              //         styleInformation: BigPictureStyleInformation(
-              //           DrawableResourceAndroidBitmap('app_notifiction'),
-              //           largeIcon:
-              //               DrawableResourceAndroidBitmap('app_notifiction'),
-              //           contentTitle: '📣 مدير الملعب',
-              //           summaryText: notification.data.message,
-              //         ),
-              //       ),
-              //     ),
-              //     payload: RoutesKeys.kNotification,
-              //   );
-              // },
-            );
-            cubit.startSocket();
-            return cubit;
-          },
-        ),
-        BlocProvider(
-          create: (context) => LayoutCubit(),
-        ),
-        BlocProvider(
-          create: (context) => UserInfoCubit(
-            getIt<AuthRepoImpl>(),
-          ),
-        ),
-        BlocProvider(
-          create: (context) => AnalysisCubit(
-            getIt<AnalysisRepoImp>(),
-          )..getAnalysis(),
-        ),
-        BlocProvider(
-          create: (context) => ProfileCubit(
-            getIt<ProfileRepoImp>(),
-          )..getProfile(),
-        ),
-        BlocProvider(
-          create: (context) => BalanceCubit(
-            getIt<BalanceRepoImp>(),
-          )..getBalance(),
-        ),
-      ],
-      child: ScreenUtilInit(
-        designSize: const Size(390, 844),
-        child: GestureDetector(
-          onTap: () {
-            FocusScopeNode currentFocus = FocusScope.of(context);
-            if (!currentFocus.hasPrimaryFocus) {
-              currentFocus.unfocus();
-              FocusManager.instance.primaryFocus?.unfocus();
-            }
-          },
-          child: OKToast(
-            child: MaterialApp.router(
-              title: 'Goal Master',
-              theme: ThemeData(
-                colorScheme: ColorScheme.fromSeed(seedColor: AppColors.primary),
-                useMaterial3: true,
-                textTheme: GoogleFonts.tajawalTextTheme(),
-                scaffoldBackgroundColor: Colors.white,
-              ),
+    return BlocProvider(
+      create: (_) => ConnectionCubit(),
+      child: BlocBuilder<ConnectionCubit, bool>(
+        builder: (context, state) {
+          if (!state) {
+            return const MaterialApp(
               debugShowCheckedModeBanner: false,
-              locale: const Locale('ar'),
-              supportedLocales: const [
-                Locale('ar'),
-              ],
-              localizationsDelegates: const [
-                GlobalMaterialLocalizations.delegate,
-                GlobalWidgetsLocalizations.delegate,
-                GlobalCupertinoLocalizations.delegate,
-              ],
-              routerConfig: AppRouter.router,
+              home: NoInternetView(),
+            );
+          }
+
+          return MultiBlocProvider(
+            providers: [
+              BlocProvider(
+                create: (_) {
+                  final cubit = NotificationCubit(
+                    notificationRepo: getIt<NotificationRepo>(),
+                    userId: SharedPreferenceUtil.getInt(PrefKey.userId) ?? 0,
+                    onVisualNotification: (notification) async {
+                      const androidDetails = AndroidNotificationDetails(
+                        'goal_channel_id',
+                        'Goal Notifications',
+                        channelDescription:
+                            'Notifications from Goal Master Admin',
+                        importance: Importance.max,
+                        priority: Priority.high,
+                        playSound: true,
+                        icon: '@mipmap/ic_launcher',
+                        styleInformation: BigPictureStyleInformation(
+                          DrawableResourceAndroidBitmap('app_notifiction'),
+                          largeIcon:
+                              DrawableResourceAndroidBitmap('app_notifiction'),
+                          contentTitle: '📣 Goal Master',
+                        ),
+                      );
+
+                      const iosDetails = DarwinNotificationDetails(
+                        presentAlert: true,
+                        presentBadge: true,
+                        presentSound: true,
+                        threadIdentifier: 'goal_notifications',
+                      );
+
+                      await flutterLocalNotificationsPlugin.show(
+                        0,
+                        '📣 Goal Master',
+                        notification.data.message,
+                        const NotificationDetails(
+                          android: androidDetails,
+                          iOS: iosDetails,
+                        ),
+                        payload: RoutesKeys.kNotification,
+                      );
+                    },
+                  );
+                  cubit.startSocket();
+                  return cubit;
+                },
+              ),
+              BlocProvider(create: (_) => LayoutCubit()),
+              BlocProvider(create: (_) => UserInfoCubit(getIt<AuthRepoImpl>())),
+              BlocProvider(
+                  create: (_) =>
+                      AnalysisCubit(getIt<AnalysisRepoImp>())..getAnalysis()),
+              BlocProvider(
+                  create: (_) =>
+                      ProfileCubit(getIt<ProfileRepoImp>())..getProfile()),
+              BlocProvider(
+                  create: (_) =>
+                      BalanceCubit(getIt<BalanceRepoImp>())..getBalance()),
+            ],
+            child: ScreenUtilInit(
+              designSize: const Size(390, 844),
+              child: GestureDetector(
+                onTap: () {
+                  FocusScopeNode currentFocus = FocusScope.of(context);
+                  if (!currentFocus.hasPrimaryFocus) {
+                    currentFocus.unfocus();
+                    FocusManager.instance.primaryFocus?.unfocus();
+                  }
+                },
+                child: OKToast(
+                  child: MaterialApp.router(
+                    title: 'Goal Master',
+                    theme: ThemeData(
+                      colorScheme:
+                          ColorScheme.fromSeed(seedColor: AppColors.primary),
+                      useMaterial3: true,
+                      textTheme: GoogleFonts.tajawalTextTheme(),
+                      scaffoldBackgroundColor: Colors.white,
+                    ),
+                    debugShowCheckedModeBanner: false,
+                    locale: const Locale('ar'),
+                    supportedLocales: const [Locale('ar')],
+                    localizationsDelegates: const [
+                      GlobalMaterialLocalizations.delegate,
+                      GlobalWidgetsLocalizations.delegate,
+                      GlobalCupertinoLocalizations.delegate,
+                    ],
+                    routerConfig: AppRouter.router,
+                  ),
+                ),
+              ),
             ),
-          ),
-        ),
+          );
+        },
       ),
     );
   }
