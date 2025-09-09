@@ -40,6 +40,7 @@ dependencies:
   android_intent_plus: ^5.3.0
   cached_network_image: ^3.4.1
   pretty_dio_logger: ^1.4.0
+  connectivity_plus: ^6.1.5
   hexcolor: ^3.0.1
   flutter_localization: ^0.3.3
   webview_flutter: ^4.13.0
@@ -51,6 +52,7 @@ dependencies:
   go_router: ^14.8.1
   smooth_page_indicator: ^1.2.1
   flutter_svg: ^2.0.17
+  flutter_inappwebview: ^6.1.5
   flutter_bloc: ^9.1.0
   bloc: ^9.0.0
   flutter_otp_text_field: ^1.5.1+1
@@ -63,8 +65,14 @@ dependencies:
   synchronized: ^3.2.0
   get_it: ^8.0.3
   flutter_secure_storage: ^8.1.0
+  crypto: ^3.0.6
+
   audioplayers: ^6.5.0
   permission_handler: ^12.0.1
+  moamalat_payment: ^0.0.5
+  webview_flutter_android: ^4.10.1
+  webview_flutter_wkwebview: ^3.23.0
+  
 
 
   infinite_scroll_pagination: ^4.1.0
@@ -113,6 +121,7 @@ flutter:
     - assets/images/svg_image/
     - assets/images/png_image/
     - assets/images/svg_image/sendotp.svg
+
 
 flutter_icons:
   android: true
