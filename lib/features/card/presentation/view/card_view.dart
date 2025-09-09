@@ -4,18 +4,22 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:goal_master/core/bottom_sheet/base_bottom_sheet.dart';
 import 'package:goal_master/core/components/button_app.dart';
 import 'package:goal_master/core/components/page_wrapper.dart';
+import 'package:goal_master/core/routing/route_utils.dart';
+import 'package:goal_master/core/routing/routes_keys.dart';
 import 'package:goal_master/core/styles/app_colors.dart';
 import 'package:goal_master/core/styles/app_text_styles.dart';
+import 'package:goal_master/core/styles/assets.dart';
 import 'package:goal_master/core/styles/spaces.dart';
 import 'package:goal_master/features/balance/data/model/transactions_response.dart';
 import 'package:goal_master/features/balance/presentation/balance_cubit/balance_cubit.dart';
-import 'package:goal_master/features/balance/presentation/send_money_cubit/send_money_cubit.dart';
+import 'package:goal_master/features/balance/presentation/send_money_cubit/send_money_cubit.dart'
+    show SendMoneyCubit;
 import 'package:goal_master/features/balance/presentation/transaction_cubit/transaction_cubit.dart';
 import 'package:goal_master/features/card/presentation/manager/cubit/card_cubit.dart';
 import 'package:goal_master/features/card/presentation/view/send_money_view.dart';
+
 import 'package:goal_master/features/card/presentation/view/transaction_item.dart';
-import 'package:goal_master/features/card/presentation/view/widgets/top_up_sheet.dart';
-import 'package:goal_master/features/card/presentation/view/widgets/top_up_sheet_visa.dart';
+
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 
 class CardView extends StatelessWidget {
@@ -110,34 +114,23 @@ class CardView extends StatelessWidget {
                                 return Center(child: Text("No Data"));
                               },
                             ),
+                            HeightSpace(8.h),
                             Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceAround,
                               children: [
                                 Expanded(
                                   child: ButtonApp(
-                                    icon: Icons.card_membership,
-                                    text: "كرت",
+                                    assetIconPath: Assets.imagesPngImageWallet2,
+                                    text: "شحن",
                                     backGround: AppColors.white,
-                                    textColor: AppColors.primary,
+                                    textColor: AppColors.obsidianBlack,
                                     onTap: () async {
-                                      final cardCubit =
-                                          context.read<CardCubit>();
                                       final txCubit =
                                           context.read<TransactionCubit>();
                                       final balanceCubit =
                                           context.read<BalanceCubit>();
 
-                                      final shouldReload =
-                                          await baseBottomSheet(
-                                        context: context,
-                                        title: "شحن الرصيد",
-                                        hideNavBar: false,
-                                        showDragHandle: false,
-                                        child: BlocProvider.value(
-                                          value: cardCubit,
-                                          child: const TopUpSheet(),
-                                        ),
-                                      );
+                                      final shouldReload = await push(
+                                          RoutesKeys.kListPaymentView, context);
 
                                       if (shouldReload == true) {
                                         txCubit.refresh();
@@ -146,47 +139,14 @@ class CardView extends StatelessWidget {
                                     },
                                   ),
                                 ),
-                                WidthSpace(4.w),
+                                WidthSpace(8.w),
                                 Expanded(
                                   child: ButtonApp(
-                                    icon: Icons.card_membership,
-                                    text: 'فيزا',
-                                    backGround: AppColors.white,
-                                    textColor: AppColors.primary,
-                                    onTap: () async {
-                                      final cardCubit =
-                                          context.read<CardCubit>();
-                                      final txCubit =
-                                          context.read<TransactionCubit>();
-                                      final balanceCubit =
-                                          context.read<BalanceCubit>();
-
-                                      final shouldReload =
-                                          await baseBottomSheet(
-                                        context: context,
-                                        title: "شحن الرصيد",
-                                        hideNavBar: false,
-                                        showDragHandle: false,
-                                        child: BlocProvider.value(
-                                          value: cardCubit,
-                                          child: const TopUpSheetVisa(),
-                                        ),
-                                      );
-
-                                      if (shouldReload == true) {
-                                        txCubit.refresh();
-                                        balanceCubit.getBalance();
-                                      }
-                                    },
-                                  ),
-                                ),
-                                WidthSpace(4.w),
-                                Expanded(
-                                  child: ButtonApp(
-                                    icon: Icons.transfer_within_a_station,
+                                    //  icon: Icons.transfer_within_a_station,
+                                    assetIconPath: Assets.sendMo,
                                     text: "تحويل فلوس",
                                     backGround: AppColors.white,
-                                    textColor: AppColors.primary,
+                                    textColor: AppColors.obsidianBlack,
                                     onTap: () async {
                                       final cardCubit =
                                           context.read<CardCubit>();
