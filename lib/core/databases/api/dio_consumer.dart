@@ -1,7 +1,11 @@
+import 'dart:io';
 import 'package:dio/dio.dart';
+import 'package:flutter/material.dart';
 import 'package:goal_master/core/components/keys_values.dart';
 import 'package:goal_master/core/components/preference_utility.dart';
 import 'package:goal_master/core/databases/token_interceptor.dart';
+import 'package:goal_master/core/routing/app_router.dart';
+import 'package:goal_master/core/view/no_internet_view.dart';
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 import 'api_consumer.dart';
 import 'end_points.dart';
@@ -44,13 +48,18 @@ class DioConsumer extends ApiConsumer {
     Map<String, dynamic>? queryParameters,
     bool isFormData = false,
   }) async {
-    _setAuthorizationHeader();
-    var response = await dio.post(
-      path,
-      data: isFormData ? FormData.fromMap(data) : data,
-      queryParameters: queryParameters,
-    );
-    return response.data;
+    try {
+      _setAuthorizationHeader();
+      var response = await dio.post(
+        path,
+        data: isFormData ? FormData.fromMap(data) : data,
+        queryParameters: queryParameters,
+      );
+      return response.data;
+    } on DioException catch (e) {
+      _handleDioError(e);
+      rethrow;
+    }
   }
 
   @override
@@ -59,32 +68,40 @@ class DioConsumer extends ApiConsumer {
     Object? data,
     Map<String, dynamic>? queryParameters,
   }) async {
-    _setAuthorizationHeader();
-    var res = await dio.get(
-      path,
-      data: data,
-      queryParameters: queryParameters,
-    );
-    return res.data;
+    try {
+      _setAuthorizationHeader();
+      var res = await dio.get(
+        path,
+        data: data,
+        queryParameters: queryParameters,
+      );
+      return res.data;
+    } on DioException catch (e) {
+      _handleDioError(e);
+      rethrow;
+    }
   }
 
-  //!DELETE
   @override
   Future delete(
     String path, {
     Object? data,
     Map<String, dynamic>? queryParameters,
   }) async {
-    _setAuthorizationHeader(); // تأكد من تحديث التوكن في كل طلب
-    var res = await dio.delete(
-      path,
-      data: data,
-      queryParameters: queryParameters,
-    );
-    return res.data;
+    try {
+      _setAuthorizationHeader();
+      var res = await dio.delete(
+        path,
+        data: data,
+        queryParameters: queryParameters,
+      );
+      return res.data;
+    } on DioException catch (e) {
+      _handleDioError(e);
+      rethrow;
+    }
   }
 
-  //!PATCH
   @override
   Future patch(
     String path, {
@@ -92,13 +109,18 @@ class DioConsumer extends ApiConsumer {
     Map<String, dynamic>? queryParameters,
     bool isFormData = true,
   }) async {
-    _setAuthorizationHeader(); // تأكد من تحديث التوكن في كل طلب
-    var res = await dio.patch(
-      path,
-      data: isFormData ? FormData.fromMap(data) : data,
-      queryParameters: queryParameters,
-    );
-    return res.data;
+    try {
+      _setAuthorizationHeader();
+      var res = await dio.patch(
+        path,
+        data: isFormData ? FormData.fromMap(data) : data,
+        queryParameters: queryParameters,
+      );
+      return res.data;
+    } on DioException catch (e) {
+      _handleDioError(e);
+      rethrow;
+    }
   }
 
   @override
@@ -108,12 +130,30 @@ class DioConsumer extends ApiConsumer {
     Map<String, dynamic>? queryParameters,
     bool isFormData = true,
   }) async {
-    _setAuthorizationHeader(); // تأكد من تحديث التوكن في كل طلب
-    var response = await dio.put(
-      path,
-      data: isFormData ? FormData.fromMap(data) : data,
-      queryParameters: queryParameters,
-    );
-    return response.data;
+    try {
+      _setAuthorizationHeader();
+      var response = await dio.put(
+        path,
+        data: isFormData ? FormData.fromMap(data) : data,
+        queryParameters: queryParameters,
+      );
+      return response.data;
+    } on DioException catch (e) {
+      _handleDioError(e);
+      rethrow;
+    }
+  }
+
+  void _handleDioError(DioException e) {
+    final isConnectionError = e.type == DioExceptionType.connectionError ||
+        e.error is SocketException;
+
+    if (isConnectionError) {
+      if (parentKey.currentState?.canPop() == false) {
+        parentKey.currentState?.push(
+          MaterialPageRoute(builder: (_) => const NoInternetView()),
+        );
+      }
+    }
   }
 }

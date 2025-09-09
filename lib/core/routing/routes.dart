@@ -37,8 +37,11 @@ import 'package:goal_master/features/booking/presentation/view/booking_details.d
 import 'package:goal_master/features/booking/presentation/view/booking_items_details.dart.dart';
 import 'package:goal_master/features/booking/presentation/view/booking_view.dart';
 import 'package:goal_master/features/card/data/repo/card_repo_imp.dart';
+import 'package:goal_master/features/card/presentation/checkout_cubit/cubit/payment_cubit.dart';
 import 'package:goal_master/features/card/presentation/manager/cubit/card_cubit.dart';
 import 'package:goal_master/features/card/presentation/view/card_view.dart';
+import 'package:goal_master/features/card/presentation/view/widgets/list_payment_view.dart';
+import 'package:goal_master/features/card/presentation/view/widgets/payment_webview_page.dart';
 import 'package:goal_master/features/home/data/model/booking_slots_response.dart';
 import 'package:goal_master/features/home/data/repo/analysis_repo_imp.dart';
 import 'package:goal_master/features/home/presentation/manager/filter_cubit/filter_cubit.dart';
@@ -499,6 +502,52 @@ List<RouteBase> appRoutes = [
           getIt<AnalysisRepoImp>(),
         ),
         child: ShowAllResulatFiltter(),
+      ),
+    ),
+  ),
+  //PaymentWebViewPage
+// في router:
+  GoRoute(
+    path: RoutesKeys.kPaymentWebViewPage,
+    pageBuilder: (context, state) {
+      final extra = state.extra as Map<String, dynamic>;
+
+      return buildPageWithDefaultTransition<void>(
+        context: context,
+        state: state,
+        child: PaymentScreen(
+          amount: extra['amount'] as String,
+        ),
+      );
+    },
+  ),
+  //ListPaymentView
+  GoRoute(
+    parentNavigatorKey: parentKey,
+    path: RoutesKeys.kListPaymentView,
+    pageBuilder: (context, state) => buildPageWithDefaultTransition<void>(
+      context: context,
+      state: state,
+      child: MultiBlocProvider(
+        providers: [
+          BlocProvider(
+            create: (context) => CardCubit(
+              getIt<CardRepoImp>(),
+            ),
+          ),
+          BlocProvider(
+            create: (context) => TransactionCubit(
+              getIt<BalanceRepo>(),
+            ),
+          ),
+          //SendMoneyCubit
+          BlocProvider(
+            create: (context) => SendMoneyCubit(
+              getIt<BalanceRepo>(),
+            ),
+          ),
+        ],
+        child: const ListPaymentView(),
       ),
     ),
   ),

@@ -21,4 +21,8 @@ class RoutesKeys {
   static const kFilter = '/kFilter';
   static const kShowAllResulatFiltter = "/ShowAllResulatFiltter";
   static const kAddNewBooking = "/kAddNewBooking";
+  //kPaymentWebViewPage
+  static const kPaymentWebViewPage = "/kPaymentWebViewPage";
+  //kListPaymentView
+  static const kListPaymentView = "/kListPaymentView";
 }
