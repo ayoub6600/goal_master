@@ -15,7 +15,7 @@ import 'package:goal_master/features/balance/presentation/balance_cubit/balance_
 import 'package:goal_master/features/balance/presentation/send_money_cubit/send_money_cubit.dart'
     show SendMoneyCubit;
 import 'package:goal_master/features/balance/presentation/transaction_cubit/transaction_cubit.dart';
-import 'package:goal_master/features/card/presentation/manager/cubit/card_cubit.dart';
+import 'package:goal_master/features/card/presentation/manager/card_cubit/card_cubit.dart';
 import 'package:goal_master/features/card/presentation/view/send_money_view.dart';
 
 import 'package:goal_master/features/card/presentation/view/transaction_item.dart';
@@ -37,7 +37,11 @@ class CardView extends StatelessWidget {
       child: PageWrapper(
         title: "المحفظة",
         child: RefreshIndicator(
-          onRefresh: () async => txCubit.refresh(),
+          onRefresh: () async {
+            txCubit.refresh();
+            //BalanceCubit
+            context.read<BalanceCubit>().getBalance();
+          },
           child: CustomScrollView(
             physics: const BouncingScrollPhysics(
               parent: AlwaysScrollableScrollPhysics(),

@@ -7,6 +7,8 @@ class EndPoints {
 
   //# parent
   static String login = 'login';
+  // transaction-store
+  static String transactionStore = 'transaction-store';
   static String getServices = 'get-service-info';
   static String sendOTP = 'resend-otp';
 

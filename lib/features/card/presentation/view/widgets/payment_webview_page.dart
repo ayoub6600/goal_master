@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:goal_master/core/bottom_sheet/base_bottom_sheet.dart';
-import 'package:goal_master/core/styles/assets.dart';
+import 'package:goal_master/features/card/presentation/manager/add_transaction_cubit/add_transaction_cubit.dart';
 import 'dart:convert';
 
 import 'package:webview_flutter/webview_flutter.dart';
@@ -70,6 +71,11 @@ class _PaymentScreenState extends State<PaymentScreen> {
   }
 
   Future<void> _onSuccess() async {
+    // 1. أرسل الطلب لحفظ المعاملة
+    final cubit = context.read<AddTransactionCubit>();
+    await cubit.addTransaction(widget.amount, "success");
+
+    // 2. أظهر النتيجة في الـ Bottom Sheet
     final shouldReload = await baseBottomSheet(
       context: context,
       hideNavBar: true,
@@ -77,6 +83,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
       child: const PaymentResultSheet(success: true),
     );
 
+    // 3. رجوع بعد العملية
     if (!mounted) return;
     Navigator.pop(context, shouldReload == true);
   }

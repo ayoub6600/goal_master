@@ -9,7 +9,7 @@ import 'package:goal_master/core/styles/assets.dart';
 import 'package:goal_master/core/styles/spaces.dart';
 import 'package:goal_master/features/balance/presentation/balance_cubit/balance_cubit.dart';
 import 'package:goal_master/features/balance/presentation/transaction_cubit/transaction_cubit.dart';
-import 'package:goal_master/features/card/presentation/manager/cubit/card_cubit.dart';
+import 'package:goal_master/features/card/presentation/manager/card_cubit/card_cubit.dart';
 import 'package:goal_master/features/card/presentation/view/widgets/top_up_sheet.dart';
 import 'package:goal_master/features/card/presentation/view/widgets/top_up_sheet_visa.dart';
 

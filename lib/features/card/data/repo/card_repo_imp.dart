@@ -24,4 +24,21 @@ class CardRepoImp implements CardRepo {
       },
     );
   }
+
+  @override
+  Future<Either<Failure, String>> addTransaction(String amount, String status) {
+    return consumer.handleRequest(
+      () => consumer.post(
+        EndPoints.transactionStore,
+        data: {
+          'amount': amount,
+          'status': status,
+        },
+      ),
+      (p0) {
+        String message = p0['message'];
+        return message;
+      },
+    );
+  }
 }
