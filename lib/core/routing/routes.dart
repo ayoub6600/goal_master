@@ -517,7 +517,7 @@ List<RouteBase> appRoutes = [
         context: context,
         state: state,
         child: BlocProvider(
-          create: (context) => AddTransactionCubit(
+          create: (context) => AddTransactionBackEndCubit(
             getIt<CardRepoImp>(),
           ),
           child: PaymentScreen(

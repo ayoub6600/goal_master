@@ -4,8 +4,8 @@ import 'package:goal_master/features/card/data/repo/card_repo.dart';
 
 part 'add_transaction_state.dart';
 
-class AddTransactionCubit extends Cubit<AddTransactionState> {
-  AddTransactionCubit(this.repo) : super(AddTransactionInitial());
+class AddTransactionBackEndCubit extends Cubit<AddTransactionState> {
+  AddTransactionBackEndCubit(this.repo) : super(AddTransactionInitial());
   final CardRepo repo;
 
   Future<void> addTransaction(String amount, String status) async {

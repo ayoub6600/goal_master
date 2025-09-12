@@ -72,8 +72,8 @@ class _PaymentScreenState extends State<PaymentScreen> {
 
   Future<void> _onSuccess() async {
     // 1. أرسل الطلب لحفظ المعاملة
-    final cubit = context.read<AddTransactionCubit>();
-    await cubit.addTransaction(widget.amount, "success");
+    final cubit = context.read<AddTransactionBackEndCubit>();
+    await cubit.addTransaction(widget.amount, "true");
 
     // 2. أظهر النتيجة في الـ Bottom Sheet
     final shouldReload = await baseBottomSheet(
@@ -202,13 +202,20 @@ class _PaymentScreenState extends State<PaymentScreen> {
       body: SafeArea(
         child: Column(
           children: [
-            Padding(
-              padding: const EdgeInsets.all(8.0), // مسافة بسيطة
-              child: SizedBox(
-                height: 40,
-                child: Image.asset(
-                  "assets/images/png_image/app_icon.jpeg",
-                  fit: BoxFit.contain,
+            GestureDetector(
+              onTap: () async {
+                // // 1. أرسل الطلب لحفظ المعاملة
+                // final cubit = context.read<AddTransactionBackEndCubit>();
+                // await cubit.addTransaction(widget.amount, "true");
+              },
+              child: Padding(
+                padding: const EdgeInsets.all(8.0), // مسافة بسيطة
+                child: SizedBox(
+                  height: 40,
+                  child: Image.asset(
+                    "assets/images/png_image/app_icon.jpeg",
+                    fit: BoxFit.contain,
+                  ),
                 ),
               ),
             ),
