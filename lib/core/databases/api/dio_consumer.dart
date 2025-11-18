@@ -22,9 +22,11 @@ class DioConsumer extends ApiConsumer {
 
     dio.options.headers['accept-language'] = 'ar';
     dio.options.followRedirects = false;
+    String loginState = SharedPreferenceUtil.getString(PrefKey.login);
+    bool isLoggedIn = loginState == "true";
 
-    dio.interceptors.addAll([
-      TokenInterceptor(dio),
+    // 🟦 Always add logger
+    dio.interceptors.add(
       PrettyDioLogger(
         requestBody: true,
         responseBody: true,
@@ -32,7 +34,15 @@ class DioConsumer extends ApiConsumer {
         requestHeader: true,
         request: true,
       ),
-    ]);
+    );
+
+    // 🟥 Add TokenInterceptor ONLY if user is logged in
+    if (isLoggedIn) {
+      print("🔐 User logged in → TokenInterceptor added");
+      dio.interceptors.add(TokenInterceptor(dio));
+    } else {
+      print("⚠️ User NOT logged in → TokenInterceptor NOT added");
+    }
   }
 
   void _setAuthorizationHeader() {

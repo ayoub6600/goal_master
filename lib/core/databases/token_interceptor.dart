@@ -12,12 +12,15 @@ class TokenInterceptor extends Interceptor {
 
   TokenInterceptor(this.dio);
 
-  void _redirectToLogin() async {
-    await SharedPreferenceUtil.clear();
+  // void _redirectToLogin() async {
+  //   await SharedPreferenceUtil.clear();
 
-    SharedPreferenceUtil.putString(PrefKey.login, "true");
-    AppRouter.router.go(RoutesKeys.kLogin);
-  }
+  //   // المستخدم الآن يعتبر غير مسجل دخول
+  //   await SharedPreferenceUtil.putString(PrefKey.login, "false");
+
+  //   // بدل ما تودّيه على login، وديه على home
+  //   // AppRouter.router.go(RoutesKeys.kHome);
+  // }
 
   @override
   void onError(
@@ -38,7 +41,7 @@ class TokenInterceptor extends Interceptor {
           print("❌ Failed to refresh token: $failure");
 
           _isRefreshing = false;
-          _redirectToLogin(); // ✅ التحويل إلى login
+          // _redirectToLogin(); // ✅ التحويل إلى login
           handler.reject(err);
         },
         (newToken) async {
@@ -55,7 +58,7 @@ class TokenInterceptor extends Interceptor {
             handler.resolve(cloneReq);
           } catch (e) {
             _isRefreshing = false;
-            _redirectToLogin(); // لو فشل بعد التحديث برضو نحوله
+            //  _redirectToLogin(); // لو فشل بعد التحديث برضو نحوله
             handler.reject(err);
           }
         },
