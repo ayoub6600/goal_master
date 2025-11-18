@@ -132,6 +132,15 @@ class LoginViewBody extends StatelessWidget {
                       },
                     ),
                     HeightSpace(29.h),
+                    ButtonApp(
+                      text: "الدخول كزائر",
+                      backGround: AppColors.primaryBlueLight,
+                      textColor: Colors.white,
+                      onTap: () {
+                        go(RoutesKeys.kHome, context);
+                      },
+                    ),
+                    HeightSpace(29.h),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       crossAxisAlignment: CrossAxisAlignment.center,
