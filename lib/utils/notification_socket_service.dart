@@ -21,11 +21,31 @@ class NotificationSocketService {
   }
 
   void _initializeLocalNotifications() async {
+    // إعدادات أندرويد
     const androidSettings =
         AndroidInitializationSettings('@mipmap/ic_launcher');
-    const initSettings = InitializationSettings(android: androidSettings);
+
+    // إعدادات iOS / iPad / macOS
+    const iosSettings = DarwinInitializationSettings(
+      requestAlertPermission: true,
+      requestBadgePermission: true,
+      requestSoundPermission: true,
+    );
+
+    const initSettings = InitializationSettings(
+      android: androidSettings,
+      iOS: iosSettings, // ✅ مهم جدًا لإصلاح الخطأ على iOS
+    );
+
     await _localNotificationsPlugin.initialize(initSettings);
   }
+
+  // void _initializeLocalNotifications() async {
+  //   const androidSettings =
+  //       AndroidInitializationSettings('@mipmap/ic_launcher');
+  //   const initSettings = InitializationSettings(android: androidSettings);
+  //   await _localNotificationsPlugin.initialize(initSettings);
+  // }
 
   void _connectToSocket() {
     _socket = IO.io('https://socket.goalmasters.online', <String, dynamic>{
