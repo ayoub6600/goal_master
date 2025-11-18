@@ -32,6 +32,16 @@ class Analysis {
       'Done': done,
     };
   }
+
+  factory Analysis.staticData() {
+    return Analysis(
+      pending: 0,
+      processing: 0,
+      approved: 0,
+      cancel: 0,
+      done: 0,
+    );
+  }
 }
 
 class ResponseModel {

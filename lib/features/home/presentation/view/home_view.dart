@@ -9,6 +9,7 @@ import 'package:goal_master/core/styles/app_colors.dart';
 import 'package:goal_master/core/styles/app_text_styles.dart';
 import 'package:goal_master/core/styles/assets.dart';
 import 'package:goal_master/core/styles/spaces.dart';
+import 'package:goal_master/core/utils/should_execute.dart';
 import 'package:goal_master/features/home/presentation/view/widgets/build_header_home.dart';
 import 'package:goal_master/features/home/presentation/view/widgets/list_section_play.dart';
 import 'package:goal_master/features/home/presentation/view/widgets/services_info_view.dart';
@@ -64,7 +65,12 @@ class _HomeViewState extends State<HomeView> {
                     children: [
                       GestureDetector(
                         onTap: () {
-                          push(RoutesKeys.kFilter, context);
+                          shouldExecute(
+                            context: context,
+                            callback: () async {
+                              push(RoutesKeys.kFilter, context);
+                            },
+                          );
                         },
                         child: Container(
                             width: 300.w,
@@ -95,7 +101,12 @@ class _HomeViewState extends State<HomeView> {
                       WidthSpace(8.w),
                       GestureDetector(
                         onTap: () {
-                          push(RoutesKeys.kFilter, context);
+                          shouldExecute(
+                            context: context,
+                            callback: () async {
+                              push(RoutesKeys.kFilter, context);
+                            },
+                          );
                         },
                         child: Image.asset(
                           Assets.imagesPngImageFiltter,
