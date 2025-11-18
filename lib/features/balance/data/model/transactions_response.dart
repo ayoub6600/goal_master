@@ -102,6 +102,7 @@ class Transaction {
   final int userId;
   final int balanceType;
   final int status;
+  final String? type;
   final DateTime createdAt;
   final DateTime updatedAt;
   final TxUser? user;
@@ -114,6 +115,7 @@ class Transaction {
     required this.amount,
     required this.userId,
     required this.balanceType,
+    this.type,
     required this.status,
     required this.createdAt,
     required this.updatedAt,
@@ -126,6 +128,7 @@ class Transaction {
       id: _asInt(json['id']),
       balanceableType: (json['balanceable_type'] ?? '').toString(),
       balanceableId: _asInt(json['balanceable_id']),
+      type: (json['type'] ?? '').toString(),
       amount: _asDouble(json['amount']),
       userId: _asInt(json['user_id']),
       balanceType: _asInt(json['balance_type']),
@@ -150,6 +153,7 @@ class Transaction {
         'balance_type': balanceType,
         'status': status,
         'created_at': createdAt.toIso8601String(),
+        'type': type,
         'updated_at': updatedAt.toIso8601String(),
         'user': user?.toJson(),
         'reference_user': referenceUser?.toJson(),
