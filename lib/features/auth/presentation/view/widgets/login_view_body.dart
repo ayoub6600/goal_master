@@ -14,170 +14,154 @@ import 'package:goal_master/core/components/button_app.dart';
 import 'package:goal_master/features/auth/presentation/manager/login_cubit/login_cubit.dart';
 
 class LoginViewBody extends StatelessWidget {
-  const LoginViewBody({
-    super.key,
-  });
+  const LoginViewBody({super.key});
 
   @override
   Widget build(BuildContext context) {
     var cubit = context.read<LoginCubit>();
     return Scaffold(
-      body: Container(
-        width: double.infinity,
-        height: MediaQuery.of(context).size.height,
-        decoration: BoxDecoration(
-          image: DecorationImage(
-            image: AssetImage(
-              Assets.imagesPngImageBackgroundLogin,
-            ),
+      resizeToAvoidBottomInset: true, // أهم خاصية لتجنب مشاكل الكيبورد
+      body: Stack(
+        fit: StackFit.expand,
+        children: [
+          Image.asset(
+            Assets.imagesPngImageBackgroundLogin,
             fit: BoxFit.cover,
           ),
-        ),
-        child: Container(
-          // width: 336.w,
-          // height: 558.h,
-          margin: EdgeInsets.symmetric(
-            horizontal: 16.w,
-            vertical: 100.h,
-          ),
-          padding: EdgeInsets.fromLTRB(16, 46, 16, 46),
-          decoration: BoxDecoration(
-            //color: Color(0x1AD9D9D9),
-            color: Colors.grey,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(width: 1, color: Colors.transparent),
-
-            gradient: LinearGradient(
-              begin: Alignment(0.85, -0.53),
-              end: Alignment(-0.85, 0.53),
-              colors: [
-                Color.fromRGBO(223, 245, 225, 0.05),
-                Color.fromRGBO(97, 206, 105, 0.5),
-              ],
-            ),
-          ),
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.start,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                  margin: EdgeInsets.symmetric(
-                    horizontal: 40.w,
-                  ),
-                  child: Column(
-                    children: [
-                      Text(
-                        "مرحبًا بعودتك!",
-                        style: AppTextStyles.font24Bold.copyWith(
-                          color: Colors.white,
-                        ),
-                      ),
-                      HeightSpace(24.h),
-                      Text(
-                        "سجّل حسابك واحجز ملعبك في لحظات",
-                        style: AppTextStyles.font16Medium.copyWith(
-                          color: Colors.white,
-                        ),
-                      ),
-                      HeightSpace(48.h),
+          SafeArea(
+            child: SingleChildScrollView(
+              padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 100.h),
+              child: Container(
+                padding: EdgeInsets.fromLTRB(16, 46, 16, 46),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(16),
+                  gradient: LinearGradient(
+                    begin: Alignment(0.85, -0.53),
+                    end: Alignment(-0.85, 0.53),
+                    colors: [
+                      Color.fromRGBO(223, 245, 225, 0.05),
+                      Color.fromRGBO(97, 206, 105, 0.5),
                     ],
                   ),
                 ),
-                Text(
-                  " رقم الهاتف",
-                  style: AppTextStyles.font16Bold.copyWith(
-                    color: Colors.white,
-                  ),
-                ),
-                HeightSpace(8.h),
-                CustomTextField(
-                  hint: " رقم الهاتف",
-                  controller: cubit.emailController,
-                  inputType: TextInputType.phone,
-                ),
-                HeightSpace(14.h),
-                Text(
-                  "كلمة السر",
-                  style: AppTextStyles.font16Bold.copyWith(
-                    color: Colors.white,
-                  ),
-                ),
-                HeightSpace(8.h),
-                CustomTextField(
-                  hint: "ضع كلمة السر",
-                  password: true,
-                  controller: cubit.passwordController,
-                ),
-                HeightSpace(8.h),
-                GestureDetector(
-                  onTap: () {
-                    push(RoutesKeys.kForgotPassword, context);
-                  },
-                  child: Text(
-                    "هل نسيت كلمة المرور؟",
-                    style: AppTextStyles.font14SemiBold.copyWith(
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
-                HeightSpace(50.h),
-                BlocConsumer<LoginCubit, LoginState>(
-                  listener: (context, state) {
-                    if (state is LoginSuccess) {
-                      GoRouter.of(context).go(RoutesKeys.kHome);
-                    } else if (state is LoginError) {
-                      showCustomFailureToast(state.errMessage);
-                    } else if (state is LoginLoading) {
-                      CircularProgressIndicator();
-                    }
-                  },
-                  builder: (context, state) {
-                    if (state is LoginLoading) {
-                      return const Center(
-                        child: CircularProgressIndicator(
-                          color:
-                              Colors.white, // أو AppColors.primary حسب التصميم
-                        ),
-                      );
-                    }
-                    return ButtonApp(
-                      text: "تسجيل الدخول",
-                      backGround: AppColors.primary,
-                      textColor: Colors.white,
-                      onTap: () => cubit.login(),
-                    );
-                  },
-                ),
-                HeightSpace(29.h),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.center,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      "ليس لديك حساب؟",
-                      style: AppTextStyles.font14SemiBold.copyWith(
-                        color: Colors.black,
+                    Center(
+                      child: Column(
+                        children: [
+                          Text(
+                            "مرحبًا بعودتك!",
+                            style: AppTextStyles.font24Bold.copyWith(
+                              color: Colors.white,
+                            ),
+                          ),
+                          HeightSpace(24.h),
+                          Text(
+                            "سجّل حسابك واحجز ملعبك في لحظات",
+                            style: AppTextStyles.font16Medium.copyWith(
+                              color: Colors.white,
+                            ),
+                          ),
+                          HeightSpace(48.h),
+                        ],
                       ),
                     ),
-                    WidthSpace(5.w),
-                    InkWell(
+                    Text(
+                      " رقم الهاتف",
+                      style: AppTextStyles.font16Bold.copyWith(
+                        color: Colors.white,
+                      ),
+                    ),
+                    HeightSpace(8.h),
+                    CustomTextField(
+                      hint: " رقم الهاتف",
+                      controller: cubit.emailController,
+                      inputType: TextInputType.phone,
+                    ),
+                    HeightSpace(14.h),
+                    Text(
+                      "كلمة السر",
+                      style: AppTextStyles.font16Bold.copyWith(
+                        color: Colors.white,
+                      ),
+                    ),
+                    HeightSpace(8.h),
+                    CustomTextField(
+                      hint: "ضع كلمة السر",
+                      password: true,
+                      controller: cubit.passwordController,
+                    ),
+                    HeightSpace(8.h),
+                    GestureDetector(
                       onTap: () {
-                        push(RoutesKeys.kRegister, context);
+                        push(RoutesKeys.kForgotPassword, context);
                       },
                       child: Text(
-                        "انشئ حساب",
+                        "هل نسيت كلمة المرور؟",
                         style: AppTextStyles.font14SemiBold.copyWith(
-                          color: AppColors.primaryBlueLight,
+                          color: Colors.white,
                         ),
                       ),
+                    ),
+                    HeightSpace(50.h),
+                    BlocConsumer<LoginCubit, LoginState>(
+                      listener: (context, state) {
+                        if (state is LoginSuccess) {
+                          GoRouter.of(context).go(RoutesKeys.kHome);
+                        } else if (state is LoginError) {
+                          showCustomFailureToast(state.errMessage);
+                        } else if (state is LoginLoading) {
+                          // لا يفضل وضع CircularProgressIndicator هنا
+                        }
+                      },
+                      builder: (context, state) {
+                        if (state is LoginLoading) {
+                          return const Center(
+                            child: CircularProgressIndicator(
+                              color: Colors.white,
+                            ),
+                          );
+                        }
+                        return ButtonApp(
+                          text: "تسجيل الدخول",
+                          backGround: AppColors.primary,
+                          textColor: Colors.white,
+                          onTap: () => cubit.login(),
+                        );
+                      },
+                    ),
+                    HeightSpace(29.h),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Text(
+                          "ليس لديك حساب؟",
+                          style: AppTextStyles.font14SemiBold.copyWith(
+                            color: Colors.black,
+                          ),
+                        ),
+                        WidthSpace(5.w),
+                        InkWell(
+                          onTap: () {
+                            push(RoutesKeys.kRegister, context);
+                          },
+                          child: Text(
+                            "انشئ حساب",
+                            style: AppTextStyles.font14SemiBold.copyWith(
+                              color: AppColors.primaryBlueLight,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
-              ],
+              ),
             ),
           ),
-        ),
+        ],
       ),
     );
   }
