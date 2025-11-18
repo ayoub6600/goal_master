@@ -23,7 +23,7 @@ class _SplashViewState extends State<SplashView> {
           pushReplacement(RoutesKeys.kOnboarding, context);
         } else if (result == 'true') {
           print("----->$result");
-          pushReplacement(RoutesKeys.kLogin, context);
+          pushReplacement(RoutesKeys.kHome, context);
         } else {
           print("----->$result");
           pushReplacement(RoutesKeys.kHome, context);

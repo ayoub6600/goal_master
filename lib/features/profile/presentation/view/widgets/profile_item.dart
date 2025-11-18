@@ -12,11 +12,13 @@ class ProfileItem extends StatelessWidget {
     required this.icon,
     this.onTap,
     this.child,
+    this.color,
   });
   final String title;
   final String icon;
   final Function()? onTap;
   final Widget? child;
+  final Color? color;
 
   @override
   Widget build(BuildContext context) {
@@ -33,7 +35,7 @@ class ProfileItem extends StatelessWidget {
               fit: BoxFit.cover,
               width: 24.w,
               height: 24.h,
-              color: AppColors.primary,
+              color: color ?? AppColors.primary,
             ),
             WidthSpace(16.w),
             Expanded(
@@ -43,7 +45,7 @@ class ProfileItem extends StatelessWidget {
                     title,
                     textDirection: TextDirection.ltr,
                     style: AppTextStyles.font16Bold.copyWith(
-                      color: AppColors.fontColor,
+                      color: color ?? AppColors.fontColor,
                     ),
                   ),
                 ],

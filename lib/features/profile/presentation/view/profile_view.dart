@@ -159,7 +159,7 @@ class ProfileView extends StatelessWidget {
                                               pushReplacement(
                                                   RoutesKeys.kLogin, context);
                                               SharedPreferenceUtil.putString(
-                                                  PrefKey.login, "true");
+                                                  PrefKey.login, "false");
                                             }),
                                       ),
                                       WidthSpace(16.w),
