@@ -6,6 +6,7 @@ import 'package:goal_master/core/components/custom_failure_toast.dart';
 import 'package:goal_master/core/components/custom_success_toast.dart';
 import 'package:goal_master/core/routing/route_utils.dart';
 import 'package:goal_master/core/routing/routes_keys.dart';
+import 'package:goal_master/core/utils/should_execute.dart';
 import 'package:goal_master/features/booking/presentation/manager/add_booking_cubit/add_booking_cubit.dart';
 import 'package:goal_master/features/booking/presentation/view/widgets/choose_payment.dart';
 import 'package:goal_master/features/booking/presentation/view/widgets/custom_calder.dart';
@@ -120,33 +121,40 @@ class _BookingDetailsState extends State<BookingDetails> {
                                   child: ButtonApp(
                                     text: "تأكيد الحجز",
                                     onTap: () {
-                                      context
-                                          .read<AddBookingCubit>()
-                                          .addBooking(
-                                            employeeId: pageViewCubit
-                                                    .state.employeeId ??
-                                                0,
-                                            serviceId:
-                                                pageViewCubit.state.serviceId ??
+                                      shouldExecute(
+                                        context: context,
+                                        callback: () async {
+                                          context
+                                              .read<AddBookingCubit>()
+                                              .addBooking(
+                                                employeeId: pageViewCubit
+                                                        .state.employeeId ??
                                                     0,
-                                            zoneId:
-                                                pageViewCubit.state.zoneId ?? 0,
-                                            clubId:
-                                                pageViewCubit.state.clubId ?? 0,
-                                            date: context
-                                                .read<CalendarCubit>()
-                                                .state
-                                                .focusedDay
-                                                .toString(),
-                                            startTime: context
-                                                .read<CalendarCubit>()
-                                                .state
-                                                .selectedTime,
-                                            endTime: context
-                                                .read<CalendarCubit>()
-                                                .state
-                                                .selectedTimeEnd!,
-                                          );
+                                                serviceId: pageViewCubit
+                                                        .state.serviceId ??
+                                                    0,
+                                                zoneId: pageViewCubit
+                                                        .state.zoneId ??
+                                                    0,
+                                                clubId: pageViewCubit
+                                                        .state.clubId ??
+                                                    0,
+                                                date: context
+                                                    .read<CalendarCubit>()
+                                                    .state
+                                                    .focusedDay
+                                                    .toString(),
+                                                startTime: context
+                                                    .read<CalendarCubit>()
+                                                    .state
+                                                    .selectedTime,
+                                                endTime: context
+                                                    .read<CalendarCubit>()
+                                                    .state
+                                                    .selectedTimeEnd!,
+                                              );
+                                        },
+                                      );
                                     },
                                   ),
                                 );
