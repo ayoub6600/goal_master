@@ -64,7 +64,9 @@ class _TopUpSheetVisaState extends State<TopUpSheetVisa> {
 
               final amountInMilli = (amount).round();
 
-              Navigator.pop(context);
+              Navigator.pop(
+                context,
+              );
 
               final res = await context.push(
                 RoutesKeys.kPaymentWebViewPage,
@@ -77,6 +79,7 @@ class _TopUpSheetVisaState extends State<TopUpSheetVisa> {
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(content: Text("تم الشحن بنجاح")),
                 );
+                Navigator.pop(context, true);
               }
             },
           ),

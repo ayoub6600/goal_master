@@ -81,20 +81,40 @@ class TransactionItem extends StatelessWidget {
                   padding:
                       const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
-                    color: transaction.status == 1
-                        ? Colors.green.withOpacity(0.15)
-                        : Colors.orange.withOpacity(0.15),
+                    color: () {
+                      switch (transaction.type) {
+                        case "credit":
+                          return Colors.blue.withOpacity(0.15);
+                        case "recharge":
+                          return Colors.purple.withOpacity(0.15);
+                        case "transfer":
+                          return Colors.green.withOpacity(0.15);
+                        case "balance":
+                        default:
+                          return Colors.orange.withOpacity(0.15);
+                      }
+                    }(),
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Text(
-                    transaction.status == 1 ? "مكتمل" : "معلق",
+                    () {
+                      switch (transaction.type) {
+                        case "credit":
+                          return "دفع بالكريديت";
+                        case "recharge":
+                          return "شحن رصيد (كارت شحن)";
+                        case "transfer":
+                          return "تحويل رصيد لمستخدم";
+                        case "balance":
+                          return "المحفظة ";
+                        default:
+                          return transaction.type ?? "";
+                      }
+                    }(),
                     style: theme.textTheme.labelSmall?.copyWith(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                      color: transaction.status == 1
-                          ? Colors.green
-                          : Colors.orange,
-                    ),
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.black),
                   ),
                 ),
               ],

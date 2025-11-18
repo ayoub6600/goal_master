@@ -205,8 +205,8 @@ class _PaymentScreenState extends State<PaymentScreen> {
             GestureDetector(
               onTap: () async {
                 // // 1. أرسل الطلب لحفظ المعاملة
-                // final cubit = context.read<AddTransactionBackEndCubit>();
-                // await cubit.addTransaction(widget.amount, "true");
+                final cubit = context.read<AddTransactionBackEndCubit>();
+                await cubit.addTransaction(widget.amount, "true");
               },
               child: Padding(
                 padding: const EdgeInsets.all(8.0), // مسافة بسيطة
