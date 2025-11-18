@@ -12,6 +12,7 @@ import 'package:goal_master/core/styles/app_colors.dart';
 import 'package:goal_master/core/styles/app_text_styles.dart';
 import 'package:goal_master/core/styles/assets.dart';
 import 'package:goal_master/core/styles/spaces.dart';
+import 'package:goal_master/core/utils/should_execute.dart';
 import 'package:goal_master/features/auth/data/repo/auth_repo_imp.dart';
 import 'package:goal_master/features/auth/presentation/manager/delete_account/delete_account_cubit.dart';
 import 'package:goal_master/features/auth/presentation/manager/delete_account/delete_account_state.dart';
@@ -101,106 +102,114 @@ class MoreView extends StatelessWidget {
             ProfileItem(
               title: "حذف الحساب",
               icon: Assets.imagesPngImageLogout,
+              color: Colors.red,
               onTap: () async {
-                showModalBottomSheet(
+                shouldExecute(
                   context: context,
-                  shape: RoundedRectangleBorder(
-                    borderRadius:
-                        BorderRadius.vertical(top: Radius.circular(16)),
-                  ),
-                  builder: (context) {
-                    return Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: BlocProvider(
-                        create: (_) =>
-                            DeleteAccountCubit(getIt<AuthRepoImpl>()),
-                        child: BlocConsumer<DeleteAccountCubit,
-                            DeleteAccountState>(
-                          listener: (context, state) async {
-                            if (state is DeleteAccountSuccess) {
-                              await SharedPreferenceUtil.clear();
-                              pushReplacement(RoutesKeys.kLogin, context);
-                              SharedPreferenceUtil.putString(
-                                  PrefKey.login, "true");
-                            } else if (state is DeleteAccountFailure) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text(state.message)),
-                              );
-                            }
-                          },
-                          builder: (context, state) {
-                            return Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Text(
-                                  "حذف الحساب",
-                                  style: AppTextStyles.font16Bold,
-                                ),
-                                HeightSpace(16.h),
-                                Text(
-                                  "هل أنت متأكد من حذف حسابك؟",
-                                  style: AppTextStyles.font14Medium.copyWith(
-                                    color: AppColors.fontColor,
-                                  ),
-                                ),
-                                HeightSpace(16.h),
-                                Column(
+                  callback: () async {
+                    showModalBottomSheet(
+                      context: context,
+                      shape: RoundedRectangleBorder(
+                        borderRadius:
+                            BorderRadius.vertical(top: Radius.circular(16)),
+                      ),
+                      builder: (context) {
+                        return Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: BlocProvider(
+                            create: (_) =>
+                                DeleteAccountCubit(getIt<AuthRepoImpl>()),
+                            child: BlocConsumer<DeleteAccountCubit,
+                                DeleteAccountState>(
+                              listener: (context, state) async {
+                                if (state is DeleteAccountSuccess) {
+                                  await SharedPreferenceUtil.clear();
+                                  pushReplacement(RoutesKeys.kLogin, context);
+                                  SharedPreferenceUtil.putString(
+                                      PrefKey.login, "true");
+                                } else if (state is DeleteAccountFailure) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(content: Text(state.message)),
+                                  );
+                                }
+                              },
+                              builder: (context, state) {
+                                return Column(
+                                  mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    Center(
-                                      child: Text(
-                                        "سيتم حذف جميع سجلاتك من قاعدة البيانات لدينا.",
-                                        textAlign: TextAlign.center,
-                                        style:
-                                            AppTextStyles.font14Medium.copyWith(
-                                          color: AppColors.fontColor,
-                                        ),
-                                      ),
-                                    ),
                                     Text(
-                                      "نشكرك على وقتك معنا ونتمنى لك كل التوفيق 🌟",
-                                      textAlign: TextAlign.center,
+                                      "حذف الحساب",
+                                      style: AppTextStyles.font16Bold,
+                                    ),
+                                    HeightSpace(16.h),
+                                    Text(
+                                      "هل أنت متأكد من حذف حسابك؟",
                                       style:
                                           AppTextStyles.font14Medium.copyWith(
                                         color: AppColors.fontColor,
                                       ),
-                                    )
-                                  ],
-                                ),
-                                HeightSpace(16.h),
-                                Row(
-                                  children: [
-                                    Expanded(
-                                      child: ButtonApp(
-                                        text: state is DeleteAccountLoading
-                                            ? "جاري الحذف..."
-                                            : "حذف",
-                                        onTap: state is DeleteAccountLoading
-                                            ? null
-                                            : () {
-                                                context
-                                                    .read<DeleteAccountCubit>()
-                                                    .deleteAccount();
-                                              },
-                                      ),
                                     ),
-                                    WidthSpace(16.w),
-                                    Expanded(
-                                      child: ButtonApp(
-                                        textColor: Colors.white,
-                                        backGround: Colors.red,
-                                        text: "إلغاء",
-                                        onTap: () {
-                                          Navigator.pop(context);
-                                        },
-                                      ),
+                                    HeightSpace(16.h),
+                                    Column(
+                                      children: [
+                                        Center(
+                                          child: Text(
+                                            "سيتم حذف جميع سجلاتك من قاعدة البيانات لدينا.",
+                                            textAlign: TextAlign.center,
+                                            style: AppTextStyles.font14Medium
+                                                .copyWith(
+                                              color: AppColors.fontColor,
+                                            ),
+                                          ),
+                                        ),
+                                        Text(
+                                          "نشكرك على وقتك معنا ونتمنى لك كل التوفيق 🌟",
+                                          textAlign: TextAlign.center,
+                                          style: AppTextStyles.font14Medium
+                                              .copyWith(
+                                            color: AppColors.fontColor,
+                                          ),
+                                        )
+                                      ],
+                                    ),
+                                    HeightSpace(16.h),
+                                    Row(
+                                      children: [
+                                        Expanded(
+                                          child: ButtonApp(
+                                            text: state is DeleteAccountLoading
+                                                ? "جاري الحذف..."
+                                                : "حذف",
+                                            onTap: state is DeleteAccountLoading
+                                                ? null
+                                                : () {
+                                                    context
+                                                        .read<
+                                                            DeleteAccountCubit>()
+                                                        .deleteAccount();
+                                                  },
+                                          ),
+                                        ),
+                                        WidthSpace(16.w),
+                                        Expanded(
+                                          child: ButtonApp(
+                                            textColor: Colors.white,
+                                            backGround: Colors.red,
+                                            text: "إلغاء",
+                                            onTap: () {
+                                              Navigator.pop(context);
+                                            },
+                                          ),
+                                        ),
+                                      ],
                                     ),
                                   ],
-                                ),
-                              ],
-                            );
-                          },
-                        ),
-                      ),
+                                );
+                              },
+                            ),
+                          ),
+                        );
+                      },
                     );
                   },
                 );
