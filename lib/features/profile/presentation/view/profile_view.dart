@@ -156,10 +156,9 @@ class ProfileView extends StatelessWidget {
                                                   context); // Close the sheet
                                               await SharedPreferenceUtil
                                                   .clear();
-                                              pushReplacement(
-                                                  RoutesKeys.kLogin, context);
                                               SharedPreferenceUtil.putString(
                                                   PrefKey.login, "false");
+                                              go(RoutesKeys.kLogin, context);
                                             }),
                                       ),
                                       WidthSpace(16.w),

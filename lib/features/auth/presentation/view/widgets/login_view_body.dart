@@ -12,6 +12,8 @@ import 'package:goal_master/core/styles/assets.dart';
 import 'package:goal_master/core/styles/spaces.dart';
 import 'package:goal_master/core/components/button_app.dart';
 import 'package:goal_master/features/auth/presentation/manager/login_cubit/login_cubit.dart';
+import 'package:goal_master/features/layout/presentation/manager/layout_cubit.dart';
+import 'package:goal_master/features/layout/presentation/manager/layout_state.dart';
 
 class LoginViewBody extends StatelessWidget {
   const LoginViewBody({super.key});
@@ -137,6 +139,12 @@ class LoginViewBody extends StatelessWidget {
                       backGround: AppColors.primaryBlueLight,
                       textColor: Colors.white,
                       onTap: () {
+                        // اضبط الشاشة الأساسية
+                        context
+                            .read<LayoutCubit>()
+                            .changeSelectedNavBar(NavBarElement.home);
+
+                        // روح لصفحة الـ Home
                         go(RoutesKeys.kHome, context);
                       },
                     ),

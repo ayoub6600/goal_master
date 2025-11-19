@@ -28,7 +28,7 @@ class OnboardingSkipPageButton extends StatelessWidget {
               bool done = cubit.increment(context);
               if (!done) {
                 pushReplacement(RoutesKeys.kRegister, context);
-                SharedPreferenceUtil.putString(PrefKey.login, "true");
+                SharedPreferenceUtil.putString(PrefKey.login, "false");
               }
             },
             child: Container(

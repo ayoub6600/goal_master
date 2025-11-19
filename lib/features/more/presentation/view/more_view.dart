@@ -126,7 +126,7 @@ class MoreView extends StatelessWidget {
                                   await SharedPreferenceUtil.clear();
                                   pushReplacement(RoutesKeys.kLogin, context);
                                   SharedPreferenceUtil.putString(
-                                      PrefKey.login, "true");
+                                      PrefKey.login, "false");
                                 } else if (state is DeleteAccountFailure) {
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     SnackBar(content: Text(state.message)),
@@ -182,11 +182,19 @@ class MoreView extends StatelessWidget {
                                                 : "حذف",
                                             onTap: state is DeleteAccountLoading
                                                 ? null
-                                                : () {
+                                                : () async {
                                                     context
                                                         .read<
                                                             DeleteAccountCubit>()
                                                         .deleteAccount();
+                                                    await SharedPreferenceUtil
+                                                        .clear();
+                                                    SharedPreferenceUtil
+                                                        .putString(
+                                                            PrefKey.login,
+                                                            "false");
+                                                    go(RoutesKeys.kLogin,
+                                                        context);
                                                   },
                                           ),
                                         ),

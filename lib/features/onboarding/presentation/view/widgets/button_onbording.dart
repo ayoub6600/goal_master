@@ -29,7 +29,7 @@ class OnboardingPreviousPageButton extends StatelessWidget {
               if (!done) {
                 pushReplacement(RoutesKeys.kLogin, context);
 
-                SharedPreferenceUtil.putString(PrefKey.login, "true");
+                SharedPreferenceUtil.putString(PrefKey.login, "false");
                 print("----->$done");
               }
             },
