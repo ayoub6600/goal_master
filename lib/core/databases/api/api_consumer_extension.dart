@@ -37,6 +37,9 @@ extension ApiConsumerExtension on ApiConsumer {
             final errors = data['errors'] as Map<String, dynamic>;
             final messages = errors.values.expand((e) => e as List).join('\n');
             return left(Failure(errMessage: messages));
+          } else if (data['data'] is String &&
+              (data['data'] as String).isNotEmpty) {
+            return left(Failure(errMessage: data['data']));
           } else if (data.containsKey('message')) {
             return left(Failure(errMessage: data['message']));
           }
@@ -64,6 +67,9 @@ extension ApiConsumerExtension on ApiConsumer {
             final errors = data['errors'] as Map<String, dynamic>;
             final messages = errors.values.expand((e) => e as List).join('\n');
             return left(Failure(errMessage: messages));
+          } else if (data['data'] is String &&
+              (data['data'] as String).isNotEmpty) {
+            return left(Failure(errMessage: data['data']));
           } else if (data.containsKey('message')) {
             return left(Failure(errMessage: data['message']));
           }

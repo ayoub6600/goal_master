@@ -66,7 +66,7 @@ class NotificationSocketService {
 
     _socket.on('notification', (data) {
       try {
-        final notification = NotificationItem.fromJson(data);
+        final notification = _mapSocketNotification(data);
         _showNotification(notification.data.message, '📢 إشعار جديد');
         onNotificationReceived(notification);
       } catch (e) {
@@ -111,5 +111,54 @@ class NotificationSocketService {
 
   void dispose() {
     _socket.dispose();
+  }
+
+  NotificationItem _mapSocketNotification(dynamic rawData) {
+    if (rawData is Map<String, dynamic> && rawData['data'] != null) {
+      return NotificationItem.fromJson(rawData);
+    }
+
+    final payload = rawData is Map ? Map<String, dynamic>.from(rawData) : {};
+    final dynamic messagePayload = payload['message'];
+    final Map<String, dynamic> normalizedMessage =
+        messagePayload is Map ? Map<String, dynamic>.from(messagePayload) : {};
+
+    final messageText = normalizedMessage['message']?.toString() ??
+        normalizedMessage['msg']?.toString() ??
+        payload['msg']?.toString() ??
+        payload['message']?.toString() ??
+        '';
+
+    final notificationId = normalizedMessage['id'] ?? payload['id'] ?? 0;
+    final bookingId = normalizedMessage['booking_id'] ??
+        payload['booking_id'] ??
+        notificationId;
+    final notificationType = normalizedMessage['type']?.toString() ??
+        payload['type']?.toString() ??
+        '';
+    final notificationAmount = normalizedMessage['amount'] ?? payload['amount'];
+    final notificationDescription =
+        normalizedMessage['description']?.toString() ??
+            payload['description']?.toString() ??
+            '';
+
+    return NotificationItem.fromJson({
+      'id': 'socket_${DateTime.now().millisecondsSinceEpoch}',
+      'type': 'socket_notification',
+      'notifiable_type': 'App.Models.User',
+      'notifiable_id': userId,
+      'data': {
+        'id': notificationId,
+        'booking_id': bookingId,
+        'message': messageText,
+        'type': notificationType,
+        'amount': notificationAmount,
+        'description': notificationDescription,
+        'created_at': DateTime.now().toIso8601String(),
+      },
+      'read_at': null,
+      'created_at': DateTime.now().toIso8601String(),
+      'updated_at': DateTime.now().toIso8601String(),
+    });
   }
 }

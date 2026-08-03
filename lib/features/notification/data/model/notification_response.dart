@@ -218,6 +218,17 @@ class NotificationItem {
 
   bool get isRead => readAt != null;
 
+  bool get isWalletTransaction {
+    final rootType = type.toLowerCase();
+    final dataType = data.type.toLowerCase();
+    final messageText = data.message.toLowerCase();
+
+    return rootType.contains('wallettransactionnotification') ||
+        dataType.startsWith('wallet') ||
+        messageText.contains('محفظ') ||
+        messageText.contains('wallet');
+  }
+
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -232,21 +243,44 @@ class NotificationItem {
 class NotificationInnerData {
   final String message;
   final int id;
+  final int bookingId;
+  final String type;
+  final double amount;
+  final String description;
+  final String createdAt;
 
   NotificationInnerData({
     required this.message,
     required this.id,
+    this.bookingId = 0,
+    this.type = '',
+    this.amount = 0.0,
+    this.description = '',
+    this.createdAt = '',
   });
 
   factory NotificationInnerData.fromJson(Map<String, dynamic> json) =>
       NotificationInnerData(
         message: asString(json['message']),
-        id: asInt(json['id']), // ← آمن ضد null/String
+        id: asInt(json['id']),
+        bookingId: asInt(
+          json['booking_id'],
+          defaultValue: asInt(json['id']),
+        ),
+        type: asString(json['type']),
+        amount: asDouble(json['amount']),
+        description: asString(json['description']),
+        createdAt: asString(json['created_at']),
       );
 
   Map<String, dynamic> toJson() => {
         'message': message,
         'id': id,
+        'booking_id': bookingId,
+        'type': type,
+        'amount': amount,
+        'description': description,
+        'created_at': createdAt,
       };
 }
 

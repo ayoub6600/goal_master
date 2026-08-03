@@ -55,33 +55,36 @@ class Service {
   factory Service.fromJson(Map<String, dynamic> json) {
     return Service(
       id: json['id'],
-      title: json['title'],
-      image: json['image'],
+      title: json['title']?.toString() ?? '',
+      image: json['image']?.toString() ?? '',
       schServiceCategoryId: json['sch_service_category_id'],
       visibility: json['visibility'],
-      price: json['price'],
-      cmnCouponId: json['cmn_coupon_id'],
-      cmnCouponAmount: json['cmn_coupon_amount'],
+      price: json['price']?.toString() ?? '0',
+      cmnCouponId: json['cmn_coupon_id']?.toString(),
+      cmnCouponAmount: json['cmn_coupon_amount']?.toString(),
       durationInDays: json['duration_in_days'],
-      durationInTime: json['duration_in_time'],
-      timeSlotInTime: json['time_slot_in_time'],
-      paddingTimeBefore: json['padding_time_before'],
-      paddingTimeAfter: json['padding_time_after'],
+      durationInTime: json['duration_in_time']?.toString() ?? '00:00:00',
+      timeSlotInTime: json['time_slot_in_time']?.toString() ?? '00:00:00',
+      paddingTimeBefore:
+          json['padding_time_before']?.toString() ?? '00:00:00',
+      paddingTimeAfter: json['padding_time_after']?.toString() ?? '00:00:00',
       appointmentLimitType: json['appoinntment_limit_type'],
       appointmentLimit: json['appoinntment_limit'],
       minimumTimeRequiredToBookingInDays:
           json['minimum_time_required_to_booking_in_days'],
       minimumTimeRequiredToBookingInTime:
-          json['minimum_time_required_to_booking_in_time'],
+          json['minimum_time_required_to_booking_in_time']?.toString() ??
+              '00:00:00',
       minimumTimeRequiredToCancelInDays:
           json['minimum_time_required_to_cancel_in_days'],
       minimumTimeRequiredToCancelInTime:
-          json['minimum_time_required_to_cancel_in_time'],
-      remarks: json['remarks'],
-      createdBy: json['created_by'],
-      updatedBy: json['updated_by'],
-      createdAt: json['created_at'],
-      updatedAt: json['updated_at'],
+          json['minimum_time_required_to_cancel_in_time']?.toString() ??
+              '00:00:00',
+      remarks: json['remarks']?.toString() ?? '',
+      createdBy: json['created_by']?.toString(),
+      updatedBy: json['updated_by']?.toString(),
+      createdAt: json['created_at']?.toString() ?? '',
+      updatedAt: json['updated_at']?.toString() ?? '',
     );
   }
 

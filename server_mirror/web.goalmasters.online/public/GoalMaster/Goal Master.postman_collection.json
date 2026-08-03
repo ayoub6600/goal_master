@@ -1,0 +1,1882 @@
+{
+	"info": {
+		"_postman_id": "a2e1c40b-1bf5-41da-9855-8bc81a2e19c8",
+		"name": "Goal Master",
+		"description": "# 🚀 Get started here\n\nThis template guides you through CRUD operations (GET, POST, PUT, DELETE), variables, and tests.\n\n## 🔖 **How to use this template**\n\n#### **Step 1: Send requests**\n\nRESTful APIs allow you to perform CRUD operations using the POST, GET, PUT, and DELETE HTTP methods.\n\nThis collection contains each of these [request](https://learning.postman.com/docs/sending-requests/requests/) types. Open each request and click \"Send\" to see what happens.\n\n#### **Step 2: View responses**\n\nObserve the response tab for status code (200 OK), response time, and size.\n\n#### **Step 3: Send new Body data**\n\nUpdate or add new data in \"Body\" in the POST request. Typically, Body data is also used in PUT request.\n\n```\n{\n    \"name\": \"Add your name in the body\"\n}\n\n ```\n\n#### **Step 4: Update the variable**\n\nVariables enable you to store and reuse values in Postman. We have created a [variable](https://learning.postman.com/docs/sending-requests/variables/) called `base_url` with the sample request [https://postman-api-learner.glitch.me](https://postman-api-learner.glitch.me). Replace it with your API endpoint to customize this collection.\n\n#### **Step 5: Add tests in the \"Scripts\" tab**\n\nAdding tests to your requests can help you confirm that your API is working as expected. You can write test scripts in JavaScript and view the output in the \"Test Results\" tab.\n\n<img src=\"https://content.pstmn.io/fa30ea0a-373d-4545-a668-e7b283cca343/aW1hZ2UucG5n\" alt=\"\" height=\"1530\" width=\"2162\">\n\n## 💪 Pro tips\n\n- Use folders to group related requests and organize the collection.\n    \n- Add more [scripts](https://learning.postman.com/docs/writing-scripts/intro-to-scripts/) to verify if the API works as expected and execute workflows.\n    \n\n## 💡Related templates\n\n[API testing basics](https://go.postman.co/redirect/workspace?type=personal&collectionTemplateId=e9a37a28-055b-49cd-8c7e-97494a21eb54&sourceTemplateId=ddb19591-3097-41cf-82af-c84273e56719)  \n[API documentation](https://go.postman.co/redirect/workspace?type=personal&collectionTemplateId=e9c28f47-1253-44af-a2f3-20dce4da1f18&sourceTemplateId=ddb19591-3097-41cf-82af-c84273e56719)  \n[Authorization methods](https://go.postman.co/redirect/workspace?type=personal&collectionTemplateId=31a9a6ed-4cdf-4ced-984c-d12c9aec1c27&sourceTemplateId=ddb19591-3097-41cf-82af-c84273e56719)",
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json",
+		"_exporter_id": "29331867"
+	},
+	"item": [
+		{
+			"name": "Auth",
+			"item": [
+				{
+					"name": "Login & Register",
+					"item": [
+						{
+							"name": "Login",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"const jsonData = pm.response.json();",
+											"if(jsonData.data){",
+											"    pm.environment.set(\"token\", jsonData.data.token);",
+											"}",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "application/json",
+										"type": "text"
+									},
+									{
+										"key": "Accept-Language",
+										"value": "ar",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "username",
+											"value": "{{usename}}",
+											"description": "{{managername_alhadf}}    --   {{usename}}  --\n{{managername_algezira}}",
+											"type": "text"
+										},
+										{
+											"key": "password",
+											"value": "{{password}}",
+											"description": "{{manager_password_Alhadf}}  --  {{password}}  --\n{{manager_password_algezira}}",
+											"type": "text"
+										},
+										{
+											"key": "phone_number",
+											"value": "{{phone}}",
+											"description": "{{manager_phone_alhadf}}  --  {{phone}} --\n{{manager_phone_algezira}}",
+											"type": "text",
+											"disabled": true
+										}
+									]
+								},
+								"url": "{{Locale}}/login",
+								"description": "This is a POST request, submitting data to an API via the request body. This request submits JSON data, and the data is reflected in the response.\n\nA successful POST request typically returns a `200 OK` or `201 Created` response code."
+							},
+							"response": []
+						},
+						{
+							"name": "Register",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Successful PUT request\", function () {",
+											"    pm.expect(pm.response.code).to.be.oneOf([200, 201, 204]);",
+											"});",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "application/json",
+										"type": "text"
+									},
+									{
+										"key": "Accept-Language",
+										"value": "ar",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "name",
+											"value": "ManagerClub",
+											"type": "text"
+										},
+										{
+											"key": "username",
+											"value": "Manager Club",
+											"type": "text"
+										},
+										{
+											"key": "password",
+											"value": "123456789",
+											"type": "text"
+										},
+										{
+											"key": "password_confirmation",
+											"value": "123456789",
+											"type": "text"
+										},
+										{
+											"key": "phone_number",
+											"value": "0968665668",
+											"type": "text"
+										}
+									]
+								},
+								"url": "{{Live}}/register",
+								"description": "This is a PUT request and it is used to overwrite an existing piece of data. For instance, after you create an entity with a POST request, you may want to modify that later. You can do that using a PUT request. You typically identify the entity being updated by including an identifier in the URL (eg. `id=1`).\n\nA successful PUT request typically returns a `200 OK`, `201 Created`, or `204 No Content` response code."
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Verification",
+					"item": [
+						{
+							"name": "Verify Account",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"const jsonData = pm.response.json();\r",
+											"if(jsonData.data){\r",
+											"    pm.environment.set(\"token\", jsonData.data.token);\r",
+											"}\r",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "application/json",
+										"type": "text"
+									},
+									{
+										"key": "Accept-Language",
+										"value": "ar",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "code",
+											"value": "533165",
+											"type": "text"
+										},
+										{
+											"key": "phone",
+											"value": "{{phone}}",
+											"type": "text"
+										}
+									]
+								},
+								"url": "{{Live}}/verify"
+							},
+							"response": []
+						},
+						{
+							"name": "Resend",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "application/json",
+										"type": "text"
+									},
+									{
+										"key": "Accept-Language",
+										"value": "ar",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "phone",
+											"value": "0968665668",
+											"type": "text"
+										}
+									]
+								},
+								"url": "{{Live}}/resend-otp"
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Logout & Refresh",
+					"item": [
+						{
+							"name": "Refresh",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"const jsonData = pm.response.json();\r",
+											"if(jsonData.data){\r",
+											"    pm.environment.set(\"token\", jsonData.data.token);\r",
+											"}\r",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": {
+										"token": "{{token}}"
+									}
+								},
+								"method": "POST",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "application/json",
+										"type": "text"
+									},
+									{
+										"key": "Accept-Language",
+										"value": "ar",
+										"type": "text"
+									}
+								],
+								"url": "{{Live}}/user/refresh"
+							},
+							"response": []
+						},
+						{
+							"name": "Logout",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": {
+										"token": "{{token}}"
+									}
+								},
+								"method": "POST",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "application/json",
+										"type": "text"
+									},
+									{
+										"key": "Accept-Language",
+										"value": "ar",
+										"type": "text"
+									}
+								],
+								"url": "{{Live}}/user/logout"
+							},
+							"response": []
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "Forget password",
+			"item": [
+				{
+					"name": "Send Otp",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Accept-Language",
+								"value": "ar",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "phone",
+									"value": "0968665668",
+									"type": "text"
+								}
+							]
+						},
+						"url": "{{Live}}/resend-otp"
+					},
+					"response": []
+				},
+				{
+					"name": "Verify Otp",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const jsonData = pm.response.json();\r",
+									"if(jsonData.data){\r",
+									"    pm.environment.set(\"reset_token\", jsonData.data.reset_token);\r",
+									"}\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Accept-Language",
+								"value": "ar",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "code",
+									"value": "194580",
+									"type": "text"
+								},
+								{
+									"key": "phone",
+									"value": "0968665668",
+									"type": "text"
+								},
+								{
+									"key": "forget",
+									"value": "1",
+									"description": "// forget  لازم تبعتها ديما بترو لما تعمل  1|| 0",
+									"type": "text"
+								}
+							]
+						},
+						"url": "{{Live}}/verify"
+					},
+					"response": []
+				},
+				{
+					"name": "Change Pass",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Accept-Language",
+								"value": "ar",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "reset_token",
+									"value": "{{reset_token}}",
+									"type": "text"
+								},
+								{
+									"key": "password",
+									"value": "123456789",
+									"type": "text"
+								},
+								{
+									"key": "password_confirmation",
+									"value": "123456789",
+									"type": "text"
+								},
+								{
+									"key": "old_password",
+									"value": "123456789",
+									"type": "text",
+									"disabled": true
+								}
+							]
+						},
+						"url": "{{Live}}/change-password"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Users",
+			"item": [
+				{
+					"name": "Profie Info",
+					"item": [
+						{
+							"name": "Update",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"const jsonData = pm.response.json();\r",
+											"if(jsonData.data){\r",
+											"    pm.environment.set(\"token\", jsonData.data.token);\r",
+											"}"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": {
+										"token": "{{token}}"
+									}
+								},
+								"method": "POST",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "application/json",
+										"type": "text"
+									},
+									{
+										"key": "Accept-Language",
+										"value": "ar",
+										"type": "text"
+									},
+									{
+										"key": "Content-Type",
+										"value": "multipart/form-data",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "name",
+											"value": "test user",
+											"type": "text"
+										},
+										{
+											"key": "username",
+											"value": "TestUser",
+											"type": "text"
+										},
+										{
+											"key": "phone_number",
+											"value": "0968665668",
+											"type": "text"
+										}
+									]
+								},
+								"url": "{{Live}}/user/update"
+							},
+							"response": []
+						},
+						{
+							"name": "Change Img",
+							"request": {
+								"method": "POST",
+								"header": []
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Card",
+					"item": [
+						{
+							"name": "Charge",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": {
+										"token": "{{token}}"
+									}
+								},
+								"method": "POST",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "application/json",
+										"type": "text"
+									},
+									{
+										"key": "Accept-Language",
+										"value": "ar",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "code",
+											"value": "39203725",
+											"type": "text"
+										}
+									]
+								},
+								"url": "{{Live}}/user/card/charge"
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Dashboard",
+					"item": [
+						{
+							"name": "analysis",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": {
+										"token": "{{token}}"
+									}
+								},
+								"method": "GET",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "application/json",
+										"type": "text"
+									},
+									{
+										"key": "Accept-Language",
+										"value": "ar",
+										"type": "text"
+									}
+								],
+								"url": "{{Locale}}/user/analysis"
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Change Password",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const jsonData = pm.response.json();\r",
+									"if(jsonData.data){\r",
+									"    pm.environment.set(\"token\", jsonData.data.token);\r",
+									"}\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": {
+								"token": "{{token}}"
+							}
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Accept-Language",
+								"value": "ar",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "password",
+									"value": "123456789",
+									"type": "text"
+								},
+								{
+									"key": "password_confirmation",
+									"value": "123456789",
+									"type": "text"
+								},
+								{
+									"key": "old_password",
+									"value": "1234567891",
+									"type": "text"
+								}
+							]
+						},
+						"url": "{{Locale}}/user/change-password-user"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Manager",
+			"item": [
+				{
+					"name": "Dashboard",
+					"item": [
+						{
+							"name": "Analysis",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": {
+										"token": "{{token}}"
+									}
+								},
+								"method": "GET",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "application/json",
+										"type": "text"
+									},
+									{
+										"key": "Accept-Language",
+										"value": "ar",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "formdata",
+									"formdata": []
+								},
+								"url": "{{Live}}/manager/dashboard/analysis"
+							},
+							"response": []
+						},
+						{
+							"name": "export Data",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": {
+										"token": "{{token}}"
+									}
+								},
+								"method": "POST",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "start_date",
+											"value": "2025-02-1",
+											"type": "text"
+										},
+										{
+											"key": "end_date",
+											"value": "2025-03-28",
+											"type": "text"
+										},
+										{
+											"key": "branchID",
+											"value": "12",
+											"type": "text"
+										},
+										{
+											"key": "exportOption",
+											"value": "2",
+											"description": "2 => عن طريق الانترنت \nلو مبعتهاش هينزلك كله ",
+											"type": "text"
+										}
+									]
+								},
+								"url": "{{Locale}}/manager/dashboard/export"
+							},
+							"response": []
+						},
+						{
+							"name": "Booking Info",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": "{{Locale}}/manager/dashboard/get-service-booking-info"
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Forgiving Generous",
+					"item": [
+						{
+							"name": "Forgiving Generous",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": {
+										"token": "{{token}}"
+									}
+								},
+								"method": "GET",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "application/json",
+										"type": "text"
+									},
+									{
+										"key": "Accept-Language",
+										"value": "ar",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{Locale}}/user/booking/get-forgiving-generous?page=2",
+									"host": [
+										"{{Locale}}"
+									],
+									"path": [
+										"user",
+										"booking",
+										"get-forgiving-generous"
+									],
+									"query": [
+										{
+											"key": "page",
+											"value": "2"
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "List",
+			"item": [
+				{
+					"name": "Get Zone",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Accept-Language",
+								"value": "ar",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": []
+						},
+						"url": "{{Live}}/list/zone"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Club",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Accept-Language",
+								"value": "ar",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "zone",
+									"value": "2",
+									"type": "text"
+								}
+							]
+						},
+						"url": "{{Live}}/list/club"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Category",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Accept-Language",
+								"value": "ar",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "branch",
+									"value": "15",
+									"type": "text"
+								}
+							]
+						},
+						"url": "{{Live}}/list/category"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Service",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Accept-Language",
+								"value": "ar",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "category",
+									"value": "27",
+									"type": "text"
+								},
+								{
+									"key": "branch",
+									"value": "15",
+									"type": "text"
+								}
+							]
+						},
+						"url": "{{Live}}/list/service"
+					},
+					"response": []
+				},
+				{
+					"name": "Booking Schedule",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Accept-Language",
+								"value": "ar",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "branch",
+									"value": "15",
+									"type": "text"
+								}
+							]
+						},
+						"url": "{{Live}}/list/booking"
+					},
+					"response": []
+				},
+				{
+					"name": "Time Slot",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Accept-Language",
+								"value": "ar",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "date",
+									"value": "2025-4-2",
+									"type": "text"
+								},
+								{
+									"key": "branch_id",
+									"value": "15",
+									"type": "text"
+								},
+								{
+									"key": "service_id",
+									"value": "20",
+									"type": "text"
+								},
+								{
+									"key": "employee_id",
+									"value": "37",
+									"type": "text"
+								}
+							]
+						},
+						"url": "{{Live}}/list/timeslot"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Customers",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": {
+								"token": "{{token}}"
+							}
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Accept-Language",
+								"value": "ar",
+								"type": "text"
+							}
+						],
+						"url": "{{Live}}/list/customers"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Service Status",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": {
+								"token": "{{token}}"
+							}
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Accept-Language",
+								"value": "ar",
+								"type": "text"
+							}
+						],
+						"url": "{{Live}}/list/service-status"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Profile",
+			"item": [
+				{
+					"name": "Profile",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": {
+								"token": "{{token}}"
+							}
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Accept-Language",
+								"value": "ar",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": []
+						},
+						"url": "{{Live}}/user/profile"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Booking",
+			"item": [
+				{
+					"name": "New | History",
+					"item": [
+						{
+							"name": "My Booking",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": {
+										"token": "{{token}}"
+									}
+								},
+								"method": "GET",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "application/json",
+										"type": "text"
+									},
+									{
+										"key": "Accept-Language",
+										"value": "en",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    // \"now\": false,  \r\n    // \"filter\":1\r\n}\r\n\r\n\r\n// لو عايز ترجعهم كلهم متبعتش ولا دي ولادي تمام \r\n\r\n/**\r\n* true = my booking now  // - //  false = old Booking \r\n*\r\n*\r\n*payment_status = paid , pending ,partially_paid\r\nلو خالص paid  , لو مدفعش خالص pending  , لو دفع جزء وعليه جزء partially_paid\r\n*\r\n*/\r\n\r\n\r\n/**\r\n// filter\r\n\r\nService Status Enum Values:\r\n\r\n0 -> Pending (قيد الانتظار)\r\n1 -> Processing (قيد المعالجة)\r\n2 -> Approved (مقبول)\r\n3 -> Cancel (ملغي)\r\n4 -> Done (مكتمل)\r\n\r\nاستخدم هذه القيم عند إرسال الطلبات إلى API، مثلاً:\r\n{\r\n    \"status\": 2\r\n}\r\n\r\n\r\n***/\r\n",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{Locale}}/user/booking/history?page=1",
+									"host": [
+										"{{Locale}}"
+									],
+									"path": [
+										"user",
+										"booking",
+										"history"
+									],
+									"query": [
+										{
+											"key": "page",
+											"value": "1"
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Fillter To Found Booking",
+					"item": [
+						{
+							"name": "Fillteration",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": {
+										"token": "{{token}}"
+									}
+								},
+								"method": "POST",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "application/json",
+										"type": "text"
+									},
+									{
+										"key": "Accept-Language",
+										"value": "ar",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "branch",
+											"value": "12",
+											"description": "// not required",
+											"type": "text"
+										},
+										{
+											"key": "start_time",
+											"value": "20:00:00",
+											"description": "// not required",
+											"type": "text"
+										},
+										{
+											"key": "end_time",
+											"value": "22:00:00",
+											"description": "// not required",
+											"type": "text"
+										},
+										{
+											"key": "booking_start",
+											"value": "2025-03-25",
+											"description": "// required",
+											"type": "text"
+										},
+										{
+											"key": "booking_end",
+											"value": "2025-04-28",
+											"description": "// required",
+											"type": "text"
+										},
+										{
+											"key": "category_id",
+											"value": "26",
+											"description": "// not required",
+											"type": "text"
+										}
+									]
+								},
+								"url": {
+									"raw": "{{Live}}/user/booking/fillter-new-booking?page=5",
+									"host": [
+										"{{Live}}"
+									],
+									"path": [
+										"user",
+										"booking",
+										"fillter-new-booking"
+									],
+									"query": [
+										{
+											"key": "page",
+											"value": "5"
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Monthly Booking",
+					"item": [
+						{
+							"name": "Get Monthly Booking",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": {
+										"token": "{{token}}"
+									}
+								},
+								"method": "GET",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "application/json",
+										"type": "text"
+									},
+									{
+										"key": "Accept-Language",
+										"value": "ar",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "formdata",
+									"formdata": []
+								},
+								"url": {
+									"raw": "{{Live}}/user/booking/getMonthlyBookingList?page=1",
+									"host": [
+										"{{Live}}"
+									],
+									"path": [
+										"user",
+										"booking",
+										"getMonthlyBookingList"
+									],
+									"query": [
+										{
+											"key": "page",
+											"value": "1"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Update Monthly Booking",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": {
+										"token": "{{token}}"
+									}
+								},
+								"method": "POST",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "application/json",
+										"type": "text"
+									},
+									{
+										"key": "Accept-Language",
+										"value": "ar",
+										"type": "text"
+									}
+								],
+								"url": "{{Locale}}/user/booking/updateMonthlyBooking"
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Booking",
+					"item": [
+						{
+							"name": "Action",
+							"item": [
+								{
+									"name": "Change",
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": {
+												"token": "{{token}}"
+											}
+										},
+										"method": "POST",
+										"header": [
+											{
+												"key": "Accept",
+												"value": "application/json",
+												"type": "text"
+											},
+											{
+												"key": "Accept-Language",
+												"value": "ar",
+												"type": "text"
+											}
+										],
+										"body": {
+											"mode": "formdata",
+											"formdata": [
+												{
+													"key": "booking_id",
+													"value": "320",
+													"type": "text"
+												},
+												{
+													"key": "status",
+													"value": "2",
+													"type": "text"
+												}
+											]
+										},
+										"url": "{{Live}}/manager/booking/change-service-booking-status"
+									},
+									"response": []
+								}
+							]
+						},
+						{
+							"name": "Add Payment",
+							"item": [
+								{
+									"name": "Deposit",
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": {
+												"token": "{{token}}"
+											}
+										},
+										"method": "POST",
+										"header": [
+											{
+												"key": "Accept",
+												"value": "application/json",
+												"type": "text"
+											},
+											{
+												"key": "Accept-Language",
+												"value": "ar",
+												"type": "text"
+											}
+										],
+										"body": {
+											"mode": "formdata",
+											"formdata": [
+												{
+													"key": "booking_id",
+													"value": "248",
+													"type": "text"
+												},
+												{
+													"key": "due",
+													"value": "5.00",
+													"description": "// دي القيمه الي انتا هتظهرها عندك انا باعتها ف ال all booking بنفس ال key تمام دي هتبقي input هيعرضها وساعتها انا اقدر اغيرها بلقيمه الي هيدفعهالي الشخص الي حاجز او الي هيسدد او بمزاج المسؤول تمام ",
+													"type": "text"
+												},
+												{
+													"key": "payment_status",
+													"value": "1",
+													"description": "0 => tolearnce \"مسامحه ف الباقي كله\"\n1 => little tolearnce \"ممكن تسامح ف جزء او تخلي القيمه 0 بتاعت extra input المبلغ الي انتا هضيفه ف \"",
+													"type": "text"
+												},
+												{
+													"key": "extra_input",
+													"value": "5",
+													"type": "text"
+												}
+											]
+										},
+										"url": "{{Live}}/manager/booking/depoist-money"
+									},
+									"response": []
+								}
+							]
+						},
+						{
+							"name": "All",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": {
+										"token": "{{token}}"
+									}
+								},
+								"method": "GET",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "application/json",
+										"type": "text"
+									},
+									{
+										"key": "Accept-Language",
+										"value": "ar",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "formdata",
+									"formdata": []
+								},
+								"url": {
+									"raw": "{{Live}}/user/booking/all?dateFrom=2025-01-01&branchId=12&dateTo=2025-03-30",
+									"host": [
+										"{{Live}}"
+									],
+									"path": [
+										"user",
+										"booking",
+										"all"
+									],
+									"query": [
+										{
+											"key": "dateFrom",
+											"value": "2025-01-01"
+										},
+										{
+											"key": "bookingId",
+											"value": "320",
+											"disabled": true
+										},
+										{
+											"key": "employeeId",
+											"value": "33",
+											"disabled": true
+										},
+										{
+											"key": "customerId",
+											"value": "122",
+											"disabled": true
+										},
+										{
+											"key": "serviceStatus",
+											"value": "3",
+											"disabled": true
+										},
+										{
+											"key": "branchId",
+											"value": "12"
+										},
+										{
+											"key": "dateTo",
+											"value": "2025-03-30"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Add",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": {
+										"token": "{{token}}"
+									}
+								},
+								"method": "POST",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "application/json",
+										"type": "text"
+									},
+									{
+										"key": "Accept-Language",
+										"value": "ar",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "branch_id",
+											"value": "15",
+											"type": "text"
+										},
+										{
+											"key": "service_id",
+											"value": "20",
+											"type": "text"
+										},
+										{
+											"key": "employee_id",
+											"value": "37",
+											"type": "text"
+										},
+										{
+											"key": "payment_type",
+											"value": "4",
+											"description": "1 cash || 4 user balance",
+											"type": "text"
+										},
+										{
+											"key": "full_name",
+											"value": "test",
+											"type": "text"
+										},
+										{
+											"key": "phone_no",
+											"value": "0916776600",
+											"type": "text"
+										},
+										{
+											"key": "state",
+											"value": "1",
+											"description": "// default",
+											"type": "text"
+										},
+										{
+											"key": "start_time",
+											"value": "13:00:00",
+											"description": "// time slot in folder list",
+											"type": "text"
+										},
+										{
+											"key": "end_time",
+											"value": "14:00:00",
+											"description": "// time slot in folder list",
+											"type": "text"
+										},
+										{
+											"key": "service_date",
+											"value": "2025-4-2",
+											"description": "// time slot in folder list",
+											"type": "text"
+										},
+										{
+											"key": "coupon_code",
+											"value": "123456",
+											"description": "// to any discount option",
+											"type": "text",
+											"disabled": true
+										}
+									]
+								},
+								"url": "{{Live}}/user/booking/store-booking"
+							},
+							"response": []
+						},
+						{
+							"name": "Update",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": {
+										"token": "{{token}}"
+									}
+								},
+								"method": "POST",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "application/json",
+										"type": "text"
+									},
+									{
+										"key": "Accept-Language",
+										"value": "ar",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "id",
+											"value": "320",
+											"type": "text"
+										},
+										{
+											"key": "cmn_branch_id",
+											"value": "12",
+											"type": "text"
+										},
+										{
+											"key": "cmn_customer_id",
+											"value": "122",
+											"type": "text"
+										},
+										{
+											"key": "sch_employee_id",
+											"value": "33",
+											"type": "text"
+										},
+										{
+											"key": "sch_service_id",
+											"value": "18",
+											"type": "text"
+										},
+										{
+											"key": "service_date",
+											"value": "2025-03-30",
+											"type": "text"
+										},
+										{
+											"key": "service_time",
+											"value": "20:00-21:00",
+											"type": "text"
+										},
+										{
+											"key": "status",
+											"value": "4",
+											"type": "text"
+										},
+										{
+											"key": "paid_amount",
+											"value": "60",
+											"type": "text"
+										},
+										{
+											"key": "cmn_payment_type_id",
+											"value": "4",
+											"type": "text"
+										},
+										{
+											"key": "isForceBooking",
+											"value": "0",
+											"type": "text"
+										},
+										{
+											"key": "remarks",
+											"value": "dhd",
+											"type": "text"
+										}
+									]
+								},
+								"url": "{{Live}}/user/booking/update-booking"
+							},
+							"response": []
+						},
+						{
+							"name": "Cancel",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": {
+										"token": "{{token}}"
+									}
+								},
+								"method": "POST",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "application/json",
+										"type": "text"
+									},
+									{
+										"key": "Accept-Language",
+										"value": "ar",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "id",
+											"value": "320",
+											"type": "text"
+										}
+									]
+								},
+								"url": "{{Live}}/user/booking/cancel-booking"
+							},
+							"response": []
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "Notfication",
+			"item": [
+				{
+					"name": "Get Notification",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": {
+								"token": "{{token}}"
+							}
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Accept-Language",
+								"value": "ar",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": []
+						},
+						"url": "{{Live}}/user/notifications/get-notification"
+					},
+					"response": []
+				},
+				{
+					"name": "Read At",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": {
+								"token": "{{token}}"
+							}
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Accept-Language",
+								"value": "ar",
+								"type": "text"
+							}
+						],
+						"url": "{{Live}}/user/notifications/read-notification/07f9a930-ef90-4993-8757-62cf817b536b"
+					},
+					"response": []
+				},
+				{
+					"name": "Read At All",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": {
+								"token": "{{token}}"
+							}
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Accept-Language",
+								"value": "ar",
+								"type": "text"
+							}
+						],
+						"url": "{{Live}}/user/notifications/read-all-notification"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "New Request",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "test",
+						"value": "",
+						"type": "text"
+					}
+				],
+				"url": "{{Live}}/send-private-message"
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "id",
+			"value": "1"
+		},
+		{
+			"key": "base_url",
+			"value": "https://postman-rest-api-learner.glitch.me/"
+		}
+	]
+}

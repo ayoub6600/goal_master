@@ -20,11 +20,14 @@ class PaymentScreen extends StatefulWidget {
 
 class _PaymentScreenState extends State<PaymentScreen> {
   late final WebViewController webViewController;
+  late final String _merchantReference;
   bool isPageLoading = true;
+  bool _resultHandled = false;
 
   @override
   void initState() {
     super.initState();
+    _merchantReference = 'ORDER_${DateTime.now().millisecondsSinceEpoch}';
 
     webViewController = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
@@ -71,9 +74,16 @@ class _PaymentScreenState extends State<PaymentScreen> {
   }
 
   Future<void> _onSuccess() async {
+    if (_resultHandled) return;
+    _resultHandled = true;
+
     // 1. أرسل الطلب لحفظ المعاملة
     final cubit = context.read<AddTransactionBackEndCubit>();
-    await cubit.addTransaction(widget.amount, "true");
+    await cubit.addTransaction(
+      widget.amount,
+      "true",
+      reference: _merchantReference,
+    );
 
     // 2. أظهر النتيجة في الـ Bottom Sheet
     final shouldReload = await baseBottomSheet(
@@ -89,6 +99,9 @@ class _PaymentScreenState extends State<PaymentScreen> {
   }
 
   Future<void> _showError([String? title]) async {
+    if (_resultHandled) return;
+    _resultHandled = true;
+
     await baseBottomSheet(
       context: context,
       hideNavBar: true,
@@ -99,6 +112,9 @@ class _PaymentScreenState extends State<PaymentScreen> {
         buttonText: 'حسناً',
       ),
     );
+
+    if (!mounted) return;
+    Navigator.pop(context, false);
   }
 
   String _buildPaymentHtml() {
@@ -108,7 +124,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
     final amount = double.tryParse(widget.amount) ?? 0.0;
     //  final amount = double.tryParse(widget.amount) ?? 0.0;
 
-    final merchRef = 'ORDER_${DateTime.now().millisecondsSinceEpoch}';
+    final merchRef = _merchantReference;
 
     return """
 <!DOCTYPE html>
@@ -203,11 +219,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
         child: Column(
           children: [
             GestureDetector(
-              onTap: () async {
-                // // 1. أرسل الطلب لحفظ المعاملة
-                final cubit = context.read<AddTransactionBackEndCubit>();
-                await cubit.addTransaction(widget.amount, "true");
-              },
+              onTap: () {},
               child: Padding(
                 padding: const EdgeInsets.all(8.0), // مسافة بسيطة
                 child: SizedBox(

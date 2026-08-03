@@ -8,11 +8,63 @@ class TransactionItem extends StatelessWidget {
   const TransactionItem({super.key, required this.transaction});
   final Transaction transaction;
 
+  bool get _isAdminCredit =>
+      transaction.type == 'credit' &&
+      !_isOnlineTopUp &&
+      transaction.balanceType == 1;
+
+  bool get _isOnlineTopUp =>
+      transaction.description?.startsWith('online_topup') == true;
+
+  String get _transactionTypeLabel {
+    switch (transaction.type) {
+      case 'credit':
+        return _isOnlineTopUp ? 'شحن أونلاين' : 'شحن من الإدارة';
+      case 'recharge':
+        return 'شحن رصيد بكارت';
+      case 'transfer':
+        return transaction.balanceType == 1 ? 'تحويل وارد' : 'تحويل صادر';
+      case 'balance':
+        return 'سحب من الإدارة';
+      default:
+        return transaction.balanceType == 1 ? 'إيداع' : 'سحب';
+    }
+  }
+
+  Color get _transactionTypeColor {
+    switch (transaction.type) {
+      case 'credit':
+        return _isOnlineTopUp ? Colors.blue : Colors.teal;
+      case 'recharge':
+        return Colors.purple;
+      case 'transfer':
+        return Colors.green;
+      case 'balance':
+        return Colors.orange;
+      default:
+        return Colors.grey;
+    }
+  }
+
+  String get _descriptionText {
+    final description = transaction.description?.trim();
+    if (description == null || description.isEmpty) {
+      return 'لا يوجد وصف';
+    }
+    if (description.startsWith('online_topup:')) {
+      return 'شحن أونلاين';
+    }
+    if (description == 'online_topup') {
+      return 'شحن أونلاين';
+    }
+    return description;
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    final isCredit = transaction.balanceType == 1; // 0 = إضافة، 1 = خصم
+    final isCredit = transaction.balanceType == 1;
     final amountColor = isCredit ? Colors.green : Colors.red;
     final icon =
         isCredit ? Icons.arrow_downward_rounded : Icons.arrow_upward_rounded;
@@ -57,11 +109,13 @@ class TransactionItem extends StatelessWidget {
               child: Icon(icon, color: Colors.white, size: 24),
             ),
             title: Text(
-              isCredit ? 'إيداع' : 'سحب',
+              _isAdminCredit
+                  ? 'إيداع من الإدارة'
+                  : (isCredit ? 'إيداع' : 'سحب'),
               style: AppTextStyles.font16Bold,
             ),
             subtitle: Text(
-              formattedDate,
+              '$formattedDate\n$_descriptionText',
               style: AppTextStyles.font10Bold.copyWith(color: Colors.grey),
             ),
             trailing: Column(
@@ -81,36 +135,11 @@ class TransactionItem extends StatelessWidget {
                   padding:
                       const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
-                    color: () {
-                      switch (transaction.type) {
-                        case "credit":
-                          return Colors.blue.withOpacity(0.15);
-                        case "recharge":
-                          return Colors.purple.withOpacity(0.15);
-                        case "transfer":
-                          return Colors.green.withOpacity(0.15);
-                        case "balance":
-                        default:
-                          return Colors.orange.withOpacity(0.15);
-                      }
-                    }(),
+                    color: _transactionTypeColor.withOpacity(0.15),
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Text(
-                    () {
-                      switch (transaction.type) {
-                        case "credit":
-                          return "دفع بالكريديت";
-                        case "recharge":
-                          return "شحن رصيد (كارت شحن)";
-                        case "transfer":
-                          return "تحويل رصيد لمستخدم";
-                        case "balance":
-                          return "المحفظة ";
-                        default:
-                          return transaction.type ?? "";
-                      }
-                    }(),
+                    _transactionTypeLabel,
                     style: theme.textTheme.labelSmall?.copyWith(
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
@@ -126,24 +155,43 @@ class TransactionItem extends StatelessWidget {
           left: 0,
           child: GestureDetector(
             onTap: () {
-              if (user == null) {
-                return;
-              }
               showDialog(
                 context: context,
                 builder: (_) => AlertDialog(
-                  title: const Text('تفاصيل المستخدم'),
+                  title: const Text('تفاصيل العملية'),
                   content: Column(
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      _infoRow('الاسم الكامل:', user.name),
-                      _infoRow('اسم الدخول:', user.username),
-                      _infoRow('رقم الجوال:', user.phoneNumber),
+                      _infoRow('نوع العملية:', _transactionTypeLabel),
+                      _infoRow(
+                        'المبلغ:',
+                        '${isCredit ? '+' : '-'} ${transaction.amount.toStringAsFixed(2)} د.ل',
+                      ),
+                      _infoRow('الوصف:', _descriptionText),
+                      _infoRow('التاريخ:', formattedDate),
+                      _infoRow(
+                        'الحالة:',
+                        transaction.status == 1 ? 'مكتملة' : 'غير مكتملة',
+                      ),
+                      if (user != null) ...[
+                        const Divider(height: 24),
+                        const Text(
+                          'صاحب المحفظة',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        _infoRow('الاسم الكامل:', user.name),
+                        _infoRow('اسم الدخول:', user.username),
+                        _infoRow('رقم الجوال:', user.phoneNumber),
+                      ],
                       if (referenceUser != null) ...[
                         const Divider(height: 24),
                         const Text(
-                          'معلومات ',
+                          'الطرف المرتبط',
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 16,
@@ -180,6 +228,7 @@ class TransactionItem extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Expanded(
               flex: 3,

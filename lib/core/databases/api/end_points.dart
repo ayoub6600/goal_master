@@ -1,6 +1,6 @@
 class EndPoints {
   //********  base url
-  static const String baserUrl = 'https://web.goalmasters.online/api/';
+  static const String baserUrl = 'http://127.0.0.1:8000/api/';
 
   //******* routes
   static const String id = 'id'; //! example route, remove this

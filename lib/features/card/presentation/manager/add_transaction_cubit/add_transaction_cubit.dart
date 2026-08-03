@@ -8,9 +8,14 @@ class AddTransactionBackEndCubit extends Cubit<AddTransactionState> {
   AddTransactionBackEndCubit(this.repo) : super(AddTransactionInitial());
   final CardRepo repo;
 
-  Future<void> addTransaction(String amount, String status) async {
+  Future<void> addTransaction(
+    String amount,
+    String status, {
+    String? reference,
+  }) async {
     emit(AddTransactionLoading());
-    final result = await repo.addTransaction(amount, status);
+    final result =
+        await repo.addTransaction(amount, status, reference: reference);
     result.fold((l) => emit(AddTransactionError(l.errMessage)),
         (r) => emit(AddTransactionSuccess(r)));
   }

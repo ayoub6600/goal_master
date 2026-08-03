@@ -1,0 +1,329 @@
+.suggestions-box {
+  border: 1px solid #ccc;
+  max-height: 150px;
+  overflow-y: auto;
+  position: absolute;
+  /* Adjust positioning */
+  background-color: white;
+  z-index: 1000;
+  /* Ensure it appears above other elements */
+}
+
+.suggestion-item {
+  padding: 10px;
+  cursor: pointer;
+}
+
+.suggestion-item:hover {
+  background-color: #f0f0f0;
+  /* Highlight on hover */
+}
+
+
+.modal-content {
+  border-radius: 10px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+}
+
+.modal-header {
+  border-bottom: none;
+  /* Remove default border */
+  padding: 20px;
+  /* Add padding */
+}
+
+.modal-body {
+  padding: 30px;
+  /* Add padding for body */
+}
+
+#task-details-body-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  /* Spacing between items */
+}
+
+#task-details-body-wrap-user {
+  background-color: #0056b3;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  color: white;
+  border-radius: 5px 5px 0 0;
+}
+
+#scheduleEmployeeImage {
+  border: 2px solid #007bff;
+  /* Add a border to the image */
+  margin-right: 15px;
+  /* Space between image and text */
+}
+
+#scheduleEmployee h4 {
+  font-size: 1.5rem;
+  /* Larger font size for the employee name */
+  margin: 0;
+  /* Remove default margin */
+  color: #333;
+  /* Darker color */
+}
+
+#task-details-body-wrap-task p {
+  font-size: 1rem;
+  font-weight: bold;
+  /* Standardize font size */
+  color: #555;
+  /* Slightly lighter text color */
+  margin: 5px 0;
+  /* Add vertical margin */
+}
+
+#task-details-body-wrap-task p span {
+  font-weight: normal;
+}
+
+.control-group {
+  margin-top: 20px;
+  /* Space above the control group */
+}
+
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 34px;
+  height: 20px;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  transition: .4s;
+  border-radius: 20px;
+  /* Rounded corners */
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 14px;
+  width: 14px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  transition: .4s;
+  border-radius: 50%;
+  /* Circular slider knob */
+}
+
+input:checked+.slider {
+  background-color: #007bff;
+  /* Active background color */
+}
+
+input:checked+.slider:before {
+  transform: translateX(14px);
+  /* Move the knob when checked */
+}
+
+.help-block {
+  font-size: 0.9rem;
+  color: #777;
+  /* Light gray color for help text */
+}
+
+.nav-button {
+  padding: 3px 7px;
+  margin: 0 3px;
+  font-size: 1em;
+  cursor: pointer;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+}
+
+.nav-button:hover {
+  background-color: #0056b3;
+}
+
+.calendar-container {
+  font-family: 'Arial', sans-serif;
+  background-color: #f8f8f8;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  padding: 10px;
+}
+
+.status-panel {
+  display: flex;
+  justify-content: space-around;
+  padding: 10px;
+  border-radius: 8px;
+  background-color: #e8e8e8;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+@media (max-width: 768px) {
+  .status-panel {
+    flex-direction: column;
+    padding: 8px;
+  }
+}
+
+
+.status-item {
+  min-width: 110px;
+  text-align: center;
+  font-size: 0.9em;
+  font-weight: bold;
+  color: white;
+  padding: 8px 12px;
+  border-radius: 4px;
+}
+
+/* Status colors */
+.status-total-booking{
+  background-color: black;
+  color: white;
+}
+
+.status-pending {
+  background-color: #f1892d;
+}
+.status-processing {
+  background-color: #07aba0;
+}
+
+.status-approved {
+  background-color: #0077c0;
+}
+
+.status-cancel {
+  background-color: #e74c3c;
+}
+
+.status-done {
+  background-color: #0eac51;
+}
+
+.filter-form {
+  margin-bottom: 10px;
+  /* display: flex; */
+  /* justify-content: space-between; */
+  /* flex-wrap: wrap; */
+}
+
+/* .form-group {
+  flex: 1 1 200px;
+} */
+
+.form-select {
+  padding: 7px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  font-size: 1em;
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+.form-select:focus {
+  border-color: #22f9f9;
+  outline: none;
+  box-shadow: 0 0 5px rgba(34, 249, 249, 0.5);
+}
+
+.table-responsive {
+  overflow-y: auto;
+  max-height: 450px;
+  /* Set the desired max height */
+}
+
+.calendar-table {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: #ffffff;
+  border-radius: 8px;
+}
+
+.calendar-table thead {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.calendar-table th {
+  background-color: #87d531;
+  color: #333;
+  padding: 8px 5px;
+  text-align: center;
+  font-weight: bold;
+  border-bottom: 2px solid #ddd;
+}
+
+.service-header {
+  position: relative;
+  width: 120px;
+}
+
+.service-title {
+  margin: 8px 0 0;
+  font-size: 1em;
+  color: #333;
+  text-align: center;
+}
+
+.service-image {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  overflow: hidden;
+  margin: 0 auto;
+  border: 3px solid #ddd;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.service-image img {
+  width: 100%;
+  height: auto;
+}
+
+.hour-cell {
+  width: 80px;
+  text-align: center;
+  padding: 14px;
+  font-weight: bold;
+  color: #333;
+  background-color: #f9f9f9;
+}
+
+.service-cell {
+  text-align: center;
+  padding: 14px;
+  border: 1px solid #ddd;
+  font-size: 0.9em;
+  color: #555;
+  transition: background-color 0.3s;
+}
+
+.even-row {
+  background-color: #f2f2f2;
+}
+
+.odd-row {
+  background-color: #ffffff;
+}
+
+.service-cell:hover {
+  background-color: #eaeaea;
+}

@@ -22,7 +22,6 @@ import 'package:goal_master/features/notification/data/repo/notifaction_repo.dar
 import 'package:goal_master/features/notification/manager/notification_cubit/notification_cubit.dart';
 import 'package:goal_master/features/profile/data/repo/profile_repo_imp.dart';
 import 'package:goal_master/features/profile/presentation/manager/profile_cubit/profile_cubit.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:oktoast/oktoast.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -96,20 +95,13 @@ class GoalMaster extends StatelessWidget {
       create: (_) => ConnectionCubit(),
       child: BlocBuilder<ConnectionCubit, bool>(
         builder: (context, state) {
-          if (!state) {
-            return const MaterialApp(
-              debugShowCheckedModeBanner: false,
-              home: NoInternetView(),
-            );
-          }
-
           return MultiBlocProvider(
             providers: [
               BlocProvider(
                 create: (_) {
                   final cubit = NotificationCubit(
                     notificationRepo: getIt<NotificationRepo>(),
-                    userId: SharedPreferenceUtil.getInt(PrefKey.userId) ?? 0,
+                    userId: SharedPreferenceUtil.getInt(PrefKey.userId),
                     onVisualNotification: (notification) async {
                       const androidDetails = AndroidNotificationDetails(
                         'goal_channel_id',
@@ -180,7 +172,7 @@ class GoalMaster extends StatelessWidget {
                       colorScheme:
                           ColorScheme.fromSeed(seedColor: AppColors.primary),
                       useMaterial3: true,
-                      textTheme: GoogleFonts.tajawalTextTheme(),
+                      textTheme: const TextTheme(),
                       scaffoldBackgroundColor: Colors.white,
                     ),
                     debugShowCheckedModeBanner: false,
@@ -191,6 +183,15 @@ class GoalMaster extends StatelessWidget {
                       GlobalWidgetsLocalizations.delegate,
                       GlobalCupertinoLocalizations.delegate,
                     ],
+                    builder: (context, child) {
+                      return Stack(
+                        children: [
+                          if (child != null) child,
+                          if (!state)
+                            const Positioned.fill(child: NoInternetView()),
+                        ],
+                      );
+                    },
                     routerConfig: AppRouter.router,
                   ),
                 ),

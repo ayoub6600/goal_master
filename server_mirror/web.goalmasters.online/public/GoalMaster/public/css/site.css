@@ -1,0 +1,218 @@
+@import url('lib/button-style.css');
+@import url('lib/theme-override.css');
+@import url('lib/override-datatable.css');
+
+/* menu color change */
+.logo-header[data-background-color=blue]{
+    background-color: #1f283e !important;
+    }
+    
+    .sidebar, .sidebar[data-background-color=white] {
+        background-color: #1f283e !important;
+    }
+    
+    .sidebar .user, .sidebar[data-background-color=white] .user{
+         border-bottom:1px solid rgba(181,181,181,.1) !important;
+    }
+    .sidebar .user .info a > span, .sidebar[data-background-color=white] .user .info a > span{
+        color: #b9babf !important;
+    }
+    .sidebar .user .info a > span .user-level, .sidebar[data-background-color=white] .user .info a > span .user-level{
+        color: #b9babf !important;
+    }
+
+    /* end menu color */
+
+.h-100 {
+    height: 100vh !important;
+}
+.w-100 {
+    width: 100vh !important;
+}
+
+.fs-11rem {
+    font-size: 1.1rem;
+}
+.mb-15rem {
+    margin-bottom: 1.5rem;
+}
+.w70 {
+    width: 70% !important;
+}
+.w30 {
+    width: 30% !important;
+}
+.w100 {
+    width: 100% !important;
+}
+.w90 {
+    width: 90% !important;
+}
+.w80 {
+    width: 80% !important;
+}
+.w95 {
+    width: 95% !important;
+}
+.w50 {
+    width: 50% !important;
+}
+
+.mt-7 {
+    margin-top: 7px; 
+}
+.mt-50{
+    margin-top: 50px;;
+}
+
+.bg-premium-dark {
+    background-image: linear-gradient(to right, #434343 0%, black 100%) !important;
+}
+
+.p-0 {
+ padding: 0px;   
+}
+.pt-20{
+    padding-top: 20px;
+}
+
+input[type="checkbox"] {
+    width: 15px;height: 15px;
+}
+input[type="radio"] {
+    width: 15px;height: 15px;
+}
+
+.control-group.error input, .control-group.error select, .control-group.error textarea {
+    color: #b94a48;
+    border-color: #b94a48;
+}
+.control-group.error > label, .control-group.error .help-block, .control-group.error .help-inline {
+    color: #b94a48 !important;
+}
+.help-block > ul > li {
+     list-style-type: none;
+         color: #b94a48;
+}
+.help-block > ul {
+    padding-left: 1px;
+     margin-bottom: 0px;
+}
+
+.treeview ul {
+    background: none !important;
+}
+.cp{
+    cursor: pointer;
+}
+.bootstrap-select > .dropdown-toggle {
+    padding: 5px 12px !important;
+    border-color: #ced4da;
+}
+.dropdown-menu{
+    z-index: 9999;
+}
+
+
+/* width */
+::-webkit-scrollbar {
+    width: 8px;
+      height: 8px;
+  }
+  
+  /* Track */
+  ::-webkit-scrollbar-track {
+    background: #f1f1f1;
+        -webkit-border-radius: 6px;
+      border-radius: 6px;
+  }
+  
+  /* Handle */
+  ::-webkit-scrollbar-thumb {
+    background: #c2c2c2;
+        -webkit-border-radius: 6px;
+      border-radius: 6px;
+  }
+  
+  /* Handle on hover */
+  ::-webkit-scrollbar-thumb:hover {
+    background: #888;
+  }
+
+.card-done{
+    background: #28a745 !important;
+}
+.card-approved {
+    background: #2674da !important;
+}
+
+.card-pending {
+    background: #ffad46 !important;
+}
+
+.card-processing {
+    background: #17a2b8 !important;
+}
+
+.card-cancel {
+    background: #fe3145 !important;
+}
+.iti {
+    width: 100% !important;
+}
+
+.fs-16{
+    font-size: 16px;
+}
+.fs-19{
+    font-size: 19px;
+}
+.app-login-box{
+    background: #fff !important;
+    border-radius: 10px;
+    box-shadow: #808080a3 0px 0px 14px 0px;
+    padding: 40px 26px 26px 26px !important;
+}
+.bootstrap-select>.dropdown-toggle.bs-placeholder, .bootstrap-select>.dropdown-toggle.bs-placeholder:active, .bootstrap-select>.dropdown-toggle.bs-placeholder:focus, .bootstrap-select>.dropdown-toggle.bs-placeholder:hover {
+    color: #434343 !important;
+}
+
+.fc_done{
+    color: #28a745  !important;
+}
+.fc_approved {
+    color: #2674da !important;
+}
+
+.fc_pending {
+    color: #ffad46 !important;
+}
+
+.fc_processing {
+    color: #17a2b8 !important;
+}
+
+.fc_cancel {
+    color: #fe3145 !important;
+}
+
+.br-5{
+    border-radius:5px !important;
+}
+
+#cmbLang{
+    border: none;
+    background: none;
+    color: #fff;
+    font-size: 12px;
+  }
+
+ #cmbLang >option{
+     background-color: #1269db;
+ }
+ .cursor-pointer{
+    cursor:pointer;
+ }
+.color-red{
+    color: #fe3145;
+}

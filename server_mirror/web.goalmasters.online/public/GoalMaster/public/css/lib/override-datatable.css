@@ -1,0 +1,38 @@
+﻿.dataTable {
+    border: none;
+    border-bottom: 1px solid #dbdbdb;
+    border-top: 3px solid #009ee4;
+    border-top-left-radius: 4px;
+    border-top-right-radius: 4px;
+}   
+ .dataTables_scrollBody {
+    background:none !important;
+}
+.dataTable > thead > tr > th {
+    border-left: 1px solid #dbdbdb !important;
+    border-right: 1px solid #dbdbdb !important;
+}
+
+.custom-select {
+    background: none;
+    -webkit-appearance: auto;
+    -moz-appearance: auto;
+    appearance: auto;
+}
+
+.dataTable td, .dataTable th {
+    font-size: 14px;
+    border-top-width: 1px;
+    border-bottom: 1px solid;
+    border-color: #dbdbdb !important;
+    padding: 0 10px !important;
+    height: 45px;
+    vertical-align: middle !important;
+}
+
+#tableElement{
+    min-width: 850px !important;
+}
+.dataTables_filter .form-control-sm{
+    width: 100% !important;
+}

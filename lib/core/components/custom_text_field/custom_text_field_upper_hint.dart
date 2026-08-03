@@ -3,7 +3,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:goal_master/core/styles/app_colors.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 class CustomTextFieldUpperHint extends StatelessWidget {
   const CustomTextFieldUpperHint({
@@ -32,7 +31,7 @@ class CustomTextFieldUpperHint extends StatelessWidget {
       right: 0,
       child: AnimatedDefaultTextStyle(
         style: hintStyle ??
-            GoogleFonts.ibmPlexSansArabic(
+            TextStyle(
               color: AppColors.inactiveText1,
               fontSize: hintDown ? 16.sp : 12.sp,
               fontWeight: FontWeight.w500,

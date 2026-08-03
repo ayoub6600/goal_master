@@ -51,7 +51,7 @@ class NotificationCubit extends Cubit<NotificationState> {
     if (_isDisposed) return;
     _socketService.initialize();
 
-    _pollingTimer = Timer.periodic(const Duration(seconds: 15), (_) {
+    _pollingTimer = Timer.periodic(const Duration(seconds: 5), (_) {
       print('[\u23F1\uFE0F Polling] التحقق من وجود إشعارات جديدة...');
       _checkForNewNotification();
     });

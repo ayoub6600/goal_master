@@ -7,5 +7,9 @@ abstract class CardRepo {
   );
   //Transactionstore
 
-  Future<Either<Failure, String>> addTransaction(String amount, String status);
+  Future<Either<Failure, String>> addTransaction(
+    String amount,
+    String status, {
+    String? reference,
+  });
 }

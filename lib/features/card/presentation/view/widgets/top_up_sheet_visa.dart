@@ -7,7 +7,6 @@ import 'package:goal_master/core/styles/app_colors.dart';
 import 'package:goal_master/core/styles/app_text_styles.dart';
 import 'package:goal_master/core/styles/spaces.dart';
 import 'package:go_router/go_router.dart';
-import 'package:goal_master/features/card/presentation/manager/checkout_cubit/payment_cubit/payment_state.dart';
 
 class TopUpSheetVisa extends StatefulWidget {
   const TopUpSheetVisa({super.key});
@@ -74,11 +73,12 @@ class _TopUpSheetVisaState extends State<TopUpSheetVisa> {
                   'amount': amountInMilli.toString(),
                 },
               );
-              if (res is PaymentResult &&
-                  res.status == PaymentResultStatus.completed) {
+              if (!context.mounted) return;
+              if (res == true) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(content: Text("تم الشحن بنجاح")),
                 );
+                if (!context.mounted) return;
                 Navigator.pop(context, true);
               }
             },

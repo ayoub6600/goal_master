@@ -1,0 +1,32 @@
+.payment-chose-div {
+    float: left;
+    border: 1px solid #d2d2d2;
+    border-radius: 2px;
+    margin: 3px 3px;
+    padding: 9px 9px;
+    cursor: pointer;
+
+}
+
+#divPaymentMethod {
+    max-width: 300px;
+    padding-top: 10px;
+}
+
+.payment-chose-div img {
+    width: 87px;
+    height: 32px;
+}
+
+.payment-chose {
+    background: var(--theamColorRgba);
+    border: 1px solid var(--theamColorRgba);
+}
+
+.payment-chose div {
+    color: #fff !important;
+}
+
+.payment-chose i {
+    color: #fff !important;
+}

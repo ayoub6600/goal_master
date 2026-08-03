@@ -52,6 +52,7 @@ import 'package:goal_master/features/home/presentation/view/widgets/booking_item
 import 'package:goal_master/features/home/presentation/view/widgets/show_all_resulat_filtter.dart';
 import 'package:goal_master/features/layout/presentation/view/home_layout_view.dart';
 import 'package:goal_master/features/notification/data/repo/notifaction_repo.dart';
+import 'package:goal_master/features/notification/data/model/notification_response.dart';
 import 'package:goal_master/features/notification/manager/notification_logic/notification_logic_cubit.dart';
 import 'package:goal_master/features/notification/presentation/view/notifaction_view.dart';
 import 'package:goal_master/features/notification/presentation/view/widgets/notification_items_details.dart.dart';
@@ -402,7 +403,7 @@ List<RouteBase> appRoutes = [
       child: BlocProvider(
         create: (_) => NotificationFetchCubit(
           notificationRepo: getIt<NotificationRepo>(),
-          userId: SharedPreferenceUtil.getInt(PrefKey.userId) ?? 0,
+          userId: SharedPreferenceUtil.getInt(PrefKey.userId),
         ),
         child: const NotificationView(),
       ),
@@ -412,30 +413,34 @@ List<RouteBase> appRoutes = [
     parentNavigatorKey: parentKey,
     path: RoutesKeys.kNotificationItemsDetails,
     pageBuilder: (context, state) {
-      final bookingId = state.extra as int;
+      final notification = state.extra as NotificationItem;
+      final isWalletNotification = notification.isWalletTransaction;
+      final bookingId = notification.data.bookingId;
 
       return buildPageWithDefaultTransition<void>(
         context: context,
         state: state,
-        child: MultiBlocProvider(
-          providers: [
-            BlocProvider(
-              create: (context) => BookingDetailsCubit(
-                getIt<BookingRepoImp>(),
-                bookingId,
-              )..getBookingInfo(),
-            ),
-            BlocProvider(
-              create: (context) => CancelBookingCubit(
-                getIt<BookingRepoImp>(),
+        child: isWalletNotification || bookingId <= 0
+            ? NotificationItemsDetails(notification: notification)
+            : MultiBlocProvider(
+                providers: [
+                  BlocProvider(
+                    create: (context) => BookingDetailsCubit(
+                      getIt<BookingRepoImp>(),
+                      bookingId,
+                    )..getBookingInfo(),
+                  ),
+                  BlocProvider(
+                    create: (context) => CancelBookingCubit(
+                      getIt<BookingRepoImp>(),
+                    ),
+                  ),
+                  BlocProvider(
+                    create: (context) => ToggleCubit(),
+                  ),
+                ],
+                child: NotificationItemsDetails(notification: notification),
               ),
-            ),
-            BlocProvider(
-              create: (context) => ToggleCubit(),
-            ),
-          ],
-          child: NotificationItemsDetails(),
-        ),
       );
     },
   ),

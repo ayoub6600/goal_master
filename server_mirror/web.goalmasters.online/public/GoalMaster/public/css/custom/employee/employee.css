@@ -1,0 +1,43 @@
+.modal-body{
+    padding-top: 2px;
+    
+}
+.div-service ul{
+    list-style-type:none;
+    padding: 0;
+}
+
+.div-service-category{
+    background: #f6f6f6;
+    border: 1px solid #f6f6f6;
+    border-radius: 1px;
+    padding: 10px;
+    margin: 15px;
+    padding-left: 20px;
+    font-weight: 600;
+    font-size: 17px;
+    border-radius: 3px;
+}
+.div-category-service{
+padding: 5px;
+margin: 10px;
+margin-left: 50px;
+font-size: 16px;
+}
+
+
+.btn-tui-calendar-default2{
+    padding: 5px 10px;
+}
+
+#topDivTblEmployeeSchedule{
+    overflow-x: auto;
+}
+
+#tblEmployeeSchedule{
+    min-width: 650px;
+}
+
+.mw250px{
+    max-width: 250PX;
+}

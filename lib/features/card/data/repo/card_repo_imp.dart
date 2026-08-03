@@ -26,13 +26,18 @@ class CardRepoImp implements CardRepo {
   }
 
   @override
-  Future<Either<Failure, String>> addTransaction(String amount, String status) {
+  Future<Either<Failure, String>> addTransaction(
+    String amount,
+    String status, {
+    String? reference,
+  }) {
     return consumer.handleRequest(
       () => consumer.post(
         EndPoints.transactionStore,
         data: {
           'amount': amount,
           'status': status,
+          if (reference != null && reference.isNotEmpty) 'reference': reference,
         },
       ),
       (p0) {

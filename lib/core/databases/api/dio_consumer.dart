@@ -1,11 +1,8 @@
 import 'dart:io';
 import 'package:dio/dio.dart';
-import 'package:flutter/material.dart';
 import 'package:goal_master/core/components/keys_values.dart';
 import 'package:goal_master/core/components/preference_utility.dart';
 import 'package:goal_master/core/databases/token_interceptor.dart';
-import 'package:goal_master/core/routing/app_router.dart';
-import 'package:goal_master/core/view/no_internet_view.dart';
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 import 'api_consumer.dart';
 import 'end_points.dart';
@@ -159,11 +156,7 @@ class DioConsumer extends ApiConsumer {
         e.error is SocketException;
 
     if (isConnectionError) {
-      if (parentKey.currentState?.canPop() == false) {
-        parentKey.currentState?.push(
-          MaterialPageRoute(builder: (_) => const NoInternetView()),
-        );
-      }
+      print('📡 Connection error captured by DioConsumer');
     }
   }
 }

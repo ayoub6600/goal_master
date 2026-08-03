@@ -45,26 +45,30 @@ class ServiceModel {
 
   factory ServiceModel.fromJson(Map<String, dynamic> json) {
     return ServiceModel(
-      id: json['id'],
-      category: json['category'],
-      title: json['title'],
-      imageUrl: json['image_url'],
-      schServiceCategoryId: json['sch_service_category_id'],
-      visibility: json['visibility'],
-      price: json['price'],
-      durationInDays: json['duration_in_days'],
-      durationInTime: json['duration_in_time'],
-      timeSlotInTime: json['time_slot_in_time'],
-      paddingTimeBefore: json['padding_time_before'],
-      paddingTimeAfter: json['padding_time_after'],
-      appointmentLimitType: json['appoinntment_limit_type'],
-      appointmentLimit: json['appoinntment_limit'],
-      minBookingDays: json['minimum_time_required_to_booking_in_days'],
-      minBookingTime: json['minimum_time_required_to_booking_in_time'],
-      minCancelDays: json['minimum_time_required_to_cancel_in_days'],
-      minCancelTime: json['minimum_time_required_to_cancel_in_time'],
-      remarks: json['remarks'],
-      branchId: json['branch_id'],
+      id: _asInt(json['id']),
+      category: json['category']?.toString() ?? '',
+      title: json['title']?.toString() ?? '',
+      imageUrl: json['image_url']?.toString(),
+      schServiceCategoryId: _asInt(json['sch_service_category_id']),
+      visibility: _asInt(json['visibility']),
+      price: json['price']?.toString() ?? '0',
+      durationInDays: _asInt(json['duration_in_days']),
+      durationInTime: json['duration_in_time']?.toString() ?? '00:00:00',
+      timeSlotInTime: json['time_slot_in_time']?.toString() ?? '00:00:00',
+      paddingTimeBefore: json['padding_time_before']?.toString() ?? '00:00:00',
+      paddingTimeAfter: json['padding_time_after']?.toString() ?? '00:00:00',
+      appointmentLimitType: _asInt(json['appoinntment_limit_type']),
+      appointmentLimit: _asInt(json['appoinntment_limit']),
+      minBookingDays: _asInt(json['minimum_time_required_to_booking_in_days']),
+      minBookingTime:
+          json['minimum_time_required_to_booking_in_time']?.toString() ??
+              '00:00:00',
+      minCancelDays: _asInt(json['minimum_time_required_to_cancel_in_days']),
+      minCancelTime:
+          json['minimum_time_required_to_cancel_in_time']?.toString() ??
+              '00:00:00',
+      remarks: json['remarks']?.toString() ?? '',
+      branchId: _asInt(json['branch_id']),
     );
   }
 
@@ -91,6 +95,12 @@ class ServiceModel {
       'remarks': remarks,
       'branch_id': branchId,
     };
+  }
+
+  static int _asInt(dynamic value) {
+    if (value is int) return value;
+    if (value is num) return value.toInt();
+    return int.tryParse(value?.toString() ?? '') ?? 0;
   }
 }
 

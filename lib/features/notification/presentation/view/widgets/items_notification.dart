@@ -34,8 +34,7 @@ class ItemsNotification extends StatelessWidget {
     final message = notification.data.message;
     final createdAt =
         getFormattedDate(notification.createdAt.toIso8601String());
-    final int? bookingId = notification.data.id;
-
+    final int bookingId = notification.data.bookingId;
     return AnimatedContainer(
       duration: const Duration(milliseconds: 300),
       padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 14.h),
@@ -104,7 +103,7 @@ class ItemsNotification extends StatelessWidget {
                             .read<NotificationCubit>()
                             .markAsRead(notification.id);
                     push(RoutesKeys.kNotificationItemsDetails, context,
-                        extra: bookingId);
+                        extra: notification);
                   },
                   child: Row(
                     children: [
@@ -159,12 +158,34 @@ class ItemsNotification extends StatelessWidget {
                           color: Colors.grey[600],
                         ),
                       ),
-                      if (bookingId != null) ...[
+                      if (!notification.isWalletTransaction) ...[
                         HeightSpace(12.h),
                         Text(
                           'رقم الحجز: $bookingId',
                           style: AppTextStyles.font14SemiBold.copyWith(
                             color: AppColors.primary,
+                          ),
+                        ),
+                      ] else ...[
+                        HeightSpace(12.h),
+                        Text(
+                          'نوع الإشعار: معاملة محفظة',
+                          style: AppTextStyles.font14SemiBold.copyWith(
+                            color: AppColors.primary,
+                          ),
+                        ),
+                        HeightSpace(8.h),
+                        Text(
+                          'الوصف: ${notification.data.description.isEmpty ? "سبب العملية غير متوفر" : notification.data.description}',
+                          style: AppTextStyles.font14SemiBold.copyWith(
+                            color: Colors.grey[700],
+                          ),
+                        ),
+                        HeightSpace(8.h),
+                        Text(
+                          'رقم العملية: ${notification.data.id}',
+                          style: AppTextStyles.font14SemiBold.copyWith(
+                            color: Colors.grey[700],
                           ),
                         ),
                       ],

@@ -2,7 +2,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 class CustomTextFieldActualField extends StatelessWidget {
   final double containerHeight;
@@ -77,7 +76,7 @@ class CustomTextFieldActualField extends StatelessWidget {
               hintText: hint,
 
               hintStyle: hintStyle ??
-                  GoogleFonts.tajawal(
+                  TextStyle(
                     color: Color(0xff858C94),
                     fontSize: 14.sp,
                     fontWeight: FontWeight.w500,

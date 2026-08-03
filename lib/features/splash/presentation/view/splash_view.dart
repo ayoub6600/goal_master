@@ -14,23 +14,21 @@ class SplashView extends StatefulWidget {
 }
 
 class _SplashViewState extends State<SplashView> {
+  @override
   void initState() {
-    Future.delayed(Duration(seconds: 1)).then(
-      (value) {
-        var result = SharedPreferenceUtil.getString(PrefKey.login);
-        if (result.isEmpty) {
-          print("----->$result");
-          pushReplacement(RoutesKeys.kOnboarding, context);
-        } else if (result == 'true') {
-          print("----->$result");
-          pushReplacement(RoutesKeys.kHome, context);
-        } else {
-          print("----->$result");
-          pushReplacement(RoutesKeys.kLogin, context);
-        }
-      },
-    );
     super.initState();
+    Future.delayed(const Duration(seconds: 1)).then((_) {
+      if (!mounted) return;
+
+      final result = SharedPreferenceUtil.getString(PrefKey.login);
+      if (result.isEmpty) {
+        pushReplacement(RoutesKeys.kOnboarding, context);
+      } else if (result == 'true') {
+        pushReplacement(RoutesKeys.kHome, context);
+      } else {
+        pushReplacement(RoutesKeys.kLogin, context);
+      }
+    });
   }
 
   @override

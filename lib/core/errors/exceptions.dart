@@ -31,6 +31,19 @@ class ServerFailure extends Failure {
   }
 
   factory ServerFailure.fromBadResponse(int statusCode, dynamic response) {
+    if (response is Map<String, dynamic>) {
+      final directMessage = response['message'];
+      final directData = response['data'];
+
+      if (directMessage is String && directMessage.isNotEmpty) {
+        return ServerFailure(errMessage: directMessage);
+      }
+
+      if (directData is String && directData.isNotEmpty) {
+        return ServerFailure(errMessage: directData);
+      }
+    }
+
     if (statusCode == 400 ||
         statusCode == 401 ||
         statusCode == 403 ||

@@ -1,0 +1,25 @@
+.div-top-card .circles-text {
+    font-size: 13px !important;
+}
+
+.div-today-service-card .circles-text {
+    font-size: 20px !important;
+}
+
+#div-body-booking-info {
+    overflow-y: scroll;
+   height: 500px;
+}
+#div-body-top-booking-service {
+    overflow-y: scroll;
+   height: 507px;
+}
+  /* Track */
+  ::-webkit-scrollbar-track {
+    background: #fff !important;
+  }
+  
+  
+    .right-option{
+    text-align: right ;
+}

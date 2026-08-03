@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 class TransactionsResponse {
   final bool status;
   final String message;
@@ -103,6 +101,7 @@ class Transaction {
   final int balanceType;
   final int status;
   final String? type;
+  final String? description;
   final DateTime createdAt;
   final DateTime updatedAt;
   final TxUser? user;
@@ -116,6 +115,7 @@ class Transaction {
     required this.userId,
     required this.balanceType,
     this.type,
+    this.description,
     required this.status,
     required this.createdAt,
     required this.updatedAt,
@@ -129,6 +129,7 @@ class Transaction {
       balanceableType: (json['balanceable_type'] ?? '').toString(),
       balanceableId: _asInt(json['balanceable_id']),
       type: (json['type'] ?? '').toString(),
+      description: json['description']?.toString(),
       amount: _asDouble(json['amount']),
       userId: _asInt(json['user_id']),
       balanceType: _asInt(json['balance_type']),
@@ -154,6 +155,7 @@ class Transaction {
         'status': status,
         'created_at': createdAt.toIso8601String(),
         'type': type,
+        'description': description,
         'updated_at': updatedAt.toIso8601String(),
         'user': user?.toJson(),
         'reference_user': referenceUser?.toJson(),

@@ -59,13 +59,10 @@
 		<string>https</string>
 	</array>
 
-	<!-- 👇 لو بتستخدم روابط غير https (اختياري جداً) -->
-	<!--
 	<key>NSAppTransportSecurity</key>
 	<dict>
 		<key>NSAllowsArbitraryLoads</key>
 		<true/>
 	</dict>
-	-->
 </dict>
 </plist>

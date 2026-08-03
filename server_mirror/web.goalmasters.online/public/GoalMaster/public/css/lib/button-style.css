@@ -1,0 +1,58 @@
+﻿.btn-shadow {
+    box-shadow: 0 0.125rem 0.625rem rgba(63,106,216,0.4), 0 0.0625rem 0.125rem rgba(63,106,216,0.5);
+}
+.btn-pill {
+    border-top-left-radius: 50px;
+    border-bottom-left-radius: 50px;
+    border-top-right-radius: 50px;
+    border-bottom-right-radius: 50px;
+}
+.btn-pill::after {
+    border-top-left-radius: 50px;
+    border-bottom-left-radius: 50px;
+    border-top-right-radius: 50px;
+    border-bottom-right-radius: 50px;
+}
+.btn-wide {
+    padding: .5rem 2rem;
+    font-size: 1.1rem;
+    line-height: 1.5;
+}
+
+.btn-datatable-padding {
+    padding: 1px 4px
+}
+
+.btn-datatable {
+    padding: 1px 4px;
+    height:25px;
+    width:25px;
+    font-size:10px;
+}
+
+.btn-datatable-sm {
+    padding: 1px 4px;
+    height: 20px;
+    width: 20px;
+    font-size: 10px;
+}
+
+
+.btn-default2 {
+    background-color: #fff;
+    border-color: #ccc;
+}
+.btn-default2:hover{
+    background-color: #e6e6e6;
+    border-color: #adadad;
+}
+.dt-buttons > button{
+    color: #333;
+    background-color: #fff !important;
+    border-color: #ccc !important;
+    }
+    .dt-buttons > button:hover{
+        color: #333;
+        background-color: #e6e6e6 !important;
+        border-color: #adadad !important;
+    }

@@ -1,0 +1,27 @@
+﻿.txtDisplayName {
+    background: none;
+    border: none;
+}
+
+.editIcon {
+    color: #ffffff;
+    background: #538dd0;
+    padding: 3px;
+    border-radius: 3px;
+    margin-left: 3px;
+}
+.saveIcon {
+    color: #ffffff;
+    background: #31ce36;
+    padding: 4px 13px;
+    border-radius: 3px;
+    margin-left: 8px;
+    display: none; 
+}
+
+.treeview .hover {
+    color: #ffffff !important;
+}
+.menu-tree-color {
+    color: #4d4d4d !important;
+}
