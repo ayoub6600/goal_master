@@ -8,6 +8,7 @@ import 'package:goal_master/core/routing/route_utils.dart';
 import 'package:goal_master/core/routing/routes_keys.dart';
 import 'package:goal_master/core/utils/should_execute.dart';
 import 'package:goal_master/features/booking/presentation/manager/add_booking_cubit/add_booking_cubit.dart';
+import 'package:goal_master/features/booking/presentation/manager/category_cubit/category_cubit.dart';
 import 'package:goal_master/features/booking/presentation/view/widgets/choose_payment.dart';
 import 'package:goal_master/features/booking/presentation/view/widgets/custom_calder.dart';
 import 'package:goal_master/core/components/page_wrapper.dart';
@@ -24,7 +25,12 @@ import 'package:goal_master/features/home/presentation/view/widgets/event_card.d
 import 'package:intl/intl.dart';
 
 class BookingDetails extends StatefulWidget {
-  const BookingDetails({super.key});
+  const BookingDetails({super.key, this.initialBranch});
+
+  // Set when arriving from a branch card that's already known (e.g. the
+  // home screen's zone-filtered list) — skips ZoneSelection/ClubSelection
+  // and jumps straight to CategorySelection for that branch.
+  final Map<String, dynamic>? initialBranch;
 
   @override
   State<BookingDetails> createState() => _BookingDetailsState();
@@ -32,6 +38,36 @@ class BookingDetails extends StatefulWidget {
 
 class _BookingDetailsState extends State<BookingDetails> {
   final PageController _controller = PageController();
+
+  @override
+  void initState() {
+    super.initState();
+    final initialBranch = widget.initialBranch;
+    if (initialBranch != null) {
+      final branchId = initialBranch['branchId'] as int;
+      final branchName = initialBranch['branchName'] as String? ?? '';
+      final zoneId = initialBranch['zoneId'] as int? ?? 0;
+      final zoneName = initialBranch['zoneName'] as String? ?? '';
+      final allowLocalPayment =
+          initialBranch['allowLocalPayment'] as bool? ?? false;
+
+      final pageViewCubit = context.read<PageViewCubit>();
+      pageViewCubit.setZoneId(zoneId, zoneName);
+      pageViewCubit.setClubId(
+        branchId,
+        branchName,
+        allowLocalPayment: allowLocalPayment,
+      );
+      context.read<CategoryCubit>().listCategory(branchId: branchId);
+      pageViewCubit.nextPage();
+      pageViewCubit.nextPage();
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (_controller.hasClients) {
+          _controller.jumpToPage(2);
+        }
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -119,8 +155,12 @@ class _BookingDetailsState extends State<BookingDetails> {
                               builder: (context, state) {
                                 return Expanded(
                                   child: ButtonApp(
+                                    isLoading: state is AddBookingLoading,
+                                    enabled: state is! AddBookingLoading,
                                     text: "تأكيد الحجز",
-                                    onTap: () {
+                                    onTap: state is AddBookingLoading
+                                        ? null
+                                        : () {
                                       shouldExecute(
                                         context: context,
                                         callback: () async {

@@ -13,6 +13,7 @@ class PageViewState extends Equatable {
   final String? employeeTitle;
   final String? clubTitle;
   final String? selectedDate;
+  final bool allowLocalPayment;
 
   const PageViewState({
     required this.currentPage,
@@ -27,6 +28,7 @@ class PageViewState extends Equatable {
     this.employeeTitle,
     this.clubTitle,
     this.selectedDate,
+    this.allowLocalPayment = false,
   });
 
   PageViewState copyWith({
@@ -42,6 +44,7 @@ class PageViewState extends Equatable {
     String? employeeTitle,
     String? clubTitle,
     String? selectedDate,
+    bool? allowLocalPayment,
   }) {
     return PageViewState(
       currentPage: currentPage ?? this.currentPage,
@@ -56,6 +59,7 @@ class PageViewState extends Equatable {
       employeeTitle: employeeTitle ?? this.employeeTitle,
       clubTitle: clubTitle ?? this.clubTitle,
       selectedDate: selectedDate ?? this.selectedDate,
+      allowLocalPayment: allowLocalPayment ?? this.allowLocalPayment,
     );
   }
 
@@ -73,5 +77,6 @@ class PageViewState extends Equatable {
         employeeTitle,
         clubTitle,
         selectedDate,
+        allowLocalPayment,
       ];
 }

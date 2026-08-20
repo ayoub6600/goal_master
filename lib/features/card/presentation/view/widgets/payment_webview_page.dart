@@ -23,6 +23,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
   late final String _merchantReference;
   bool isPageLoading = true;
   bool _resultHandled = false;
+  bool _isLeaving = false;
 
   @override
   void initState() {
@@ -85,6 +86,8 @@ class _PaymentScreenState extends State<PaymentScreen> {
       reference: _merchantReference,
     );
 
+    if (!mounted) return;
+
     // 2. أظهر النتيجة في الـ Bottom Sheet
     final shouldReload = await baseBottomSheet(
       context: context,
@@ -117,6 +120,37 @@ class _PaymentScreenState extends State<PaymentScreen> {
     Navigator.pop(context, false);
   }
 
+  Future<void> _confirmExit() async {
+    if (_isLeaving || !mounted) return;
+
+    final shouldLeave = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: const Text('إلغاء الدفع؟'),
+          content: const Text(
+            'إذا رجعت الآن فسيتم إلغاء عملية الدفع الحالية ولن يضاف أي رصيد.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext, false),
+              child: const Text('متابعة الدفع'),
+            ),
+            ElevatedButton(
+              onPressed: () => Navigator.pop(dialogContext, true),
+              child: const Text('نعم، رجوع'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (shouldLeave == true && mounted) {
+      _isLeaving = true;
+      Navigator.pop(context, false);
+    }
+  }
+
   String _buildPaymentHtml() {
     final mID = "10765981238";
     final tID = "34152540";
@@ -142,12 +176,12 @@ class _PaymentScreenState extends State<PaymentScreen> {
   <h3>Processing Payment...</h3>
   <script>
     function callLightbox() {
-      var mID = '${mID}';
-      var tID = '${tID}';
-      var amount = ${amount};
-      var merchRef = '${merchRef}';
+      var mID = '$mID';
+      var tID = '$tID';
+      var amount = $amount;
+      var merchRef = '$merchRef';
 
-      var merchantKey = "${merchantKey}";
+      var merchantKey = "$merchantKey";
       var keyBytes = CryptoJS.enc.Hex.parse(merchantKey);
       var dt = new Date().YYYYMMDDHHMMSS();
 
@@ -168,8 +202,8 @@ class _PaymentScreenState extends State<PaymentScreen> {
         MerchantReference: merchRef,
         TrxDateTime: dt,
         SecureHash: secureHash,
-        showCloseButton: false,
-        allowCancel: false,
+        showCloseButton: true,
+        allowCancel: true,
 
         completeCallback: function (data) {
           console.log('Payment complete:', data);
@@ -214,33 +248,29 @@ class _PaymentScreenState extends State<PaymentScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: SafeArea(
-        child: Column(
-          children: [
-            GestureDetector(
-              onTap: () {},
-              child: Padding(
-                padding: const EdgeInsets.all(8.0), // مسافة بسيطة
-                child: SizedBox(
-                  height: 40,
-                  child: Image.asset(
-                    "assets/images/png_image/app_icon.jpeg",
-                    fit: BoxFit.contain,
-                  ),
-                ),
-              ),
-            ),
-            Expanded(
-              child: Stack(
-                children: [
-                  WebViewWidget(controller: webViewController),
-                  if (isPageLoading)
-                    const Center(child: CircularProgressIndicator()),
-                ],
-              ),
-            ),
-          ],
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) async {
+        if (didPop) return;
+        await _confirmExit();
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          leading: IconButton(
+            onPressed: _confirmExit,
+            icon: const Icon(Icons.arrow_back_ios_new_rounded),
+          ),
+          title: const Text('الدفع بالكرت'),
+          centerTitle: true,
+        ),
+        body: SafeArea(
+          child: Stack(
+            children: [
+              WebViewWidget(controller: webViewController),
+              if (isPageLoading)
+                const Center(child: CircularProgressIndicator()),
+            ],
+          ),
         ),
       ),
     );

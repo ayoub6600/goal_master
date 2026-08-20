@@ -10,7 +10,9 @@ import 'package:goal_master/core/styles/app_text_styles.dart';
 import 'package:goal_master/core/styles/assets.dart';
 import 'package:goal_master/core/styles/spaces.dart';
 import 'package:goal_master/core/utils/should_execute.dart';
+import 'package:goal_master/features/home/presentation/manager/get_services_info_cubit/get_services_info_cubit.dart';
 import 'package:goal_master/features/home/presentation/view/widgets/build_header_home.dart';
+import 'package:goal_master/features/home/presentation/view/widgets/build_location_row.dart';
 import 'package:goal_master/features/home/presentation/view/widgets/list_section_play.dart';
 import 'package:goal_master/features/home/presentation/view/widgets/services_info_view.dart';
 import 'package:goal_master/features/layout/presentation/manager/layout_cubit.dart';
@@ -35,6 +37,10 @@ class _HomeViewState extends State<HomeView> {
   void initState() {
     super.initState();
     layoutCubit = context.read<LayoutCubit>();
+    // Show the last known location instantly (no waiting on GPS/permission)
+    // while a fresh fix is requested in the background.
+    layoutCubit.loadSavedLocation();
+    layoutCubit.initUserLocation();
     _emojiTimer = Timer.periodic(Duration(seconds: 3), (timer) {
       setState(() {
         _emojiIndex = (_emojiIndex + 1) % _emojis.length;
@@ -52,7 +58,20 @@ class _HomeViewState extends State<HomeView> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(
-        child: BlocBuilder<LayoutCubit, LayoutState>(
+        child: BlocListener<LayoutCubit, LayoutState>(
+          listenWhen: (previous, current) =>
+              current.currentPosition != null &&
+              previous.currentPosition != current.currentPosition,
+          listener: (context, state) {
+            final position = state.currentPosition;
+            if (position != null) {
+              context.read<GetServicesInfoCubit>().getServicesInfo(
+                    lat: position.latitude,
+                    lng: position.longitude,
+                  );
+            }
+          },
+          child: BlocBuilder<LayoutCubit, LayoutState>(
           builder: (context, state) {
             return RefreshIndicator(
               onRefresh: () async {},
@@ -60,6 +79,8 @@ class _HomeViewState extends State<HomeView> {
                 padding: const EdgeInsets.all(16),
                 children: [
                   BuildHeaderHome(layoutCubit: layoutCubit),
+                  const SizedBox(height: 10),
+                  const BuildLocationRow(),
                   const SizedBox(height: 10),
                   Row(
                     children: [
@@ -175,6 +196,25 @@ class _HomeViewState extends State<HomeView> {
                     },
                   ),
                   HeightSpace(24.h),
+                  BlocBuilder<GetServicesInfoCubit, GetServicesInfoState>(
+                    builder: (context, servicesState) {
+                      final zoneName = servicesState is GetServicesInfoSuccess
+                          ? servicesState.zoneName
+                          : null;
+                      if (zoneName == null || zoneName.isEmpty) {
+                        return const SizedBox.shrink();
+                      }
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 8),
+                        child: Text(
+                          "الملاعب المتاحة في منطقتك: $zoneName",
+                          style: AppTextStyles.font14Medium
+                              .copyWith(color: AppColors.primary),
+                        ),
+                      );
+                    },
+                  ),
+                  HeightSpace(8.h),
                   SizedBox(height: 200.h, child: ServicesInfoView()),
                   HeightSpace(8.h),
                   ListSectionPlay(),
@@ -184,6 +224,7 @@ class _HomeViewState extends State<HomeView> {
               ),
             );
           },
+        ),
         ),
       ),
     );

@@ -1,39 +1,39 @@
 class CategoryModel {
   final int id;
   final String name;
-  final int createdBy;
-  final int? modifiedBy; // Nullable because it can be null
-  final String createdAt;
-  final String updatedAt;
+  final int? createdBy;
+  final int? modifiedBy;
+  final String? createdAt;
+  final String? updatedAt;
   final int cmnBranchId;
   final CmnBranch cmnBranch;
 
   CategoryModel({
     required this.id,
     required this.name,
-    required this.createdBy,
+    this.createdBy,
     this.modifiedBy,
-    required this.createdAt,
-    required this.updatedAt,
+    this.createdAt,
+    this.updatedAt,
     required this.cmnBranchId,
     required this.cmnBranch,
   });
 
-  // Factory constructor to convert JSON to Dart object
   factory CategoryModel.fromJson(Map<String, dynamic> json) {
     return CategoryModel(
-      id: json['id'],
-      name: json['name'],
-      createdBy: json['created_by'],
-      modifiedBy: json['modified_by'], // Nullable
-      createdAt: json['created_at'],
-      updatedAt: json['updated_at'],
-      cmnBranchId: json['cmn_branch_id'],
-      cmnBranch: CmnBranch.fromJson(json['cmn_branch']), // Parse nested object
+      id: _asInt(json['id']),
+      name: json['name']?.toString() ?? '',
+      createdBy: _asNullableInt(json['created_by']),
+      modifiedBy: _asNullableInt(json['modified_by']),
+      createdAt: _asNullableString(json['created_at']),
+      updatedAt: _asNullableString(json['updated_at']),
+      cmnBranchId: _asInt(json['cmn_branch_id']),
+      cmnBranch: CmnBranch.fromJson(
+        (json['cmn_branch'] as Map<String, dynamic>?) ?? const {},
+      ),
     );
   }
 
-  // To convert Dart object to JSON
   Map<String, dynamic> toJson() {
     return {
       'id': id,
@@ -51,57 +51,55 @@ class CategoryModel {
 class CmnBranch {
   final int id;
   final String name;
-  final String phone;
-  final String email;
-  final String address;
+  final String? phone;
+  final String? email;
+  final String? address;
   final int order;
   final int status;
-  final int createdBy;
-  final int? updatedBy; // Nullable because it can be null
-  final String createdAt;
-  final String updatedAt;
-  final String lat;
-  final String long;
+  final int? createdBy;
+  final int? updatedBy;
+  final String? createdAt;
+  final String? updatedAt;
+  final String? lat;
+  final String? long;
   final int zoneId;
 
   CmnBranch({
     required this.id,
     required this.name,
-    required this.phone,
-    required this.email,
-    required this.address,
+    this.phone,
+    this.email,
+    this.address,
     required this.order,
     required this.status,
-    required this.createdBy,
-    this.updatedBy, // Nullable
-    required this.createdAt,
-    required this.updatedAt,
-    required this.lat,
-    required this.long,
+    this.createdBy,
+    this.updatedBy,
+    this.createdAt,
+    this.updatedAt,
+    this.lat,
+    this.long,
     required this.zoneId,
   });
 
-  // Factory constructor to convert JSON to Dart object
   factory CmnBranch.fromJson(Map<String, dynamic> json) {
     return CmnBranch(
-      id: json['id'],
-      name: json['name'],
-      phone: json['phone'],
-      email: json['email'],
-      address: json['address'],
-      order: json['order'],
-      status: json['status'],
-      createdBy: json['created_by'],
-      updatedBy: json['updated_by'], // Nullable
-      createdAt: json['created_at'],
-      updatedAt: json['updated_at'],
-      lat: json['lat'],
-      long: json['long'],
-      zoneId: json['zone_id'] ?? 0, // Default to 0 if zoneId is null
+      id: _asInt(json['id']),
+      name: json['name']?.toString() ?? '',
+      phone: _asNullableString(json['phone']),
+      email: _asNullableString(json['email']),
+      address: _asNullableString(json['address']),
+      order: _asInt(json['order']),
+      status: _asInt(json['status']),
+      createdBy: _asNullableInt(json['created_by']),
+      updatedBy: _asNullableInt(json['updated_by']),
+      createdAt: _asNullableString(json['created_at']),
+      updatedAt: _asNullableString(json['updated_at']),
+      lat: _asNullableString(json['lat']),
+      long: _asNullableString(json['long']),
+      zoneId: _asInt(json['zone_id']),
     );
   }
 
-  // To convert Dart object to JSON
   Map<String, dynamic> toJson() {
     return {
       'id': id,
@@ -120,4 +118,23 @@ class CmnBranch {
       'zone_id': zoneId,
     };
   }
+}
+
+int _asInt(dynamic value) {
+  if (value is int) return value;
+  if (value is double) return value.toInt();
+  return int.tryParse(value?.toString() ?? '') ?? 0;
+}
+
+int? _asNullableInt(dynamic value) {
+  if (value == null) return null;
+  if (value is int) return value;
+  if (value is double) return value.toInt();
+  return int.tryParse(value.toString());
+}
+
+String? _asNullableString(dynamic value) {
+  if (value == null) return null;
+  final stringValue = value.toString();
+  return stringValue.isEmpty ? null : stringValue;
 }

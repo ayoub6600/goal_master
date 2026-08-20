@@ -18,8 +18,14 @@ class PageViewCubit extends Cubit<PageViewState> {
     }
   }
 
-  void setClubId(int id, String title) {
-    emit(state.copyWith(clubId: id, clubTitle: title));
+  void setClubId(int id, String title, {required bool allowLocalPayment}) {
+    emit(
+      state.copyWith(
+        clubId: id,
+        clubTitle: title,
+        allowLocalPayment: allowLocalPayment,
+      ),
+    );
   }
 
   void setZoneId(int id, String title) {

@@ -7,7 +7,10 @@ import 'package:goal_master/features/home/data/model/service_model.dart';
 
 abstract class AnalysisRepo {
   Future<Either<Failure, Analysis>> getAnalysis();
-  Future<Either<Failure, List<ServiceModel>>> getService();
+  Future<Either<Failure, ServiceResponse>> getService({
+    double? lat,
+    double? lng,
+  });
 
   Future<Either<Failure, List<Slide>>> getBanner();
 

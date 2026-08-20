@@ -61,9 +61,12 @@ class ClubSelection extends StatelessWidget {
                               child: InkWell(
                                 borderRadius: BorderRadius.circular(12),
                                 onTap: () {
-                                  context
-                                      .read<PageViewCubit>()
-                                      .setClubId(club.id, club.name);
+                                  context.read<PageViewCubit>().setClubId(
+                                        club.id,
+                                        club.name,
+                                        allowLocalPayment:
+                                            club.allowLocalPayment,
+                                      );
                                   context
                                       .read<CategoryCubit>()
                                       .listCategory(branchId: club.id);
@@ -167,7 +170,8 @@ class ClubSelection extends StatelessWidget {
                                                   }
                                                 },
                                                 child: Container(
-                                                  margin: EdgeInsets.only(top: 8),
+                                                  margin:
+                                                      EdgeInsets.only(top: 8),
                                                   padding: EdgeInsets.symmetric(
                                                       horizontal: 10.w,
                                                       vertical: 8.h),
@@ -177,14 +181,16 @@ class ClubSelection extends StatelessWidget {
                                                             12.r),
                                                     color: AppColors.primary,
                                                     border: Border.all(
-                                                        color: AppColors.primary),
+                                                        color:
+                                                            AppColors.primary),
                                                   ),
                                                   child: Row(
                                                     mainAxisSize:
                                                         MainAxisSize.min,
                                                     children: [
                                                       Icon(Icons.location_on,
-                                                          color: AppColors.white),
+                                                          color:
+                                                              AppColors.white),
                                                       SizedBox(width: 8.w),
                                                       Text(
                                                         "مكان الملعب",

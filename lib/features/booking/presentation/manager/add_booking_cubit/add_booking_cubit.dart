@@ -12,6 +12,7 @@ class AddBookingCubit extends Cubit<AddBookingState> {
 
   final BookingRepo bookingRepo;
   int _paymentType = 0; // default is cash
+  bool _isSubmitting = false;
 
   void setPaymentType(int value) {
     _paymentType = value;
@@ -26,6 +27,11 @@ class AddBookingCubit extends Cubit<AddBookingState> {
     required dynamic startTime, // String or DateTime
     required dynamic endTime, // String or DateTime
   }) async {
+    if (_isSubmitting) {
+      return;
+    }
+
+    _isSubmitting = true;
     emit(AddBookingLoading());
 
     String formattedDate = _formatDate(date);
@@ -45,7 +51,10 @@ class AddBookingCubit extends Cubit<AddBookingState> {
       date: formattedDate,
       startTime: startTime,
       endTime: endTime,
-    )) return;
+    )) {
+      _isSubmitting = false;
+      return;
+    }
 
     String fullname = SharedPreferenceUtil.getString(PrefKey.fullName);
     String phone = SharedPreferenceUtil.getString(PrefKey.phone);
@@ -64,8 +73,14 @@ class AddBookingCubit extends Cubit<AddBookingState> {
     );
 
     result.fold(
-      (failure) => emit(AddBookingFailure(massage: failure.errMessage)),
-      (data) => emit(AddBookingSuccess(massage: data)),
+      (failure) {
+        _isSubmitting = false;
+        emit(AddBookingFailure(massage: failure.errMessage));
+      },
+      (data) {
+        _isSubmitting = false;
+        emit(AddBookingSuccess(massage: data));
+      },
     );
   }
 

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:goal_master/core/styles/app_colors.dart';
 import 'package:goal_master/core/styles/app_text_styles.dart';

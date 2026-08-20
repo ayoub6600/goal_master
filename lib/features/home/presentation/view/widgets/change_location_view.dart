@@ -38,7 +38,11 @@ class _ChangeLocationViewState extends State<ChangeLocationView> {
       isLoading = true;
     });
 
-    await layoutCubit.getMyCurrentLocation();
+    // Goes through the service/permission checks first (same path
+    // HomeView's initial auto-capture uses) instead of calling the raw
+    // GPS fetch directly, which was failing silently here whenever
+    // permission/service state wasn't already settled.
+    await layoutCubit.initUserLocation();
 
     if (layoutCubit.state.currentPosition != null) {
       _moveCameraToPosition(layoutCubit.state.currentPosition!);
@@ -61,15 +65,18 @@ class _ChangeLocationViewState extends State<ChangeLocationView> {
   }
 
   /// ✅ حفظ الموقع الجديد والعودة إلى `HomeView`
-  // void _saveLocationAndReturn() async {
-  //   if (layoutCubit.state.currentPosition != null) {
-  //     await layoutCubit.convertToAddress(
-  //       layoutCubit.state.currentPosition!.latitude,
-  //       layoutCubit.state.currentPosition!.longitude,
-  //     );
-  //   }
-  //   Navigator.pop(context, true);
-  // }
+  void _confirmLocation() {
+    if (layoutCubit.state.currentPosition == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("اختر موقعك على الخريطة أولاً"),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+    Navigator.pop(context, true);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -97,7 +104,7 @@ class _ChangeLocationViewState extends State<ChangeLocationView> {
                   });
 
                   layoutCubit.updateCurrentPosition(newPosition);
-                  layoutCubit.updateLocationMarker(newPosition);
+                  await layoutCubit.updateLocationMarker(newPosition);
                   _moveCameraToPosition(newPosition);
 
                   /// ✅ تحديث العنوان تلقائيًا عند تغيير الموقع
@@ -117,9 +124,8 @@ class _ChangeLocationViewState extends State<ChangeLocationView> {
 
               /// **🔹 زر تحديد الموقع الحالي**
               Positioned(
-                //   top: 20,
                 left: 20,
-                bottom: 10,
+                bottom: 76,
 
                 child: FloatingActionButton(
                   backgroundColor: AppColors.primary,
@@ -162,6 +168,29 @@ class _ChangeLocationViewState extends State<ChangeLocationView> {
                         ),
                       ),
                     ],
+                  ),
+                ),
+              ),
+
+              /// **🔹 زر تأكيد الموقع**
+              Positioned(
+                left: 20,
+                right: 20,
+                bottom: 10,
+                child: SizedBox(
+                  height: 48,
+                  child: ElevatedButton(
+                    onPressed: _confirmLocation,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primary,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    child: const Text(
+                      "تأكيد الموقع",
+                      style: TextStyle(color: Colors.white, fontSize: 16),
+                    ),
                   ),
                 ),
               ),

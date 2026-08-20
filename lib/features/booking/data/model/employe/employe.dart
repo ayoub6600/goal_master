@@ -67,38 +67,38 @@ class Employee {
   });
 
   factory Employee.fromJson(Map<String, dynamic> json) => Employee(
-        id: json['id'] as int?,
-        fullName: json['full_name'] as String?,
-        imageUrl: json['image_url'] as String?,
+        id: _asNullableInt(json['id']),
+        fullName: _asNullableString(json['full_name']),
+        imageUrl: _asNullableString(json['image_url']),
         employeeId: json['employee_id']?.toString(),
-        cmnBranchId: json['cmn_branch_id'] as int?,
+        cmnBranchId: _asNullableInt(json['cmn_branch_id']),
         emailAddress: json['email_address']?.toString(),
         countryCode: json['country_code'] as dynamic,
         contactNo: json['contact_no']?.toString(),
         hrmDepartmentId: json['hrm_department_id'] as dynamic,
-        hrmDesignationId: json['hrm_designation_id'] as int?,
+        hrmDesignationId: _asNullableInt(json['hrm_designation_id']),
         userId: json['user_id'] as dynamic,
-        gender: json['gender'] as int?,
+        gender: _asNullableInt(json['gender']),
         dob: json['dob'] as dynamic,
         specialist: json['specialist']?.toString(),
         presentAddress: json['present_address']?.toString(),
         permanentAddress: json['permanent_address']?.toString(),
         note: json['note']?.toString(),
-        payCommissionBasedOn: json['pay_commission_based_on'] as int?,
+        payCommissionBasedOn: _asNullableInt(json['pay_commission_based_on']),
         targetServiceAmount: json['target_service_amount']?.toString(),
         passport: json['passport'] as dynamic,
         idCard: json['id_card'] as dynamic,
         commission: json['commission']?.toString(),
         salary: json['salary']?.toString(),
-        status: json['status'] as int?,
-        createdBy: json['created_by'] as int?,
-        updatedBy: json['updated_by'] as int?,
+        status: _asNullableInt(json['status']),
+        createdBy: _asNullableInt(json['created_by']),
+        updatedBy: _asNullableInt(json['updated_by']),
         createdAt: json['created_at'] == null
             ? null
-            : DateTime.parse(json['created_at'] as String),
+            : DateTime.tryParse(json['created_at'].toString()),
         updatedAt: json['updated_at'] == null
             ? null
-            : DateTime.parse(json['updated_at'] as String),
+            : DateTime.tryParse(json['updated_at'].toString()),
         designation: json['designation'] == null
             ? null
             : Designation.fromJson(json['designation'] as Map<String, dynamic>),
@@ -139,4 +139,17 @@ class Employee {
         'designation': designation?.toJson(),
         'branch': branch?.toJson(),
       };
+}
+
+int? _asNullableInt(dynamic value) {
+  if (value == null) return null;
+  if (value is int) return value;
+  if (value is double) return value.toInt();
+  return int.tryParse(value.toString());
+}
+
+String? _asNullableString(dynamic value) {
+  if (value == null) return null;
+  final stringValue = value.toString();
+  return stringValue.isEmpty || stringValue == 'null' ? null : stringValue;
 }

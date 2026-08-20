@@ -18,17 +18,17 @@ class Designation {
   });
 
   factory Designation.fromJson(Map<String, dynamic> json) => Designation(
-        id: json['id'] as int?,
-        name: json['name'] as String?,
-        order: json['order'] as int?,
-        createdBy: json['created_by'] as int?,
-        updatedBy: json['updated_by'] as int?,
+        id: _asNullableInt(json['id']),
+        name: _asNullableString(json['name']),
+        order: _asNullableInt(json['order']),
+        createdBy: _asNullableInt(json['created_by']),
+        updatedBy: _asNullableInt(json['updated_by']),
         createdAt: json['created_at'] == null
             ? null
-            : DateTime.parse(json['created_at'] as String),
+            : DateTime.tryParse(json['created_at'].toString()),
         updatedAt: json['updated_at'] == null
             ? null
-            : DateTime.parse(json['updated_at'] as String),
+            : DateTime.tryParse(json['updated_at'].toString()),
       );
 
   Map<String, dynamic> toJson() => {
@@ -40,4 +40,17 @@ class Designation {
         'created_at': createdAt?.toIso8601String(),
         'updated_at': updatedAt?.toIso8601String(),
       };
+}
+
+int? _asNullableInt(dynamic value) {
+  if (value == null) return null;
+  if (value is int) return value;
+  if (value is double) return value.toInt();
+  return int.tryParse(value.toString());
+}
+
+String? _asNullableString(dynamic value) {
+  if (value == null) return null;
+  final stringValue = value.toString();
+  return stringValue.isEmpty || stringValue == 'null' ? null : stringValue;
 }

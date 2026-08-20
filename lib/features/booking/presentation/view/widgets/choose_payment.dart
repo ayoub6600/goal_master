@@ -4,6 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:goal_master/core/styles/app_text_styles.dart';
 import 'package:goal_master/core/styles/spaces.dart';
 import 'package:goal_master/features/booking/presentation/manager/add_booking_cubit/add_booking_cubit.dart';
+import 'package:goal_master/features/booking/presentation/manager/page_view_cubit/page_view_cubit_cubit.dart';
 import 'package:goal_master/features/booking/presentation/view/widgets/step_title.dart';
 
 class ChoosePayment extends StatefulWidget {
@@ -28,6 +29,9 @@ class _ChoosePaymentState extends State<ChoosePayment> {
 
   @override
   Widget build(BuildContext context) {
+    final canUseLocalPayment =
+        context.watch<PageViewCubit>().state.allowLocalPayment;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -41,11 +45,22 @@ class _ChoosePaymentState extends State<ChoosePayment> {
           icon: Icons.wallet,
           type: 4,
         ),
-        _buildPaymentOption(
-          title: "الدفع عندالوصل",
-          icon: Icons.attach_money,
-          type: 1,
-        ),
+        if (canUseLocalPayment)
+          _buildPaymentOption(
+            title: "الدفع عند الوصول",
+            icon: Icons.attach_money,
+            type: 1,
+          )
+        else
+          Padding(
+            padding: EdgeInsets.only(top: 8.h),
+            child: Text(
+              "الدفع عند الوصول غير متاح لهذا الملعب حالياً",
+              style: AppTextStyles.font14Regular.copyWith(
+                color: Colors.redAccent,
+              ),
+            ),
+          ),
       ],
     );
   }

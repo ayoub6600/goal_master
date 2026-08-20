@@ -321,7 +321,9 @@ List<RouteBase> appRoutes = [
             create: (context) => PageViewCubit(),
           ),
         ],
-        child: const BookingDetails(),
+        child: BookingDetails(
+          initialBranch: state.extra as Map<String, dynamic>?,
+        ),
       ),
     ),
   ),

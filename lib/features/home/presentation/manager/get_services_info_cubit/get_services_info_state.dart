@@ -13,9 +13,15 @@ final class GetServicesInfoLoading extends GetServicesInfoState {}
 
 final class GetServicesInfoSuccess extends GetServicesInfoState {
   final List<ServiceModel> services;
-  const GetServicesInfoSuccess({required this.services});
+  final String? zoneName;
+  final int? zoneId;
+  const GetServicesInfoSuccess({
+    required this.services,
+    this.zoneName,
+    this.zoneId,
+  });
   @override
-  List<Object> get props => [services];
+  List<Object> get props => [services, zoneName ?? '', zoneId ?? 0];
 }
 
 final class GetServicesInfoError extends GetServicesInfoState {

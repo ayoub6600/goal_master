@@ -51,10 +51,17 @@ class AnalysisRepoImp extends AnalysisRepo {
     );
   }
 
-  Future<Either<Failure, List<ServiceModel>>> getService() {
+  @override
+  Future<Either<Failure, ServiceResponse>> getService({
+    double? lat,
+    double? lng,
+  }) {
     return consumer.handleRequest(
-      () => consumer.post(EndPoints.getServices),
-      (data) => ServiceResponse.fromJson(data).data,
+      () => consumer.post(EndPoints.getServices, data: {
+        if (lat != null) 'lat': lat,
+        if (lng != null) 'lng': lng,
+      }),
+      (data) => ServiceResponse.fromJson(data),
     );
   }
 }

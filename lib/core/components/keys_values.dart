@@ -16,4 +16,7 @@ class PrefKey {
   static const String chucker = "chucker";
   static const String homeDialog = "homeDialog";
   static const String refreshToken = "refreshToken";
+
+  static const String savedLat = "savedLat";
+  static const String savedLng = "savedLng";
 }

@@ -1,8 +1,15 @@
 # Goal Master Project Context
 
-Last Updated: 2026-08-02
+Last Updated: 2026-08-09
 Maintained By: Codex project agent
 Scope: current Codex workspace only
+
+Primary onboarding files for any future AI:
+
+- `/Users/ayoubbelhaj/Documents/GitHub/goal_master/AGENTS.md`
+- `/Users/ayoubbelhaj/Documents/GitHub/goal_master/AI_QUICKSTART.md`
+- `/Users/ayoubbelhaj/Documents/GitHub/goal_master/SUBSCRIPTION_SYSTEM_SPEC.md`
+- `/Users/ayoubbelhaj/Documents/GitHub/goal_master/CODEX_WORK_LOG.md`
 
 ## 1. Project Summary
 
@@ -14,8 +21,8 @@ Goal Master is a multi-application sports booking platform. Based on the code cu
    Stadium managers mobile application.
 3. `server_mirror/web.goalmasters.online`
    Local mirror of the production website source pulled from the server on 2026-08-02.
-4. `goal_master_web`
-   GitHub-ready local working copy of the website source prepared on 2026-08-02 and moved to a top-level sibling path on 2026-08-02.
+4. `goal-master-web`
+   GitHub-ready local working copy of the website source prepared on 2026-08-02 and normalized to a top-level sibling path on 2026-08-09.
 5. Backend + Admin Panel
    Still not fully present locally as separate repositories and must not be treated as missing code defects.
 
@@ -23,6 +30,140 @@ Important boundary:
 
 - The backend and server-side admin panel are intentionally unavailable in this workspace at this stage.
 - When backend files or server access become available later, they should be merged into this understanding incrementally, not by rebuilding project knowledge from zero.
+
+## 1.1 AI Continuity Layer
+
+To reduce repeated rediscovery and token waste, this project now has a documentation stack for future AI agents:
+
+1. `AI_QUICKSTART.md`
+   shortest safe project entry point
+2. `AGENTS.md`
+   mandatory operating protocol for any AI agent
+3. `PROJECT_CONTEXT.md`
+   long-form durable project memory
+4. `CODEX_WORK_LOG.md`
+   append-only historical record of work, decisions, and verification
+5. `SUBSCRIPTION_SYSTEM_SPEC.md`
+   approved blueprint for stadium-manager subscription architecture
+
+Current subscription-system direction:
+
+- launch recommendation uses 3 plans:
+  `Starter`, `Growth`, `Pro`
+- but system architecture must support dynamic plan management from admin panel
+- app and web must consume plans from backend, not from hardcoded frontend constants
+- phase 2 architecture is now defined in `SUBSCRIPTION_SYSTEM_SPEC.md` including:
+  data model,
+  ownership model,
+  API groups,
+  enforcement points,
+  and lifecycle job expectations
+- phase 3 implementation has now started in the website/admin codebase with the first admin slice:
+  subscription plan management
+  at route:
+  `/subscription-plans`
+  backed by local tables:
+  `subscription_plans`
+  and
+  `subscription_plan_feature_values`
+- phase 3 now also includes the second admin slice:
+  assigning a subscription plan to a stadium-manager/system-user account
+  from the existing admin user-management page:
+  `/user-info`
+  using a modal-backed flow and local table:
+  `manager_subscriptions`
+- stadium-manager onboarding no longer assumes that creating one branch is enough to start bookings
+- the real operational setup sequence, based on the existing admin panel/backend logic, is:
+  `Branch -> Business Hours -> Category -> Service -> Employee/Schedule -> Booking`
+- this matters because booking availability depends on:
+  branch hours,
+  employee-service mappings,
+  and employee schedules,
+  not only on branch existence
+- the temporary old mobile flow that created a branch plus fake default services was identified as too simplistic and is being replaced gradually by a stage-based setup flow
+- manager notifications now need to support more than one backend payload shape:
+  some notifications store the booking reference in
+  `data.id`
+  while others store it in
+  `data.booking_id`
+- this was confirmed on Thursday, August 13, 2026 during local-payment request testing for booking `#13`
+- any future manager-app notification parsing change must remain compatible with both payload shapes
+- local-payment request notifications should be treated as a special manager workflow:
+  pending approval,
+  actionable,
+  and distinct from generic “new booking” notifications
+- customer-facing booking status notifications must not resolve the recipient through plain phone-number matching alone
+- this became critical on Friday, August 14, 2026 when local booking `#13` belonged to:
+  `cmn_customer_id = 43`
+  with
+  `user_id = null`
+  while the same phone number was also used by manager system user `33`
+- safe notification recipient resolution must prefer:
+  `customer->user`
+  and only allow fallback matches if the fallback user is explicitly:
+  `user_type = WebsiteUser`
+- production server inspection on Tuesday, August 11, 2026 confirmed that the original live Goal Master database uses a Laravel table prefix model:
+  logical table names in code such as
+  `users`,
+  `cmn_branches`,
+  `sch_service_categories`,
+  `sch_services`,
+  `sch_employees`
+  are stored physically as
+  `db2_users`,
+  `db2_cmn_branches`,
+  `db2_sch_service_categories`,
+  `db2_sch_services`,
+  `db2_sch_employees`,
+  etc.
+- this means production is not using different business tables;
+  it is using the same old schema behind a DB prefix
+- live role data on the server currently includes at least:
+  `صلاحيات الادمن`
+  `مدير ملعب`
+  `صلحيات محدده`
+- live stadium-manager setup examples confirmed the real operational chain:
+  1. create a `db2_users` record with `user_type = 1`
+  2. attach role through `db2_sec_user_roles`
+  3. create branch in `db2_cmn_branches`
+  4. attach user to branch through `db2_sec_user_branches`
+  5. create category in `db2_sch_service_categories`
+  6. create services in `db2_sch_services`
+  7. create employee rows in `db2_sch_employees`
+  8. attach services to employees through `db2_sch_employee_services`
+  9. define time windows in `db2_sch_employee_schedules`
+- important production insight:
+  the real evening/after-midnight split is currently modeled through employee records and their schedules,
+  not through a separate dedicated stadium flag
+- production examples found on server:
+  branch `ملاعب الهدف`
+  branch `ملاعب الجزيره`
+  category `كرة قدم`
+  services like
+  `سداسي 1`,
+  `ملعب سباعي`,
+  `1 ملعب`,
+  `2 ملعب`,
+  `3 ملعب`
+  and employees named like
+  `حجز مسائي`
+  and
+  `حجز ليلي من 12 الى 2`
+  or
+  `حجز ليلي من 12الى`
+- this confirms that the manager app cannot be considered booking-ready after only saving branch info;
+  it must eventually support:
+  category creation,
+  service creation,
+  and at least one schedule-aware employee setup
+
+Required reading order for any new AI:
+
+1. `AI_QUICKSTART.md`
+2. `AGENTS.md`
+3. `PROJECT_CONTEXT.md`
+4. latest relevant work log entry
+5. if the task relates to stadium-manager subscriptions, read `SUBSCRIPTION_SYSTEM_SPEC.md`
 
 ## 2. Primary Goals
 
@@ -38,7 +179,7 @@ Accessible now:
 - `goal_master`
 - `goal_master_admin`
 - `goal_master/server_mirror/web.goalmasters.online`
-- `goal_master_web`
+- `goal-master-web`
 
 Not accessible now:
 
@@ -120,7 +261,7 @@ Important deployment structure note:
 
 Local path:
 
-- `/Users/ayoubbelhaj/Documents/GitHub/goal_master_web`
+- `/Users/ayoubbelhaj/Documents/GitHub/goal-master-web`
 
 Purpose:
 
@@ -141,9 +282,9 @@ Current preparation state:
 
 Current local runtime notes observed on 2026-08-02:
 
-- Local Laravel setup was successfully run from `/Users/ayoubbelhaj/Documents/GitHub/goal_master_web`
+- Local Laravel setup was successfully run from `/Users/ayoubbelhaj/Documents/GitHub/goal-master-web`
 - Local development database is currently `sqlite` at:
-  `/Users/ayoubbelhaj/Documents/GitHub/goal_master_web/database/database.sqlite`
+  `/Users/ayoubbelhaj/Documents/GitHub/goal-master-web/database/database.sqlite`
 - The site was successfully served locally at:
   `http://127.0.0.1:8000`
 - Admin login was verified locally through the web login flow and redirected successfully to `/home`
@@ -151,7 +292,7 @@ Current local runtime notes observed on 2026-08-02:
 - Composer dependencies are installed locally in the working copy
 - Local JWT auth is configured for the website API, so `/api/login` works for local mobile-app testing
 - A reproducible demo data seeder exists at:
-  `/Users/ayoubbelhaj/Documents/GitHub/goal_master_web/database/seeders/DemoStadiumManagerSeeder.php`
+  `/Users/ayoubbelhaj/Documents/GitHub/goal-master-web/database/seeders/DemoStadiumManagerSeeder.php`
   This seeder creates one demo stadium manager, one demo club/branch, two demo fields/services, two employees, branch hours, employee schedules, and their mappings
 - Booking-related API responses are not type-stable across all fields:
   values such as `service_amount`, `paid_amount`, `due`, and some IDs may arrive as JSON numbers or strings depending on endpoint and query path
@@ -161,14 +302,124 @@ Current local runtime notes observed on 2026-08-02:
 - Customer notifications are not schema-uniform:
   some booking-related notifications use `data.id`,
   while `UserNotification` uses `data.booking_id`;
+- stadium-manager setup bootstrap now exposes real setup progress flags:
+  `has_branch_profile`,
+  `has_category_setup`,
+  `has_service_setup`,
+  `has_employee_setup`,
+  `can_start_booking`,
+  and `next_step_label`
+  so the mobile manager app can stop assuming that branch creation alone means the account is booking-ready
   client notification parsing must normalize both to avoid showing booking id `0` or opening booking details with an invalid id
 - The customer no-internet recovery flow now validates real internet reachability, not just network presence, and `NoInternetView` closes itself when connectivity is restored and the user retries
 - Customer online wallet top-up flow originally had no reliable server-side idempotency:
   repeated `transaction-store` requests could create duplicate balance rows unless guarded by a payment reference or duplicate-detection logic
 - Web admin user management already contained a partial wallet-management UI skeleton:
   `resources/views/user_management/user.blade.php`
+- Admin user management now also contains subscription assignment controls for non-admin system users.
+- Current local admin subscription assignment endpoints:
+  `GET /manager-subscription`
+  `POST /manager-subscription`
+- Current local subscription assignment persistence:
+  latest active/current manager subscription is tracked in
+  `manager_subscriptions`
+  with history preserved by marking older records `is_current = 0`
+- First real enforcement layer is now implemented in the website/admin backend:
+  non-admin system users with subscriptions are checked against plan limits when creating:
+  branches,
+  services/fields,
+  and employees
+- Current enforced limits:
+  `max_branches`,
+  `max_fields`,
+  `max_staff`
+- Current enforcement behavior:
+  admin bypasses subscription limits;
+  non-admin system users must have an active or trialing current subscription
+  or creation is blocked with a business error message
+- Feature-flag enforcement has now started as a second layer:
+  `allow_monthly_bookings`,
+  `allow_reports`,
+  `allow_web_access`
+- Current feature-flag behavior:
+  monthly-booking routes are blocked when `allow_monthly_bookings = 0`
+  dashboard/report routes are blocked when `allow_reports = 0`
+  and system-user access to the admin web panel is blocked at route level when `allow_web_access = 0`
+- Current UX handling:
+  if reports are disabled but web access is allowed,
+  opening `/home` redirects the manager to `booking.calendar`
+  with an explanatory error message
   and `public/js/custom/user_management/user.js`
+- Manager self-onboarding now has a first real setup API slice for the mobile manager app:
+  `GET /api/manager/setup/bootstrap`
+  and
+  `POST /api/manager/setup/first-venue`
+- The new manager-setup bootstrap payload now returns:
+  setup completion state,
+  wallet summary,
+  recent wallet transactions,
+  and available zones for first-venue creation
+- In Goal Master business structure,
+  the first stadium setup is now persisted as:
+  one real `cmn_branch`,
+  one default `sch_service_category`,
+  and N initial `sch_services`
+  based on the manager-entered field count
+- For this onboarding slice,
+  the entered stadium description is currently stored as branch address fallback text
+  and copied into the initial service remarks,
+  because `cmn_branches` has no dedicated description column in the current schema
+- Manager wallet preparation is now considered part of onboarding:
+  the setup screen can read current wallet balance before first-venue creation,
+  even if the active plan is still in a free trial period
   but it was add-only and did not yet support direct withdrawals or mandatory descriptions before this task
+- Manager wallet onboarding is now promoted to its own API/UI slice:
+  `GET /api/manager/wallet/summary`
+  and
+  `GET /api/manager/wallet/transactions`
+  now back a dedicated manager-wallet screen in the mobile app
+- As of Monday, August 10, 2026,
+  manager wallet top-up is now partially implemented end-to-end for the mobile manager app:
+  `POST /api/manager/wallet/confirm-topup`
+  stores a manager credit transaction in `cmn_user_balances`
+  and the Flutter manager app now opens a dedicated online-payment webview flow from the wallet screen
+- Current manager top-up persistence rules:
+  wallet credits are stored through the manager user's morph relation to `cmn_user_balances`
+  with:
+  `balance_type = 1`,
+  `type = credit`,
+  and description shaped as:
+  `manager_online_topup[:reference]`
+- Current manager-wallet test baseline on local data:
+  manager user id `33`
+  successfully received a tested top-up of `7`
+  on Monday, August 10, 2026,
+  and the wallet transaction list returned that record through:
+  `GET /api/manager/wallet/transactions?page=1`
+- Manager profile consistency note:
+  for manager accounts,
+  `GET /api/user/profile`
+  must expose
+  `zone_id`
+  and
+  `club_id`
+  the same way login does,
+  otherwise the app can wrongly keep the account in setup mode after venue creation
+- As of Sunday, August 9, 2026, the canonical website repo path should be treated as:
+  `/Users/ayoubbelhaj/Documents/GitHub/goal-master-web`
+  and not the older duplicate:
+  `/Users/ayoubbelhaj/Documents/GitHub/goal_master_web`
+- As of Sunday, August 9, 2026, VS Code terminal support for the website repo is now localized:
+  `.vscode/settings.json`
+  prepends:
+  `.codex/bin`
+  to PATH for that workspace,
+  and `.codex/bin/php` wraps Homebrew PHP with:
+  `E_DEPRECATED` and `E_USER_DEPRECATED` suppressed.
+  Practical effect:
+  inside VS Code, from the website repo, the user can type:
+  `php artisan serve`
+  and get a cleaner Laravel startup on PHP `8.4.8` without changing the global system PHP command.
 
 ## 5. High-Level Architecture
 
@@ -648,7 +899,24 @@ Observed directly from the local codebase:
   `storage/framework/sessions`
   `storage/framework/views`
   `storage/framework/cache/data`
-- Current booking availability logic in the website backend primarily blocks by `employee + date + start_time`; it does not reliably isolate availability by service alone in `serviceIsAvaiable()`
+- Local booking availability for the manager-app API path was hardened on Tuesday, August 11, 2026:
+  it now checks overlap by
+  `service + employee + date + time range`
+  and treats
+  `Pending`, `Processing`, `Approved`, and `Done`
+  as blocking states, so manager-created bookings now lock the slot like the web flow instead of allowing the same hour to be booked again through overlap gaps
+- Customer-app branch selection on Tuesday, August 11, 2026 exposed another local API-shape issue:
+  newly created branches can return nullable
+  `lat` and `long`
+  from `/api/list/club`,
+  so the customer Flutter model for club/branch data must not assume those fields are always non-null strings
+- Customer-app category selection on Tuesday, August 11, 2026 exposed the same nullability pattern one step later:
+  `/api/list/category`
+  returns a nested `cmn_branch` object, and that nested branch can also contain
+  `lat = null`
+  and
+  `long = null`,
+  so `CategoryModel` and its nested branch model must also stay null-safe instead of assuming every branch string field is present
 - Mobile local-run risk:
   both apps are currently configured against the local backend URL rather than production
 - Customer app local-run risk:
@@ -819,3 +1087,276 @@ As of Sunday, August 2, 2026:
   `/Users/ayoubbelhaj/Documents/GitHub/goal_master/lib/core/view/no_internet_view.dart`
   `/Users/ayoubbelhaj/Documents/GitHub/goal_master/lib/core/databases/api/dio_consumer.dart`
   before changing button callbacks in isolation.
+
+## 24. Subscription Rollout In Manager Mobile App
+
+As of Sunday, August 9, 2026:
+
+- The backend now exposes manager subscription metadata to API consumers on:
+  `/api/login`
+  `/api/user/profile`
+  `/api/manager/dashboard/analysis`
+- The manager mobile app now reads:
+  `current_subscription`
+  and
+  `subscription_features`
+  from the authenticated manager payload.
+- The first mobile-facing subscription behaviors now implemented are:
+  - monthly booking lock awareness
+  - reports/dashboard lock awareness
+  - visible current plan summary on the manager home screen
+- API enforcement was also extended for manager-mobile routes:
+  - `/api/user/booking/getMonthlyBookingList`
+  - `/api/user/booking/updateMonthlyBooking`
+  - `/api/manager/dashboard/analysis`
+- Important local environment note:
+  the Laravel local `.env` required a valid JWT secret before manager mobile login could work in the current local clone.
+  This was fixed locally on Sunday, August 9, 2026.
+
+## 25. Manager Self-Signup Phase 1
+
+As of Sunday, August 9, 2026:
+
+- The project now has a dedicated stadium-manager self-signup API flow.
+- New public API endpoint:
+  `/api/manager/public-subscription-plans`
+  returns active public plans for app onboarding.
+- New manager signup API endpoint:
+  `/api/manager/register`
+  creates:
+  a manager `SystemUser`,
+  assigns `Operator` role,
+  creates a current subscription,
+  and
+  returns JWT login data plus subscription metadata.
+- The older `/api/register` route should still be treated as the legacy website/customer registration path,
+  not the preferred base for manager onboarding.
+- `AuthController::GetDetails()` is now null-safe for managers who have no branch or club yet.
+
+Manager app architecture added for this phase:
+
+- dedicated feature module:
+  `/Users/ayoubbelhaj/Documents/GitHub/goal_master_admin/lib/features/manager_onboarding`
+- responsibilities split into:
+  models,
+  repo,
+  plans cubit,
+  signup cubit,
+  flow view,
+  and small UI widgets
+
+Manager app UX changes in this phase:
+
+- login screen now exposes:
+  `ليس لديك حساب؟ أنشئ حساب مدير ملعب`
+- signup flow now:
+  fetches live plans from backend,
+  supports monthly/yearly switch,
+  lets the manager choose a plan,
+  and
+  submits account details separately from the old register screen
+- the signup email field now gives a lightweight `gmail.com` suggestion as soon as the user starts typing after `@`
+- new manager accounts that still have no `zone_id` and no `club_id` are now treated as setup-pending accounts in the manager app
+- home, profile, and drawer now show a setup-oriented manager experience for those new accounts instead of the old booking-first manager UI
+- a dedicated local-first screen now exists for those accounts:
+  `إضافة الملعب الأول`
+  with fields for:
+  stadium name,
+  region,
+  description,
+  number of fields,
+  and
+  image selection
+
+Important implementation note:
+
+- Manager self-signup now auto-logs the new manager in immediately after successful registration.
+- The account may still have:
+  no branch,
+  no club,
+  and
+  no stadium setup yet,
+  so future onboarding work must keep post-signup home flow safe for that empty-state account.
+
+Important local runtime note:
+
+- `lib/main.dart` was corrected so Flutter binding initialization and `runApp` now happen inside the same zone.
+  This removed the noisy `Zone mismatch` startup assertion during local manager-app runs.
+
+Known remaining gap after this phase:
+
+- unauthenticated startup still triggers some older background calls:
+  token refresh
+  and
+  notification polling
+  before login is established
+- future auth cleanup should stop those calls when no token exists
+
+New confirmed onboarding mechanic for manager self-setup:
+
+- after manager self-signup, the correct production-like path is now:
+  1. save branch
+  2. save first category
+  3. save services / fields
+  4. create booking channels for
+     evening
+     and
+     after midnight
+  5. link each service to one or both channels
+- in this project, these booking channels are technically stored as `SchEmployee` rows with schedules.
+  They are not necessarily literal human employees.
+  They often act as operational time buckets such as:
+  `حجز مسائي`
+  `حجز بعد منتصف الليل`
+
+Local manager setup API now supports:
+
+- `GET /api/manager/setup/bootstrap`
+- `POST /api/manager/setup/first-venue`
+- `POST /api/manager/setup/booking-periods`
+- `POST /api/manager/setup/catalog`
+
+Current manager-app setup screen behavior:
+
+- the same setup screen now handles:
+  branch data
+  and then links out to separate follow-up steps
+- the new dedicated follow-up step added on Wednesday, August 12, 2026 is:
+  `فترات الحجز`
+  where the manager can explicitly manage:
+  `حجز مسائي`
+  and
+  `حجز بعد منتصف الليل`
+  with their own start and end times
+- as of Wednesday, August 12, 2026, this screen is also the place where each service is explicitly linked to one or both booking periods
+- this matters because showing the period name alone in Flutter is not enough;
+  `/api/user/booking/time-slot`
+  only works when the selected service is actually linked through
+  `sch_employee_services`
+  to the operational employee row that represents that period
+- catalog bootstrap now returns:
+  current category
+  current services
+  and
+  current operational booking channels
+- operational booking channels now also return:
+  `designation_name`
+  `start_time`
+  `end_time`
+
+Current unresolved booking investigation state:
+
+- structural setup is now closer to the real production mechanism
+- confirmed local branch `test1` with `branch_id = 5` had this exact failure:
+  `حجز بعد منتصف الليل`
+  appeared in the manager app
+  but service `ملعب 1`
+  was only linked to the evening channel in `sch_employee_services`
+- after linking the service to both periods, the same local timeslot API began returning valid slots for the after-midnight channel:
+  `00:00 -> 01:00`
+  `01:00 -> 02:00`
+  `02:00 -> 03:00`
+- the old extra invalid slot after the end of the schedule was also removed from
+  `BookingController::getServiceTimeSlot()`
+- but the following still need a separate debugging pass after this linking fix:
+  duplicate booking rows,
+  slot not always locking after approval,
+  and admin-panel mismatch for some app-created bookings
+
+Customer-app booking parsing note:
+
+- on Wednesday, August 12, 2026, more customer booking models were hardened against nullable and mixed-type backend payloads
+- affected model families:
+  service,
+  employee,
+  nested branch,
+  designation,
+  and booking history
+- reason:
+  the current backend list APIs do not consistently guarantee strict string-only or int-only values for all fields, especially around:
+  `lat`
+  `long`
+  `address`
+  dates,
+  image fields,
+  and nested objects
+- if a future booking screen crashes with a `Null` / `String` / `int` parsing error, first inspect the corresponding Flutter model before assuming the booking logic itself is broken
+
+Booking lock normalization note:
+
+- on Wednesday, August 12, 2026, the booking-lock bug was traced to mixed date/time storage in local booking rows
+- some rows stored:
+  `date` as `Y-m-d 00:00:00`
+  instead of `Y-m-d`
+  and
+  `start_time` / `end_time`
+  as full datetime strings instead of time-only values
+- backend save flow now normalizes stored booking values before insert
+- backend availability checks now compare with:
+  `whereDate(...)`
+  and
+  `whereTime(...)`
+  so older mixed-format rows are still respected as conflicts
+- confirmed locally via live API that booked evening slots for branch `5` / service `8` now return:
+  `is_available: 0`
+
+Local-payment approval verification note:
+
+- on Thursday, August 13, 2026, the local-payment closing rule was verified directly with a future booking on:
+  Friday, August 14, 2026
+- exact tested setup:
+  branch `5`
+  service `8`
+  employee `6`
+  slot:
+  `20:00 -> 21:00`
+- confirmed behavior:
+  1. before creating the local-payment booking, the slot was open
+  2. while the booking remained in:
+     `Processing`
+     as a local-payment request waiting for manager approval, the slot still stayed open
+  3. after changing that same booking to:
+     `Approved`
+     the slot became blocked in backend availability logic
+  4. the live local API:
+     `POST /api/list/timeslot`
+     also returned that slot with:
+     `is_available: 0`
+- conclusion:
+  the backend rule currently matches the intended business behavior for:
+  `الدفع عند الوصول`
+  where waiting requests do not lock the slot,
+  but approved bookings do
+
+Manager payment settings note:
+
+- the manager app now includes a dedicated side-menu entry:
+  `إعدادات الدفع`
+- this screen exposes the:
+  `الدفع عند الوصول`
+  toggle and is still governed by subscription permissions
+- if the current branch does not allow local payment, the setting should remain disabled and the customer app should hide or reject that method accordingly
+
+Admin designation clarification:
+
+- `Designation` in admin is only a classification label for an operational booking row.
+- It does not by itself create the evening / after-midnight split.
+- The real split depends on:
+  1. the operational `SchEmployee` row
+  2. its linked services
+  3. its schedule
+- The two important operational labels currently used by this project are:
+  `حجز مسائي`
+  and
+  `حجز بعد منتصف الليل`
+
+## 26. Persistent Venue Data Access And Self-Service Subscription Management
+
+As of Sunday, August 16, 2026:
+
+- The manager-app drawer previously only exposed the venue/category/services setup screen (`AddFirstVenueView`, route `kAddFirstVenue`) while the account still had `needsVenueSetup == true`. Once setup finished, that entry vanished from the drawer with no other way to reach it, so a manager could not go back and edit branch, category, service, or channel data later.
+- This is now fixed by adding a permanent drawer entry "بيانات الملعب" (near "فترات الحجز") in the normal post-setup drawer branch that opens the same `AddFirstVenueView`. That screen already prefills from `manager/setup/bootstrap` and already supports resubmitting branch and catalog data, so no separate "edit mode" was needed. The screen title changed from "تهيئة مدير الملعب" to "بيانات الملعب" to reflect that it is a durable settings screen, not a one-time onboarding step.
+- A new self-service subscription management capability now exists end to end:
+  - Backend: `GET /api/manager/subscription/current` and `POST /api/manager/subscription/change` (`ManagerSubscriptionSelfController`), reusing the same subscription lifecycle math as manager self-signup (`ManagerSignupService`). Changing plan deactivates the current `manager_subscriptions` row and creates a new current one; this same endpoint is used both to renew the same plan and to switch to a different one.
+  - Manager app: new feature module `manager_subscription` and screen `ManagerSubscriptionView` (route `kManagerSubscription`), reachable from a new drawer entry "الاشتراك" placed next to "بيانات الملعب" and "فترات الحجز" (present in both the setup-pending and normal drawer branches).
+- Important: this work is implemented and passed `flutter analyze` / `php -l`, but has not yet been exercised against a running local server or the manager app in a simulator, and is not yet committed to git in either `goal-master-web` or `goal_master_admin`. Treat it as unverified end-to-end until that happens.

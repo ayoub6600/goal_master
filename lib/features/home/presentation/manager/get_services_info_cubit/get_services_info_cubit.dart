@@ -9,10 +9,16 @@ class GetServicesInfoCubit extends Cubit<GetServicesInfoState> {
   GetServicesInfoCubit(this.analysisRepo) : super(GetServicesInfoInitial());
   final AnalysisRepo analysisRepo;
 
-  Future<void> getServicesInfo() async {
+  Future<void> getServicesInfo({double? lat, double? lng}) async {
     emit(GetServicesInfoLoading());
-    final result = await analysisRepo.getService();
-    result.fold((l) => emit(GetServicesInfoError(errMessage: l.errMessage)),
-        (r) => emit(GetServicesInfoSuccess(services: r)));
+    final result = await analysisRepo.getService(lat: lat, lng: lng);
+    result.fold(
+      (l) => emit(GetServicesInfoError(errMessage: l.errMessage)),
+      (r) => emit(GetServicesInfoSuccess(
+        services: r.data,
+        zoneName: r.zone?.name,
+        zoneId: r.zone?.id,
+      )),
+    );
   }
 }

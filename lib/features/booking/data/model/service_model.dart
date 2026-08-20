@@ -51,44 +51,55 @@ class Service {
     required this.updatedAt,
   });
 
-  // Factory constructor for converting JSON to Dart object
   factory Service.fromJson(Map<String, dynamic> json) {
     return Service(
-      id: json['id'],
-      title: json['title']?.toString() ?? '',
-      image: json['image']?.toString() ?? '',
-      schServiceCategoryId: json['sch_service_category_id'],
-      visibility: json['visibility'],
+      id: _asInt(json['id']),
+      title: _asString(json['title']),
+      image: _asString(json['image'] ?? json['image_url']),
+      schServiceCategoryId: _asInt(json['sch_service_category_id']),
+      visibility: _asInt(json['visibility']),
       price: json['price']?.toString() ?? '0',
       cmnCouponId: json['cmn_coupon_id']?.toString(),
       cmnCouponAmount: json['cmn_coupon_amount']?.toString(),
-      durationInDays: json['duration_in_days'],
-      durationInTime: json['duration_in_time']?.toString() ?? '00:00:00',
-      timeSlotInTime: json['time_slot_in_time']?.toString() ?? '00:00:00',
-      paddingTimeBefore:
-          json['padding_time_before']?.toString() ?? '00:00:00',
-      paddingTimeAfter: json['padding_time_after']?.toString() ?? '00:00:00',
-      appointmentLimitType: json['appoinntment_limit_type'],
-      appointmentLimit: json['appoinntment_limit'],
+      durationInDays: _asInt(json['duration_in_days']),
+      durationInTime: _asString(
+        json['duration_in_time'],
+        fallback: '00:00:00',
+      ),
+      timeSlotInTime: _asString(
+        json['time_slot_in_time'],
+        fallback: '00:00:00',
+      ),
+      paddingTimeBefore: _asString(
+        json['padding_time_before'],
+        fallback: '00:00:00',
+      ),
+      paddingTimeAfter: _asString(
+        json['padding_time_after'],
+        fallback: '00:00:00',
+      ),
+      appointmentLimitType: _asInt(json['appoinntment_limit_type']),
+      appointmentLimit: _asInt(json['appoinntment_limit']),
       minimumTimeRequiredToBookingInDays:
-          json['minimum_time_required_to_booking_in_days'],
-      minimumTimeRequiredToBookingInTime:
-          json['minimum_time_required_to_booking_in_time']?.toString() ??
-              '00:00:00',
+          _asInt(json['minimum_time_required_to_booking_in_days']),
+      minimumTimeRequiredToBookingInTime: _asString(
+        json['minimum_time_required_to_booking_in_time'],
+        fallback: '00:00:00',
+      ),
       minimumTimeRequiredToCancelInDays:
-          json['minimum_time_required_to_cancel_in_days'],
-      minimumTimeRequiredToCancelInTime:
-          json['minimum_time_required_to_cancel_in_time']?.toString() ??
-              '00:00:00',
-      remarks: json['remarks']?.toString() ?? '',
+          _asInt(json['minimum_time_required_to_cancel_in_days']),
+      minimumTimeRequiredToCancelInTime: _asString(
+        json['minimum_time_required_to_cancel_in_time'],
+        fallback: '00:00:00',
+      ),
+      remarks: _asString(json['remarks']),
       createdBy: json['created_by']?.toString(),
       updatedBy: json['updated_by']?.toString(),
-      createdAt: json['created_at']?.toString() ?? '',
-      updatedAt: json['updated_at']?.toString() ?? '',
+      createdAt: _asString(json['created_at']),
+      updatedAt: _asString(json['updated_at']),
     );
   }
 
-  // Method to convert Dart object to JSON
   Map<String, dynamic> toJson() {
     return {
       'id': id,
@@ -121,4 +132,18 @@ class Service {
       'updated_at': updatedAt,
     };
   }
+}
+
+int _asInt(dynamic value) {
+  if (value is int) return value;
+  if (value is double) return value.toInt();
+  return int.tryParse(value?.toString() ?? '') ?? 0;
+}
+
+String _asString(dynamic value, {String fallback = ''}) {
+  final stringValue = value?.toString();
+  if (stringValue == null || stringValue.isEmpty || stringValue == 'null') {
+    return fallback;
+  }
+  return stringValue;
 }

@@ -19,6 +19,9 @@ class ServiceModel {
   final String minCancelTime;
   final String remarks;
   final int branchId;
+  final String branchName;
+  final int branchZoneId;
+  final bool branchAllowLocalPayment;
 
   ServiceModel({
     required this.id,
@@ -41,6 +44,9 @@ class ServiceModel {
     required this.minCancelTime,
     required this.remarks,
     required this.branchId,
+    required this.branchName,
+    required this.branchZoneId,
+    required this.branchAllowLocalPayment,
   });
 
   factory ServiceModel.fromJson(Map<String, dynamic> json) {
@@ -69,6 +75,9 @@ class ServiceModel {
               '00:00:00',
       remarks: json['remarks']?.toString() ?? '',
       branchId: _asInt(json['branch_id']),
+      branchName: json['branch_name']?.toString() ?? '',
+      branchZoneId: _asInt(json['branch_zone_id']),
+      branchAllowLocalPayment: json['branch_allow_local_payment'] == true,
     );
   }
 
@@ -94,6 +103,9 @@ class ServiceModel {
       'minimum_time_required_to_cancel_in_time': minCancelTime,
       'remarks': remarks,
       'branch_id': branchId,
+      'branch_name': branchName,
+      'branch_zone_id': branchZoneId,
+      'branch_allow_local_payment': branchAllowLocalPayment,
     };
   }
 
@@ -104,13 +116,29 @@ class ServiceModel {
   }
 }
 
+class ZoneModel {
+  final int id;
+  final String name;
+
+  ZoneModel({required this.id, required this.name});
+
+  factory ZoneModel.fromJson(Map<String, dynamic> json) {
+    return ZoneModel(
+      id: ServiceModel._asInt(json['id']),
+      name: json['name']?.toString() ?? '',
+    );
+  }
+}
+
 class ServiceResponse {
   final String status;
   final List<ServiceModel> data;
+  final ZoneModel? zone;
 
   ServiceResponse({
     required this.status,
     required this.data,
+    this.zone,
   });
 
   factory ServiceResponse.fromJson(Map<String, dynamic> json) {
@@ -118,6 +146,7 @@ class ServiceResponse {
       status: json['status'],
       data: List<ServiceModel>.from(
           json['data'].map((x) => ServiceModel.fromJson(x))),
+      zone: json['zone'] != null ? ZoneModel.fromJson(json['zone']) : null,
     );
   }
 
