@@ -23,7 +23,7 @@ class ConnectionCubit extends Cubit<bool> {
   }
 
   Future<bool> _emitFromResult(List<ConnectivityResult> result) async {
-    if (result.contains(ConnectivityResult.none)) {
+    if (result.isEmpty) {
       emit(false);
       return false;
     }
@@ -49,8 +49,6 @@ class ConnectionCubit extends Cubit<bool> {
         return result.isNotEmpty && result.first.rawAddress.isNotEmpty;
       } catch (_) {
         return false;
-      } finally {
-        httpClient.close(force: true);
       }
     } finally {
       httpClient.close(force: true);

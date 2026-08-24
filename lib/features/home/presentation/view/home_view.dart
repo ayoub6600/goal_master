@@ -10,6 +10,9 @@ import 'package:goal_master/core/styles/app_text_styles.dart';
 import 'package:goal_master/core/styles/assets.dart';
 import 'package:goal_master/core/styles/spaces.dart';
 import 'package:goal_master/core/utils/should_execute.dart';
+import 'package:goal_master/features/coins/presentation/manager/coins_cubit/coins_cubit.dart';
+import 'package:goal_master/features/coins/presentation/view/widgets/coin_burst_popup.dart';
+import 'package:goal_master/features/home/presentation/manager/analysis_cubit/analysis_cubit.dart';
 import 'package:goal_master/features/home/presentation/manager/get_services_info_cubit/get_services_info_cubit.dart';
 import 'package:goal_master/features/home/presentation/view/widgets/build_header_home.dart';
 import 'package:goal_master/features/home/presentation/view/widgets/build_location_row.dart';
@@ -41,6 +44,7 @@ class _HomeViewState extends State<HomeView> {
     // while a fresh fix is requested in the background.
     layoutCubit.loadSavedLocation();
     layoutCubit.initUserLocation();
+    context.read<CoinsCubit>().getBalance();
     _emojiTimer = Timer.periodic(Duration(seconds: 3), (timer) {
       setState(() {
         _emojiIndex = (_emojiIndex + 1) % _emojis.length;
@@ -58,23 +62,49 @@ class _HomeViewState extends State<HomeView> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(
-        child: BlocListener<LayoutCubit, LayoutState>(
-          listenWhen: (previous, current) =>
-              current.currentPosition != null &&
-              previous.currentPosition != current.currentPosition,
-          listener: (context, state) {
-            final position = state.currentPosition;
-            if (position != null) {
-              context.read<GetServicesInfoCubit>().getServicesInfo(
-                    lat: position.latitude,
-                    lng: position.longitude,
-                  );
-            }
-          },
+        child: MultiBlocListener(
+          listeners: [
+            BlocListener<LayoutCubit, LayoutState>(
+              listenWhen: (previous, current) =>
+                  current.currentPosition != null &&
+                  previous.currentPosition != current.currentPosition,
+              listener: (context, state) {
+                final position = state.currentPosition;
+                if (position != null) {
+                  context.read<GetServicesInfoCubit>().getServicesInfo(
+                        lat: position.latitude,
+                        lng: position.longitude,
+                      );
+                }
+              },
+            ),
+            BlocListener<CoinsCubit, CoinsState>(
+              listenWhen: (previous, current) => current.justEarnedCoins != null,
+              listener: (context, state) {
+                final earned = state.justEarnedCoins;
+                if (earned != null) {
+                  showCoinBurstPopup(context, earned);
+                  context.read<CoinsCubit>().clearJustEarned();
+                }
+              },
+            ),
+          ],
           child: BlocBuilder<LayoutCubit, LayoutState>(
           builder: (context, state) {
             return RefreshIndicator(
-              onRefresh: () async {},
+              onRefresh: () async {
+                final servicesCubit = context.read<GetServicesInfoCubit>();
+                final analysisCubit = context.read<AnalysisCubit>();
+                await layoutCubit.getMyCurrentLocation();
+                final position = layoutCubit.state.currentPosition;
+                if (position != null) {
+                  await servicesCubit.getServicesInfo(
+                    lat: position.latitude,
+                    lng: position.longitude,
+                  );
+                }
+                await analysisCubit.getAnalysis();
+              },
               child: ListView(
                 padding: const EdgeInsets.all(16),
                 children: [

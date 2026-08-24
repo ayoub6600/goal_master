@@ -2,6 +2,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:goal_master/core/components/keys_values.dart';
 import 'package:goal_master/core/components/preference_utility.dart';
+import 'package:goal_master/core/services/push_notification_service.dart';
 import 'package:goal_master/features/auth/data/model/login_model/user.dart';
 
 import 'package:goal_master/features/auth/data/repo/auth_repo.dart';
@@ -50,7 +51,8 @@ class LoginCubit extends Cubit<LoginState> {
         PrefKey.email, userData.user?.username ?? "");
     await SharedPreferenceUtil.putString(
         PrefKey.phone, userData.user?.phoneNumber ?? "");
-    SharedPreferenceUtil.putString(PrefKey.login, "true");
+    await SharedPreferenceUtil.putString(PrefKey.login, "true");
+    PushNotificationService.registerTokenIfLoggedIn();
   }
 
   bool _validate(String phone, String password) {

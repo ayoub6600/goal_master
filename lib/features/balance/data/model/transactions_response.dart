@@ -235,12 +235,14 @@ class TxUser {
   final String name;
   final String username;
   final String phoneNumber;
+  final String? branchName;
 
   TxUser({
     required this.id,
     required this.name,
     required this.username,
     required this.phoneNumber,
+    this.branchName,
   });
 
   factory TxUser.fromJson(Map<String, dynamic> json) {
@@ -251,6 +253,9 @@ class TxUser {
       name: (json['name'] ?? '').toString(),
       username: (json['username'] ?? '').toString(),
       phoneNumber: (json['phone_number'] ?? '').toString(),
+      branchName: _asNullableString(
+        json['branch_name'] ?? json['stadium_name'],
+      ),
     );
   }
 
@@ -259,5 +264,11 @@ class TxUser {
         'name': name,
         'username': username,
         'phone_number': phoneNumber,
+        'branch_name': branchName,
       };
+
+  static String? _asNullableString(dynamic value) {
+    final text = value?.toString().trim();
+    return text == null || text.isEmpty ? null : text;
+  }
 }

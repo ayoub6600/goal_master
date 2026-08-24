@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "910464651554",
+    "project_id": "goal-master-ced1a",
+    "storage_bucket": "goal-master-ced1a.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:910464651554:android:bf15a993badd30f46e557b",
+        "android_client_info": {
+          "package_name": "com.ayoub.goalmaster"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBXDBPUKL-4Gz9AoruVBbfvgyf9gnLgJYo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:910464651554:android:857f6ea43b336c016e557b",
+        "android_client_info": {
+          "package_name": "com.rahbdev.goaladmin"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBXDBPUKL-4Gz9AoruVBbfvgyf9gnLgJYo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

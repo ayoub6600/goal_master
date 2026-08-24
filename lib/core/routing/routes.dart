@@ -6,6 +6,8 @@ import 'package:goal_master/core/components/preference_utility.dart';
 import 'package:goal_master/core/routing/routes_keys.dart';
 import 'package:goal_master/core/services/service_locator.dart';
 import 'package:goal_master/core/view/no_internet_view.dart';
+import 'package:goal_master/features/assistant/presentation/view/assistant_chat_view.dart';
+import 'package:goal_master/features/coins/presentation/view/coins_view.dart';
 import 'package:goal_master/features/auth/data/repo/auth_repo_imp.dart';
 import 'package:goal_master/features/auth/presentation/manager/change_password_cubit/change_password_cubit.dart';
 import 'package:goal_master/features/auth/presentation/manager/login_cubit/login_cubit.dart';
@@ -393,6 +395,28 @@ List<RouteBase> appRoutes = [
         ],
         child: const CardView(),
       ),
+    ),
+  ),
+  //AssistantChatView (Captain Ayoub) — AssistantChatCubit is provided
+  //app-wide in main.dart so it survives navigation, no BlocProvider here.
+  GoRoute(
+    parentNavigatorKey: parentKey,
+    path: RoutesKeys.kAssistantChat,
+    pageBuilder: (context, state) => buildPageWithDefaultTransition<void>(
+      context: context,
+      state: state,
+      child: const AssistantChatView(),
+    ),
+  ),
+  //CoinsView — CoinsCubit is provided app-wide in main.dart, no
+  //BlocProvider here, same reasoning as AssistantChatView above.
+  GoRoute(
+    parentNavigatorKey: parentKey,
+    path: RoutesKeys.kCoins,
+    pageBuilder: (context, state) => buildPageWithDefaultTransition<void>(
+      context: context,
+      state: state,
+      child: const CoinsView(),
     ),
   ),
   //NotificationView

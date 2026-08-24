@@ -83,7 +83,7 @@ class TransactionItem extends StatelessWidget {
             borderRadius: BorderRadius.circular(16),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.05),
+                color: Colors.black.withValues(alpha: 0.05),
                 blurRadius: 8,
                 offset: const Offset(0, 3),
               ),
@@ -99,8 +99,8 @@ class TransactionItem extends StatelessWidget {
                 shape: BoxShape.circle,
                 gradient: LinearGradient(
                   colors: [
-                    amountColor.withOpacity(0.8),
-                    amountColor.withOpacity(0.4),
+                    amountColor.withValues(alpha: 0.8),
+                    amountColor.withValues(alpha: 0.4),
                   ],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
@@ -135,13 +135,13 @@ class TransactionItem extends StatelessWidget {
                   padding:
                       const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
-                    color: _transactionTypeColor.withOpacity(0.15),
+                    color: _transactionTypeColor.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Text(
                     _transactionTypeLabel,
                     style: theme.textTheme.labelSmall?.copyWith(
-                        fontSize: 12,
+                        fontSize: 10,
                         fontWeight: FontWeight.w600,
                         color: Colors.black),
                   ),
@@ -191,15 +191,16 @@ class TransactionItem extends StatelessWidget {
                       if (referenceUser != null) ...[
                         const Divider(height: 24),
                         const Text(
-                          'الطرف المرتبط',
+                          'المرسل إليه',
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 16,
                           ),
                         ),
                         const SizedBox(height: 8),
+                        if (referenceUser.branchName != null)
+                          _infoRow('اسم الملعب:', referenceUser.branchName!),
                         _infoRow('الاسم الكامل:', referenceUser.name),
-                        _infoRow('اسم الدخول:', referenceUser.username),
                         _infoRow('رقم الجوال:', referenceUser.phoneNumber),
                       ],
                     ],

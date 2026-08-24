@@ -12,6 +12,7 @@ import 'package:goal_master/core/styles/assets.dart';
 import 'package:goal_master/core/styles/spaces.dart';
 import 'package:goal_master/core/utils/should_execute.dart';
 import 'package:goal_master/features/balance/presentation/balance_cubit/balance_cubit.dart';
+import 'package:goal_master/features/coins/presentation/manager/coins_cubit/coins_cubit.dart';
 import 'package:goal_master/features/layout/presentation/manager/layout_cubit.dart';
 import 'package:goal_master/features/more/presentation/view/more_view.dart';
 import 'package:goal_master/features/notification/manager/notification_cubit/notification_cubit.dart';
@@ -198,6 +199,44 @@ class BuildHeaderHome extends StatelessWidget {
                   ),
                 ),
               ),
+        if (loginState == "true") ...[
+          WidthSpace(8.w),
+          GestureDetector(
+            onTap: () async {
+              final cubit = context.read<CoinsCubit>();
+              await push(RoutesKeys.kCoins, context);
+              // The balance may have changed while the coins screen was
+              // open (a redeem) or since this pill last loaded — refresh
+              // on return instead of waiting for the next cold start.
+              cubit.getBalance();
+            },
+            child: BlocBuilder<CoinsCubit, CoinsState>(
+              buildWhen: (previous, current) => previous.balance != current.balance,
+              builder: (context, state) {
+                return Container(
+                  padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFFF8E1),
+                    border: Border.all(color: const Color(0xFFFFB300), width: 1.5),
+                    borderRadius: BorderRadius.circular(30),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Text('🪙', style: TextStyle(fontSize: 14)),
+                      SizedBox(width: 4.w),
+                      Text(
+                        '${state.balance?.coinsBalance ?? 0}',
+                        style: AppTextStyles.font14SemiBold
+                            .copyWith(color: const Color(0xFFE59400)),
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
         WidthSpace(10.w),
         loginState == "true"
             ? BlocConsumer<NotificationCubit, NotificationState>(

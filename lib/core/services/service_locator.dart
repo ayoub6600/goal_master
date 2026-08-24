@@ -8,6 +8,8 @@ import 'package:goal_master/features/home/data/repo/analysis_repo_imp.dart';
 import 'package:goal_master/features/notification/data/repo/notifaction_repo.dart';
 import 'package:goal_master/features/notification/data/repo/notifaction_repo_imp.dart';
 import 'package:goal_master/features/profile/data/repo/profile_repo_imp.dart';
+import 'package:goal_master/features/assistant/data/repo/assistant_repo_imp.dart';
+import 'package:goal_master/features/coins/data/repo/coins_repo_imp.dart';
 import '../../features/booking/data/repo/booking_repo_imp.dart';
 import '../databases/api/dio_consumer.dart';
 
@@ -43,5 +45,11 @@ void setupServiceLocator() {
   //BalanceRepo
   getIt.registerSingleton<BalanceRepo>(
     BalanceRepoImp(getIt.get<DioConsumer>()),
+  );
+  getIt.registerSingleton<AssistantRepoImp>(
+    AssistantRepoImp(getIt.get<DioConsumer>()),
+  );
+  getIt.registerSingleton<CoinsRepoImp>(
+    CoinsRepoImp(getIt.get<DioConsumer>()),
   );
 }

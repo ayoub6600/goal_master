@@ -35,6 +35,8 @@ class EndPoints {
   static String changePasswordUser = 'user/change-password-user';
 
   static String refresh = 'user/refresh';
+  static String appVersionCheck = 'app-version/check';
+  static String saveFcmToken = 'user/save-fcm-token';
 
   static String profile = 'user/profile';
   static String analysis = 'user/analysis';
@@ -70,6 +72,13 @@ class EndPoints {
   static String markAllNotificationsAsRead =
       'user/notifications/read-all-notification';
   static String notification = 'user/notifications/get-notification';
+
+  static String assistantHistory = 'user/assistant/history';
+  static String assistantMessage = 'user/assistant/message';
+
+  static String coinsBalance = 'user/coins/balance';
+  static String coinsHistory(int page) => 'user/coins/history?per_page=20&page=$page';
+  static String coinsRedeem = 'user/coins/redeem';
 }
 
 //doctors/top-ratings

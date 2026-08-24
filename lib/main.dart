@@ -1,3 +1,4 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
@@ -7,14 +8,24 @@ import 'package:goal_master/core/components/preference_utility.dart';
 import 'package:goal_master/core/manager/user_info_cubit/user_info_cubit.dart';
 import 'package:goal_master/core/routing/app_router.dart';
 import 'package:goal_master/core/routing/routes_keys.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:goal_master/core/app_update/app_update_gate.dart';
+import 'package:goal_master/core/services/notification_navigation_service.dart';
+import 'package:goal_master/core/services/push_notification_service.dart';
 import 'package:goal_master/core/services/service_locator.dart';
+import 'package:goal_master/firebase_options.dart';
 import 'package:goal_master/core/styles/app_colors.dart';
 import 'package:goal_master/core/utils/storage_service.dart';
 import 'package:goal_master/core/view/connection_cubit.dart';
 import 'package:goal_master/core/view/no_internet_view.dart';
+import 'package:goal_master/features/assistant/data/repo/assistant_repo_imp.dart';
+import 'package:goal_master/features/assistant/presentation/manager/assistant_chat_cubit/assistant_chat_cubit.dart';
+import 'package:goal_master/features/assistant/presentation/view/widgets/captain_ayoub_bubble.dart';
 import 'package:goal_master/features/auth/data/repo/auth_repo_imp.dart';
 import 'package:goal_master/features/balance/data/repo/balance_repo_imp.dart';
 import 'package:goal_master/features/balance/presentation/balance_cubit/balance_cubit.dart';
+import 'package:goal_master/features/coins/data/repo/coins_repo_imp.dart';
+import 'package:goal_master/features/coins/presentation/manager/coins_cubit/coins_cubit.dart';
 import 'package:goal_master/features/home/data/repo/analysis_repo_imp.dart';
 import 'package:goal_master/features/home/presentation/manager/analysis_cubit/analysis_cubit.dart';
 import 'package:goal_master/features/layout/presentation/manager/layout_cubit.dart';
@@ -30,6 +41,7 @@ final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
     FlutterLocalNotificationsPlugin();
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   await SharedPreferenceUtil.getInstance();
 
   await StorageService.init();
@@ -37,7 +49,18 @@ void main() async {
 
   await _initializeNotifications();
   await requestNotificationPermission();
+  await PushNotificationService.initialize();
+  await PushNotificationService.registerTokenIfLoggedIn();
+
+  // App opened by tapping a notification while backgrounded (not terminated).
+  FirebaseMessaging.onMessageOpenedApp
+      .listen(NotificationNavigationService.handleMessageTap);
+
   runApp(const GoalMaster());
+
+  // App launched fresh by tapping a notification (was fully terminated) —
+  // handled after runApp so the router/navigator exists to push onto.
+  NotificationNavigationService.handleInitialMessage();
 }
 
 Future<void> _initializeNotifications() async {
@@ -154,6 +177,9 @@ class GoalMaster extends StatelessWidget {
               BlocProvider(
                   create: (_) =>
                       BalanceCubit(getIt<BalanceRepoImp>())..getBalance()),
+              BlocProvider(
+                  create: (_) => AssistantChatCubit(getIt<AssistantRepoImp>())),
+              BlocProvider(create: (_) => CoinsCubit(getIt<CoinsRepoImp>())),
             ],
             child: ScreenUtilInit(
               designSize: const Size(390, 844),
@@ -166,33 +192,37 @@ class GoalMaster extends StatelessWidget {
                   }
                 },
                 child: OKToast(
-                  child: MaterialApp.router(
-                    title: 'Goal Master',
-                    theme: ThemeData(
-                      colorScheme:
-                          ColorScheme.fromSeed(seedColor: AppColors.primary),
-                      useMaterial3: true,
-                      textTheme: const TextTheme(),
-                      scaffoldBackgroundColor: Colors.white,
+                  child: AppUpdateGate(
+                    appKey: 'customer',
+                    child: MaterialApp.router(
+                      title: 'Goal Master',
+                      theme: ThemeData(
+                        colorScheme:
+                            ColorScheme.fromSeed(seedColor: AppColors.primary),
+                        useMaterial3: true,
+                        textTheme: const TextTheme(),
+                        scaffoldBackgroundColor: Colors.white,
+                      ),
+                      debugShowCheckedModeBanner: false,
+                      locale: const Locale('ar'),
+                      supportedLocales: const [Locale('ar')],
+                      localizationsDelegates: const [
+                        GlobalMaterialLocalizations.delegate,
+                        GlobalWidgetsLocalizations.delegate,
+                        GlobalCupertinoLocalizations.delegate,
+                      ],
+                      builder: (context, child) {
+                        return Stack(
+                          children: [
+                            if (child != null) child,
+                            if (!state)
+                              const Positioned.fill(child: NoInternetView()),
+                            if (state) const CaptainAyoubBubble(),
+                          ],
+                        );
+                      },
+                      routerConfig: AppRouter.router,
                     ),
-                    debugShowCheckedModeBanner: false,
-                    locale: const Locale('ar'),
-                    supportedLocales: const [Locale('ar')],
-                    localizationsDelegates: const [
-                      GlobalMaterialLocalizations.delegate,
-                      GlobalWidgetsLocalizations.delegate,
-                      GlobalCupertinoLocalizations.delegate,
-                    ],
-                    builder: (context, child) {
-                      return Stack(
-                        children: [
-                          if (child != null) child,
-                          if (!state)
-                            const Positioned.fill(child: NoInternetView()),
-                        ],
-                      );
-                    },
-                    routerConfig: AppRouter.router,
                   ),
                 ),
               ),

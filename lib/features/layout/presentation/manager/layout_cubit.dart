@@ -1,10 +1,11 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart' show ImageConfiguration;
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location/location.dart';
-import 'package:geocoding/geocoding.dart' as geoCode;
+import 'package:geocoding/geocoding.dart' as geo_code;
 import 'package:goal_master/core/components/keys_values.dart';
 import 'package:goal_master/core/components/preference_utility.dart';
 import 'package:goal_master/core/styles/assets.dart';
@@ -33,21 +34,21 @@ class LayoutCubit extends Cubit<LayoutState> {
 
     try {
       if (!await _checkLocationService()) {
-        print("❌ خدمة الموقع غير مفعّلة");
-        emit(state.copyWith(
-            currentLocationStatus: CurrentLocationStatus.error));
+        debugPrint("❌ خدمة الموقع غير مفعّلة");
+        emit(
+            state.copyWith(currentLocationStatus: CurrentLocationStatus.error));
         return;
       }
       if (!await _checkLocationPermission()) {
-        print("❌ لم يتم منح صلاحية الموقع");
-        emit(state.copyWith(
-            currentLocationStatus: CurrentLocationStatus.error));
+        debugPrint("❌ لم يتم منح صلاحية الموقع");
+        emit(
+            state.copyWith(currentLocationStatus: CurrentLocationStatus.error));
         return;
       }
 
       await getMyCurrentLocation();
     } catch (e) {
-      print("❌ خطأ أثناء تحميل الموقع: $e");
+      debugPrint("❌ خطأ أثناء تحميل الموقع: $e");
       emit(state.copyWith(currentLocationStatus: CurrentLocationStatus.error));
     }
   }
@@ -58,11 +59,10 @@ class LayoutCubit extends Cubit<LayoutState> {
     // can drive — `requestService()` can hang there with no dialog ever
     // appearing, so this must never be awaited unprotected.
     try {
-      bool serviceEnabled =
-          await locationController.serviceEnabled().timeout(
-                const Duration(seconds: 10),
-                onTimeout: () => false,
-              );
+      bool serviceEnabled = await locationController.serviceEnabled().timeout(
+            const Duration(seconds: 10),
+            onTimeout: () => false,
+          );
       if (!serviceEnabled) {
         serviceEnabled = await locationController.requestService().timeout(
               const Duration(seconds: 10),
@@ -71,7 +71,7 @@ class LayoutCubit extends Cubit<LayoutState> {
       }
       return serviceEnabled;
     } catch (e) {
-      print("❌ خطأ في التحقق من خدمة الموقع: $e");
+      debugPrint("❌ خطأ في التحقق من خدمة الموقع: $e");
       return false;
     }
   }
@@ -94,7 +94,7 @@ class LayoutCubit extends Cubit<LayoutState> {
       return permissionGranted == PermissionStatus.granted ||
           permissionGranted == PermissionStatus.grantedLimited;
     } catch (e) {
-      print("❌ خطأ في التحقق من صلاحية الموقع: $e");
+      debugPrint("❌ خطأ في التحقق من صلاحية الموقع: $e");
       return false;
     }
   }
@@ -102,14 +102,13 @@ class LayoutCubit extends Cubit<LayoutState> {
   /// ✅ جلب الموقع الحالي
   Future<void> getMyCurrentLocation() async {
     try {
-      // A hung GPS fix (a known flakiness of the `location` plugin,
-      // especially on simulators) must not leave a caller's loading
-      // spinner stuck forever — force this to fail after a timeout
-      // instead of waiting indefinitely.
-      final position = await locationController
-          .getLocation()
-          .timeout(const Duration(seconds: 15));
-      LatLng currentPosition = LatLng(position.latitude!, position.longitude!);
+      final position = await _readCurrentLocation();
+      final latitude = position.latitude;
+      final longitude = position.longitude;
+      if (latitude == null || longitude == null) {
+        throw StateError('Location provider returned empty coordinates');
+      }
+      final currentPosition = LatLng(latitude, longitude);
 
       /// ✅ تحديث الموقع والعنوان فورًا
       await updateLocationMarker(currentPosition);
@@ -117,9 +116,72 @@ class LayoutCubit extends Cubit<LayoutState> {
       await convertToAddress(
           currentPosition.latitude, currentPosition.longitude);
     } catch (e) {
-      print("❌ خطأ في جلب الموقع: $e");
+      debugPrint("❌ خطأ في جلب الموقع: $e");
       emit(state.copyWith(currentLocationStatus: CurrentLocationStatus.error));
     }
+  }
+
+  Future<LocationData> _readCurrentLocation() async {
+    try {
+      await locationController.changeSettings(
+        accuracy: LocationAccuracy.high,
+        interval: 1000,
+      );
+    } catch (e) {
+      debugPrint("⚠️ تعذر تحديث إعدادات الموقع: $e");
+    }
+
+    try {
+      return await locationController
+          .getLocation()
+          .timeout(const Duration(seconds: 8));
+    } on TimeoutException catch (_) {
+      debugPrint("⚠️ انتهت مهلة getLocation، سأقرأ أول تحديث من stream.");
+    } catch (e) {
+      debugPrint("⚠️ فشل getLocation، سأقرأ أول تحديث من stream: $e");
+    }
+
+    try {
+      return await locationController.onLocationChanged.first.timeout(
+        const Duration(seconds: 8),
+      );
+    } on TimeoutException catch (_) {
+      debugPrint("⚠️ انتهت مهلة location stream، سأستخدم آخر موقع معروف.");
+    } catch (e) {
+      debugPrint("⚠️ فشل location stream، سأستخدم آخر موقع معروف: $e");
+    }
+
+    final fallback = _lastKnownLocationData();
+    if (fallback != null) {
+      return fallback;
+    }
+
+    throw TimeoutException('Location provider did not return coordinates');
+  }
+
+  LocationData? _lastKnownLocationData() {
+    final statePosition = state.currentPosition;
+    if (statePosition != null) {
+      return _locationDataFromLatLng(statePosition);
+    }
+
+    final hasSavedLat = SharedPreferenceUtil.haveKey(PrefKey.savedLat) == true;
+    final hasSavedLng = SharedPreferenceUtil.haveKey(PrefKey.savedLng) == true;
+    if (!hasSavedLat || !hasSavedLng) return null;
+
+    return _locationDataFromLatLng(
+      LatLng(
+        SharedPreferenceUtil.getDouble(PrefKey.savedLat),
+        SharedPreferenceUtil.getDouble(PrefKey.savedLng),
+      ),
+    );
+  }
+
+  LocationData _locationDataFromLatLng(LatLng position) {
+    return LocationData.fromMap({
+      'latitude': position.latitude,
+      'longitude': position.longitude,
+    });
   }
 
   /// ✅ أيقونة العلامة المخصصة (لاعب كرة قدم كرتوني بدل الدبوس الأحمر الافتراضي)
@@ -147,8 +209,7 @@ class LayoutCubit extends Cubit<LayoutState> {
   void updateCurrentPosition(LatLng currentPosition) {
     emit(state.copyWith(currentPosition: currentPosition));
     SharedPreferenceUtil.putDouble(PrefKey.savedLat, currentPosition.latitude);
-    SharedPreferenceUtil.putDouble(
-        PrefKey.savedLng, currentPosition.longitude);
+    SharedPreferenceUtil.putDouble(PrefKey.savedLng, currentPosition.longitude);
   }
 
   /// ✅ استرجاع آخر موقع محفوظ (إن وُجد) فور فتح التطبيق، دون انتظار GPS جديد
@@ -171,27 +232,64 @@ class LayoutCubit extends Cubit<LayoutState> {
     emit(state.copyWith(
         currentLocationStatus: CurrentLocationStatus.submitting));
 
+    final fallbackAddress =
+        '${latitude.toStringAsFixed(5)}, ${longitude.toStringAsFixed(5)}';
+
     try {
-      List<geoCode.Placemark> placemarks =
-          await geoCode.placemarkFromCoordinates(latitude, longitude);
+      final List<geo_code.Placemark> placemarks =
+          await geo_code.placemarkFromCoordinates(latitude, longitude).timeout(
+                const Duration(seconds: 10),
+                onTimeout: () => <geo_code.Placemark>[],
+              );
       if (placemarks.isNotEmpty) {
-        String fullAddress =
-            "${placemarks.first.administrativeArea} - ${placemarks.first.locality}, ${placemarks.first.country}";
-        String shortAddress =
-            "${placemarks.first.locality}, ${placemarks.first.administrativeArea}";
+        final place = placemarks.first;
+        final fullAddress = _joinAddressParts([
+          place.street,
+          place.subLocality,
+          place.locality,
+          place.administrativeArea,
+          place.country,
+        ]);
+        final shortAddress = _joinAddressParts([
+          place.locality,
+          place.administrativeArea,
+          place.country,
+        ]);
 
         // ✅ إرسال الحالة الجديدة بعد التحديث
         emit(state.copyWith(
-          currentFullAddress: fullAddress,
-          currentShortAddress: shortAddress,
+          currentFullAddress:
+              fullAddress.isEmpty ? fallbackAddress : fullAddress,
+          currentShortAddress:
+              shortAddress.isEmpty ? fallbackAddress : shortAddress,
           currentLocationStatus: CurrentLocationStatus.success,
         ));
       } else {
-        print("❌ لا يوجد بيانات للموقع المحدد.");
+        debugPrint("❌ لا يوجد بيانات للموقع المحدد.");
+        emit(state.copyWith(
+          currentFullAddress: fallbackAddress,
+          currentShortAddress: fallbackAddress,
+          currentLocationStatus: CurrentLocationStatus.success,
+        ));
       }
     } catch (e) {
-      print("❌ خطأ في تحويل الإحداثيات إلى عنوان: $e");
-      emit(state.copyWith(currentLocationStatus: CurrentLocationStatus.error));
+      debugPrint("❌ خطأ في تحويل الإحداثيات إلى عنوان: $e");
+      emit(state.copyWith(
+        currentFullAddress: fallbackAddress,
+        currentShortAddress: fallbackAddress,
+        currentLocationStatus: CurrentLocationStatus.success,
+      ));
     }
+  }
+
+  String _joinAddressParts(List<String?> parts) {
+    final cleanParts = <String>[];
+    for (final value in parts) {
+      final part = value?.trim() ?? '';
+      if (part.isNotEmpty && !cleanParts.contains(part)) {
+        cleanParts.add(part);
+      }
+    }
+    return cleanParts.join('، ');
   }
 }

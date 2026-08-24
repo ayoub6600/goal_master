@@ -1337,6 +1337,57 @@ Manager payment settings note:
   toggle and is still governed by subscription permissions
 - if the current branch does not allow local payment, the setting should remain disabled and the customer app should hide or reject that method accordingly
 
+App force-update system note:
+
+- On Friday, August 21, 2026, the backend/admin first slice for app update control was added in `goal-master-web`.
+- The system uses the `app_update_rules` table to control app-version policy per:
+  `app_key`
+  and
+  `platform`.
+- Supported app keys are:
+  `customer`
+  and
+  `manager`.
+- Supported platforms are:
+  `ios`
+  and
+  `android`.
+- The public mobile API contract is:
+  `POST /api/app-version/check`
+- Request fields:
+  `app`,
+  `platform`,
+  `version_name`,
+  `build_number`.
+- Response tells the app:
+  `update_required`,
+  `force`,
+  `mode`,
+  `deadline_at`,
+  latest/minimum versions and store/message fields.
+- Update modes:
+  `none`
+  means no update prompt,
+  `soft`
+  means optional update,
+  `deadline`
+  means optional until `force_after`, then forced,
+  `force`
+  means forced immediately for outdated versions.
+- Version comparison prefers numeric build numbers when both current and target builds are present, and falls back to semantic `version_name` comparison.
+- Only one active rule should exist per app/platform; saving an active rule deactivates sibling active rules for the same app/platform.
+- Mobile integration:
+  - Customer app calls the endpoint with `app=customer`.
+  - Manager app calls the endpoint with `app=manager`.
+  - Both apps read native `version_name` and `build_number` through `package_info_plus`.
+  - The startup check is fail-open: if the endpoint is unavailable, app startup continues normally.
+  - If the backend returns `force=true`, the update overlay cannot be dismissed. If it returns an optional update, the user can choose `لاحقًا`.
+  - The update UI is an app-level overlay, not a normal dialog, so it remains visible above router/navigation/login state after startup.
+- Force-update source-of-truth decision:
+  - The backend/admin `app_update_rules` table remains the source of truth for update policy.
+  - Firebase Remote Config is a common global option, but for Goal Master the admin-controlled backend is preferred because app/platform rules must be managed from the existing admin panel with operational visibility.
+  - Firebase Remote Config can be added later as an emergency fallback/cache layer, not as a replacement for the admin rules.
+
 Admin designation clarification:
 
 - `Designation` in admin is only a classification label for an operational booking row.

@@ -7,7 +7,6 @@ import 'package:goal_master/features/home/presentation/manager/get_services_info
 import 'package:goal_master/features/home/presentation/view/widgets/change_location_view.dart';
 import 'package:goal_master/features/layout/presentation/manager/layout_cubit.dart';
 import 'package:goal_master/features/layout/presentation/manager/layout_state.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 class BuildLocationRow extends StatelessWidget {
   const BuildLocationRow({super.key});
@@ -17,8 +16,9 @@ class BuildLocationRow extends StatelessWidget {
     return BlocSelector<LayoutCubit, LayoutState, String?>(
       selector: (state) => state.currentFullAddress,
       builder: (context, currentFullAddress) {
-        final String newAddress =
-            context.read<LayoutCubit>().state.currentFullAddress;
+        final address = currentFullAddress == null || currentFullAddress.isEmpty
+            ? "جاري جلب العنوان..."
+            : currentFullAddress;
         return Row(
           children: [
             Image.asset(Assets.imagesPngImageLocation,
@@ -27,7 +27,7 @@ class BuildLocationRow extends StatelessWidget {
             SizedBox(
               width: MediaQuery.of(context).size.width * .4,
               child: Text(
-                newAddress ?? "جاري جلب العنوان...",
+                address,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style:
@@ -39,10 +39,17 @@ class BuildLocationRow extends StatelessWidget {
               onPressed: () async {
                 final servicesCubit = context.read<GetServicesInfoCubit>();
                 final layoutCubit = context.read<LayoutCubit>();
+                final servicesState = servicesCubit.state;
                 final result = await Navigator.push<bool?>(
                   context,
                   MaterialPageRoute(
-                      builder: (context) => const ChangeLocationView()),
+                    builder: (context) => ChangeLocationView(
+                      zoneId: servicesState is GetServicesInfoSuccess
+                          ? servicesState.zoneId
+                          : null,
+                      zoneIds: _resolveZoneIds(servicesState),
+                    ),
+                  ),
                 );
 
                 final position = layoutCubit.state.currentPosition;
@@ -58,5 +65,23 @@ class BuildLocationRow extends StatelessWidget {
         );
       },
     );
+  }
+
+  List<int> _resolveZoneIds(GetServicesInfoState state) {
+    if (state is! GetServicesInfoSuccess) return const [];
+
+    final zones = <int>{};
+    final zoneId = state.zoneId;
+    if (zoneId != null && zoneId > 0) {
+      zones.add(zoneId);
+    }
+
+    for (final service in state.services) {
+      if (service.branchZoneId > 0) {
+        zones.add(service.branchZoneId);
+      }
+    }
+
+    return zones.toList(growable: false);
   }
 }

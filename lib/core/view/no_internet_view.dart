@@ -1,11 +1,39 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:goal_master/core/styles/app_text_styles.dart';
 import 'package:goal_master/core/styles/assets.dart';
 import 'package:goal_master/core/view/connection_cubit.dart';
 
-class NoInternetView extends StatelessWidget {
+class NoInternetView extends StatefulWidget {
   const NoInternetView({super.key});
+
+  @override
+  State<NoInternetView> createState() => _NoInternetViewState();
+}
+
+class _NoInternetViewState extends State<NoInternetView> {
+  bool _isRetrying = false;
+
+  Future<void> _retryConnection() async {
+    if (_isRetrying) return;
+
+    setState(() => _isRetrying = true);
+    PaintingBinding.instance.imageCache.clear();
+    PaintingBinding.instance.imageCache.clearLiveImages();
+
+    final connected = await context.read<ConnectionCubit>().retryCheck();
+
+    if (!mounted) return;
+
+    if (connected) {
+      GoRouter.of(context).refresh();
+    }
+
+    if (mounted) {
+      setState(() => _isRetrying = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -44,11 +72,16 @@ class NoInternetView extends StatelessWidget {
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton.icon(
-                  onPressed: () {
-                    context.read<ConnectionCubit>().retryCheck();
-                  },
-                  icon: const Icon(Icons.refresh),
-                  label: const Text('إعادة المحاولة'),
+                  onPressed: _isRetrying ? null : _retryConnection,
+                  icon: _isRetrying
+                      ? const SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Icon(Icons.refresh),
+                  label:
+                      Text(_isRetrying ? 'جاري المحاولة...' : 'إعادة المحاولة'),
                   style: ElevatedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     shape: RoundedRectangleBorder(
