@@ -1,3 +1,6 @@
+import 'package:flutter/widgets.dart';
+import 'package:goal_master/core/components/keys_values.dart';
+import 'package:goal_master/core/components/preference_utility.dart';
 import 'dart:async';
 
 import 'package:audioplayers/audioplayers.dart';
@@ -11,7 +14,8 @@ import 'package:equatable/equatable.dart';
 
 part 'notification_state.dart';
 
-class NotificationCubit extends Cubit<NotificationState> {
+class NotificationCubit extends Cubit<NotificationState>
+    with WidgetsBindingObserver {
   final NotificationRepo notificationRepo;
   final void Function(NotificationItem)? onVisualNotification;
 
@@ -20,7 +24,17 @@ class NotificationCubit extends Cubit<NotificationState> {
   final AudioPlayer _audioPlayer = AudioPlayer();
 
   bool _isDisposed = false;
-  String? _lastNotificationId;
+
+  /// The newest notification already shown to this customer.
+  ///
+  /// Read from storage rather than starting empty: an in-memory watermark is
+  /// null on every fresh login, and the loop below then treats the entire
+  /// first page as unseen — replaying every old notification, with its sound,
+  /// each time somebody signs in.
+  String? _lastNotificationId =
+      SharedPreferenceUtil.getString(PrefKey.lastSeenNotificationId).isEmpty
+          ? null
+          : SharedPreferenceUtil.getString(PrefKey.lastSeenNotificationId);
 
   PagingController<int, NotificationItem> get pagingController =>
       _pagingController;
@@ -36,7 +50,9 @@ class NotificationCubit extends Cubit<NotificationState> {
 
     _socketService = NotificationSocketService(
       userId: userId,
-      onNotificationReceived: _onNotificationReceived,
+      // The socket only wakes the app. Re-fetch the stored notification so
+      // its assistant type/avatar are available before anything is shown.
+      onNotificationReceived: (_) => _checkForNewNotification(),
     );
 
     _fetchPage(1);
@@ -45,16 +61,60 @@ class NotificationCubit extends Cubit<NotificationState> {
     emit(NotificationUnreadUpdated(unreadCount));
   }
 
-  late Timer _pollingTimer;
+  Timer? _pollingTimer;
+
+  /// How often to fall back to asking over HTTP.
+  ///
+  /// Was five seconds, unconditionally, for as long as the app was alive —
+  /// roughly 720 requests an hour per customer, almost all of them answering
+  /// "nothing new", and most of them while the socket was already delivering
+  /// the same events. Thirty seconds is ample for a fallback that only runs
+  /// when the live channel is down.
+  static const Duration _pollInterval = Duration(seconds: 30);
 
   void startSocket() {
     if (_isDisposed) return;
-    _socketService.initialize();
 
-    _pollingTimer = Timer.periodic(const Duration(seconds: 5), (_) {
-      print('[\u23F1\uFE0F Polling] التحقق من وجود إشعارات جديدة...');
+    _socketService.initialize();
+    WidgetsBinding.instance.addObserver(this);
+    _startPolling();
+  }
+
+  void _startPolling() {
+    _pollingTimer?.cancel();
+
+    _pollingTimer = Timer.periodic(_pollInterval, (_) {
+      if (_isDisposed) return;
+
+      // The socket is the primary channel. Polling exists for the times it
+      // is not connected, so asking while it IS connected is pure waste.
+      if (_socketService.isConnected) return;
+
       _checkForNewNotification();
     });
+  }
+
+  void _stopPolling() {
+    _pollingTimer?.cancel();
+    _pollingTimer = null;
+  }
+
+  /// Nothing is worth polling for while the customer cannot see the screen.
+  ///
+  /// A backgrounded app kept the timer running, so it went on querying the
+  /// server — and draining the battery — for notifications nobody was there
+  /// to read. Anything that arrives meanwhile is still delivered by push, and
+  /// is caught up on the next resume.
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (_isDisposed) return;
+
+    if (state == AppLifecycleState.resumed) {
+      _checkForNewNotification();
+      _startPolling();
+    } else {
+      _stopPolling();
+    }
   }
 
   Future<void> _checkForNewNotification() async {
@@ -64,29 +124,74 @@ class NotificationCubit extends Cubit<NotificationState> {
     result.fold(
       (failure) => {},
       (response) {
-        final latest = response.data.data.firstOrNull;
-        if (latest != null && latest.id != _lastNotificationId) {
-          _lastNotificationId = latest.id;
-          _onNotificationReceived(latest);
+        final notifications = response.data.data;
+        if (notifications.isEmpty) return;
+
+        final previousLatestId = _lastNotificationId;
+        final unseen = <NotificationItem>[];
+
+        // The API returns newest first. A booking refusal can create both the
+        // Captain offer and a regular cancellation notice in the same second;
+        // process every unseen item rather than losing the Captain offer when
+        // the regular notice happens to be first.
+        for (final notification in notifications) {
+          if (notification.id == previousLatestId) break;
+          unseen.add(notification);
+        }
+
+        final isFirstEverCheck = previousLatestId == null;
+
+        _rememberLatest(notifications.first.id);
+
+        if (unseen.isEmpty) return;
+
+        // Nothing has been shown to this device before, so there is no way to
+        // tell what the customer has already read. Take the current state as
+        // the starting point and stay quiet — announcing a backlog on first
+        // launch is noise, not news.
+        if (isFirstEverCheck) return;
+
+        final hasCaptainOffer = unseen.any(
+          (notification) => notification.data.type == 'captain_rejection_offer',
+        );
+
+        // Restore chronological order for the notification list. When an
+        // offer is present, it is the only foreground visual: the normal
+        // cancellation record remains in the list without masking Captain.
+        for (final notification in unseen.reversed) {
+          final showVisual = !hasCaptainOffer ||
+              notification.data.type == 'captain_rejection_offer';
+          _onNotificationReceived(notification, showVisual: showVisual);
         }
       },
     );
   }
 
-  Future<void> _onNotificationReceived(NotificationItem notification) async {
+  /// Moves the watermark, in memory and on disk.
+  void _rememberLatest(String id) {
+    _lastNotificationId = id;
+    SharedPreferenceUtil.putString(PrefKey.lastSeenNotificationId, id);
+  }
+
+  Future<void> _onNotificationReceived(
+    NotificationItem notification, {
+    bool showVisual = true,
+  }) async {
     if (_isDisposed) return;
 
-    print('[🔔 إشعار جديد]: ${notification.data.message}');
+    if (showVisual) {
+      print('[🔔 إشعار جديد]: ${notification.data.message}');
 
-    try {
-      await _audioPlayer.play(
-        AssetSource('sound/new-notification-09-352705.mp3'),
-      );
-    } catch (e) {
-      print('[NotificationCubit] فشل تشغيل صوت الإشعار: $e');
+      try {
+        await _audioPlayer.play(
+          AssetSource('sound/new-notification-09-352705.mp3'),
+        );
+      } catch (e) {
+        print('[NotificationCubit] فشل تشغيل صوت الإشعار: $e');
+      }
+
+      onVisualNotification?.call(notification);
     }
-
-    onVisualNotification?.call(notification);
 
     final current = _pagingController.itemList ?? [];
 
@@ -212,9 +317,10 @@ class NotificationCubit extends Cubit<NotificationState> {
   @override
   Future<void> close() {
     _isDisposed = true;
+    WidgetsBinding.instance.removeObserver(this);
     _socketService.dispose();
     _pagingController.dispose();
-    _pollingTimer.cancel();
+    _stopPolling();
     _audioPlayer.dispose();
     return super.close();
   }

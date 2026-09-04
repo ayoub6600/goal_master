@@ -65,24 +65,43 @@ class _ChangeLocationViewState extends State<ChangeLocationView> {
     super.dispose();
   }
 
+  /// Recentre on the customer's position — one tap, one request.
+  ///
+  /// This button used to feel dead. Getting a fix walks a chain of guarded
+  /// calls (location service 10s + 10s, permission 10s + 30s, then the
+  /// position itself 8s + 8s), and NOTHING moved on screen until the very end
+  /// of it — so a cold tap could sit silent for the best part of a minute and
+  /// look broken. It then asked for the position a SECOND time whenever the
+  /// first attempt came back empty, doubling the wait in exactly the case that
+  /// was already slow.
+  ///
+  /// So: the camera jumps to the last known point immediately, the request is
+  /// made once, and the fresh fix updates the camera when it lands. Still a
+  /// single one-shot read — nothing here subscribes to location.
   Future<void> _setCurrentLocation({bool silent = false}) async {
+    // The in-flight guard. Tapping again while a fix is on its way must not
+    // start a second one; the spinner is the answer to the second tap.
     if (_isLoadingLocation) return;
     setState(() => _isLoadingLocation = true);
 
     try {
+      // Immediate feedback from whatever position we already hold, so the map
+      // reacts on the tap rather than at the end of the chain.
+      final cached = layoutCubit.state.currentPosition ?? _selectedPosition;
+      if (cached != null) {
+        await _moveCamera(cached);
+      }
+
       await layoutCubit.initUserLocation();
       if (!mounted) return;
 
-      LatLng? position = layoutCubit.state.currentPosition;
-      if (position == null) {
-        await layoutCubit.getMyCurrentLocation();
-        if (!mounted) return;
-        position = layoutCubit.state.currentPosition;
-      }
+      // Asked once. initUserLocation() already reads the position; calling
+      // getMyCurrentLocation() again here repeated the whole timeout chain.
+      final position = layoutCubit.state.currentPosition;
 
       if (position == null) {
         if (!silent) {
-          _showError('تعذر جلب موقعك الحالي. تأكد من تفعيل الموقع في المحاكي.');
+          _showError('تعذر تحديد موقعك الآن. تأكد من تفعيل خدمة الموقع، أو حرّك الخريطة لاختيار موقعك يدويًا.');
         }
         return;
       }

@@ -1,3 +1,4 @@
+import 'package:goal_master/features/auth/presentation/view/signup_success_view.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:goal_master/core/components/build_page_with_default_transition.dart';
@@ -30,6 +31,9 @@ import 'package:goal_master/features/booking/presentation/manager/cancel_booking
 import 'package:goal_master/features/booking/presentation/manager/category_cubit/category_cubit.dart';
 import 'package:goal_master/features/booking/presentation/manager/club_cubit/club_cubit.dart';
 import 'package:goal_master/features/booking/presentation/manager/add_booking_cubit/add_booking_cubit.dart';
+import 'package:goal_master/features/booking/presentation/manager/monthly_booking_cubit/monthly_booking_cubit.dart';
+import 'package:goal_master/features/booking/presentation/manager/series_details_cubit/series_details_cubit.dart';
+import 'package:goal_master/features/booking/presentation/view/series_details_view.dart';
 import 'package:goal_master/features/booking/presentation/manager/page_view_cubit/page_view_cubit_cubit.dart';
 import 'package:goal_master/features/booking/presentation/manager/employee_cubit/employee_cubit.dart';
 import 'package:goal_master/features/booking/presentation/manager/service_cubit/service_cubit.dart';
@@ -179,6 +183,18 @@ List<RouteBase> appRoutes = [
       );
     },
   ),
+  // Shown once the number is confirmed, before the customer signs in.
+  GoRoute(
+    parentNavigatorKey: parentKey,
+    path: RoutesKeys.kSignupSuccess,
+    pageBuilder: (context, state) {
+      return buildPageWithDefaultTransition<void>(
+        context: context,
+        state: state,
+        child: SignupSuccessView(name: state.extra as String?),
+      );
+    },
+  ),
   //NewPasswordView
   GoRoute(
       parentNavigatorKey: parentKey,
@@ -282,11 +298,12 @@ List<RouteBase> appRoutes = [
       state: state,
       child: MultiBlocProvider(
         providers: [
-          BlocProvider(
-            create: (context) => ZoneCubitCubit(
-              getIt<BookingRepoImp>(),
-            )..listZone(),
-          ),
+          // ZoneCubitCubit is gone from this route: the booking wizard no
+          // longer lists zones for the customer to pick from, so fetching them
+          // here was a request nobody read. Zones themselves are untouched —
+          // the filter screen still lists them, and every booking still
+          // carries a zone id. What was removed is the duplicate MANUAL
+          // selection, not the concept.
           //ClubCubit
           BlocProvider(
               create: (context) => ClubCubit(
@@ -311,6 +328,18 @@ List<RouteBase> appRoutes = [
           //AddBookingCubit
           BlocProvider(
             create: (context) => AddBookingCubit(
+              getIt<BookingRepoImp>(),
+            ),
+          ),
+          // Normal-vs-monthly choice and the four-date preview.
+          BlocProvider(
+            create: (context) => MonthlyBookingCubit(
+              getIt<BookingRepoImp>(),
+            ),
+          ),
+          // Creating a recurring booking: one outcome for all four dates.
+          BlocProvider(
+            create: (context) => CreateMonthlyBookingCubit(
               getIt<BookingRepoImp>(),
             ),
           ),
@@ -347,6 +376,21 @@ List<RouteBase> appRoutes = [
             ),
             BlocProvider(
               create: (context) => AddBookingCubit(getIt<BookingRepoImp>()),
+            ),
+            // The quick checkout offers monthly booking too, so it needs the
+            // same cubits the wizard checkout uses. Without them the selector
+            // would throw ProviderNotFound.
+            BlocProvider(
+              create: (context) => MonthlyBookingCubit(getIt<BookingRepoImp>()),
+            ),
+            // Reused by the "choose another time" sheet, which lists slots
+            // from the same endpoint the wizard's time step uses.
+            BlocProvider(
+              create: (context) => CalendarCubit(getIt<BookingRepoImp>()),
+            ),
+            BlocProvider(
+              create: (context) =>
+                  CreateMonthlyBookingCubit(getIt<BookingRepoImp>()),
             ),
             BlocProvider(
               create: (context) => PageViewNewBookingCubit(),
@@ -484,6 +528,22 @@ List<RouteBase> appRoutes = [
               ),
               child: BookingItemsDetails(
                 booking: state.extra as Booking,
+              ),
+            ),
+          )),
+  //SeriesDetails — one recurring booking and its four dates
+  GoRoute(
+      parentNavigatorKey: parentKey,
+      path: RoutesKeys.kSeriesDetails,
+      pageBuilder: (context, state) => buildPageWithDefaultTransition<void>(
+            context: context,
+            state: state,
+            child: BlocProvider(
+              create: (context) => SeriesDetailsCubit(
+                getIt<BookingRepoImp>(),
+              ),
+              child: SeriesDetailsView(
+                seriesId: state.extra as int,
               ),
             ),
           )),

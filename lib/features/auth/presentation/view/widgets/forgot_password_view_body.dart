@@ -55,8 +55,7 @@ class ForgotPasswordViewBody extends StatelessWidget {
                     context,
                     extra: {
                       'phone': cubit.emailController.text,
-                      'forget':
-                          true, 
+                      'forget': true,
                     },
                   );
                 } else if (state is VerifyEmailError) {

@@ -16,6 +16,12 @@ class CoinsState extends Equatable {
   /// this, shows itself, then calls clearJustEarned() to consume it.
   final int? justEarnedCoins;
 
+  /// Checkout-scoped: what the backend says may be spent on the booking
+  /// currently being confirmed, and how much of it the customer opted into.
+  final CoinCheckoutQuote? checkoutQuote;
+  final bool useCoinsAtCheckout;
+  final int selectedCheckoutCoins;
+
   const CoinsState({
     this.balance,
     this.history = const [],
@@ -27,7 +33,22 @@ class CoinsState extends Equatable {
     this.error,
     this.redeemError,
     this.justEarnedCoins,
+    this.checkoutQuote,
+    this.useCoinsAtCheckout = false,
+    this.selectedCheckoutCoins = 0,
   });
+
+  /// Coins actually sent with the booking request — zero unless the customer
+  /// switched the option on and the quote still permits it.
+  int get coinsToRedeem {
+    final quote = checkoutQuote;
+    if (!useCoinsAtCheckout || quote == null || !quote.canRedeem) return 0;
+    if (selectedCheckoutCoins < quote.minRedeemCoins) return 0;
+    return selectedCheckoutCoins.clamp(0, quote.maxRedeemableCoins);
+  }
+
+  double get checkoutDiscount =>
+      checkoutQuote?.discountFor(coinsToRedeem) ?? 0;
 
   CoinsState copyWith({
     CoinBalance? balance,
@@ -40,9 +61,13 @@ class CoinsState extends Equatable {
     String? error,
     String? redeemError,
     int? justEarnedCoins,
+    CoinCheckoutQuote? checkoutQuote,
+    bool? useCoinsAtCheckout,
+    int? selectedCheckoutCoins,
     bool clearJustEarned = false,
     bool clearError = false,
     bool clearRedeemError = false,
+    bool clearCheckout = false,
   }) {
     return CoinsState(
       balance: balance ?? this.balance,
@@ -56,6 +81,14 @@ class CoinsState extends Equatable {
       redeemError: clearRedeemError ? null : (redeemError ?? this.redeemError),
       justEarnedCoins:
           clearJustEarned ? null : (justEarnedCoins ?? this.justEarnedCoins),
+      checkoutQuote:
+          clearCheckout ? null : (checkoutQuote ?? this.checkoutQuote),
+      useCoinsAtCheckout: clearCheckout
+          ? false
+          : (useCoinsAtCheckout ?? this.useCoinsAtCheckout),
+      selectedCheckoutCoins: clearCheckout
+          ? 0
+          : (selectedCheckoutCoins ?? this.selectedCheckoutCoins),
     );
   }
 
@@ -71,5 +104,8 @@ class CoinsState extends Equatable {
         error,
         redeemError,
         justEarnedCoins,
+        checkoutQuote,
+        useCoinsAtCheckout,
+        selectedCheckoutCoins,
       ];
 }

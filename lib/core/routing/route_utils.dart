@@ -37,3 +37,10 @@ Future<T?> pushReplacement<T extends Object?>(
 void pop<T extends Object?>(BuildContext context, [T? result]) {
   return GoRouter.of(context).pop();
 }
+
+/// Whether there is anywhere to go back to.
+///
+/// A screen reached with [pushReplacement] is alone on the stack, and popping
+/// from there throws rather than doing nothing — so any back control on such a
+/// screen has to ask first and pick a destination of its own.
+bool canPop(BuildContext context) => GoRouter.of(context).canPop();

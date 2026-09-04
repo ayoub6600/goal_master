@@ -248,6 +248,8 @@ class NotificationInnerData {
   final double amount;
   final String description;
   final String createdAt;
+  final String assistantName;
+  final String assistantAvatar;
 
   NotificationInnerData({
     required this.message,
@@ -257,6 +259,8 @@ class NotificationInnerData {
     this.amount = 0.0,
     this.description = '',
     this.createdAt = '',
+    this.assistantName = '',
+    this.assistantAvatar = '',
   });
 
   factory NotificationInnerData.fromJson(Map<String, dynamic> json) =>
@@ -271,6 +275,8 @@ class NotificationInnerData {
         amount: asDouble(json['amount']),
         description: asString(json['description']),
         createdAt: asString(json['created_at']),
+        assistantName: asString(json['assistant_name']),
+        assistantAvatar: asString(json['assistant_avatar']),
       );
 
   Map<String, dynamic> toJson() => {
@@ -281,6 +287,8 @@ class NotificationInnerData {
         'amount': amount,
         'description': description,
         'created_at': createdAt,
+        'assistant_name': assistantName,
+        'assistant_avatar': assistantAvatar,
       };
 }
 

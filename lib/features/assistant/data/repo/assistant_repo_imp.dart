@@ -1,6 +1,5 @@
 import 'package:dartz/dartz.dart';
-import 'package:goal_master/core/components/keys_values.dart';
-import 'package:goal_master/core/components/preference_utility.dart';
+import 'package:goal_master/features/location/data/active_location_snapshot.dart';
 import 'package:goal_master/core/databases/api/api_consumer.dart';
 import 'package:goal_master/core/databases/api/api_consumer_extension.dart';
 import 'package:goal_master/core/databases/api/end_points.dart';
@@ -13,31 +12,36 @@ class AssistantRepoImp extends AssistantRepo {
 
   AssistantRepoImp(this.apiConsumer);
 
-  /// The customer's last-known GPS position, already persisted by
-  /// LayoutCubit whenever the home screen resolves it — reused here so the
-  /// captain persona can follow the customer's zone without the assistant
-  /// feature needing its own location plumbing.
-  Map<String, dynamic> get _locationParams {
-    final hasLat = SharedPreferenceUtil.haveKey(PrefKey.savedLat) == true;
-    final hasLng = SharedPreferenceUtil.haveKey(PrefKey.savedLng) == true;
-    if (!hasLat || !hasLng) {
-      return const {};
-    }
-    return {
-      'lat': SharedPreferenceUtil.getDouble(PrefKey.savedLat),
-      'lng': SharedPreferenceUtil.getDouble(PrefKey.savedLng),
-    };
-  }
+  /// The customer's Active Location.
+  ///
+  /// Read live on every request, so «نبي ملعب قريب» means near wherever the
+  /// customer has just said they are — the captain follows a location change
+  /// immediately, with no assistant-specific storage of its own to go stale.
+  Map<String, dynamic> get _locationParams =>
+      ActiveLocationSnapshot.requestParams;
 
   @override
-  Future<Either<Failure, AssistantConversationResponse>> getHistory() {
+  Future<Either<Failure, AssistantConversationResponse>> getHistory({
+    bool markRead = false,
+  }) {
     return apiConsumer.handleRequest(
       () => apiConsumer.get(
         EndPoints.assistantHistory,
-        queryParameters: _locationParams,
+        queryParameters: {
+          ..._locationParams,
+          if (markRead) 'mark_read': 1,
+        },
       ),
       (data) => AssistantConversationResponse.fromJson(
           Map<String, dynamic>.from(data['data'])),
+    );
+  }
+
+  @override
+  Future<Either<Failure, int>> getUnreadCount() {
+    return apiConsumer.handleRequest(
+      () => apiConsumer.get(EndPoints.assistantUnread),
+      (data) => (data['data']?['unread_count'] as num?)?.toInt() ?? 0,
     );
   }
 

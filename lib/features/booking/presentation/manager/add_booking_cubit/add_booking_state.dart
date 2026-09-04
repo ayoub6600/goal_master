@@ -14,10 +14,15 @@ final class AddBookingLoading extends AddBookingState {}
 final class AddBookingSuccess extends AddBookingState {
   final String massage;
 
-  const AddBookingSuccess({required this.massage});
+  /// What the customer spent on this booking, so the success screen can say
+  /// so. The coins *earned* aren't known here — the backend only awards them
+  /// once the booking completes, and the app reads that from its balance.
+  final int coinsRedeemed;
+
+  const AddBookingSuccess({required this.massage, this.coinsRedeemed = 0});
 
   @override
-  List<Object> get props => [massage];
+  List<Object> get props => [massage, coinsRedeemed];
 }
 
 final class AddBookingFailure extends AddBookingState {

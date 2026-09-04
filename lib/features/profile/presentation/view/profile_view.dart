@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:goal_master/features/location/presentation/manager/active_location_cubit.dart';
 import 'package:goal_master/core/components/button_app.dart';
 import 'package:goal_master/core/components/keys_values.dart';
 import 'package:goal_master/core/components/page_wrapper.dart';
@@ -152,10 +153,27 @@ class ProfileView extends StatelessWidget {
                                         child: ButtonApp(
                                             text: "تسجيل الخروج",
                                             onTap: () async {
+                                              // Read before the sheet closes:
+                                              // the cubit lives above the
+                                              // router, but this context is
+                                              // about to be popped.
+                                              final locationCubit = context
+                                                  .read<ActiveLocationCubit>();
                                               Navigator.pop(
                                                   context); // Close the sheet
                                               await SharedPreferenceUtil
                                                   .clear();
+                                              // Clearing storage is not
+                                              // enough. The cubit and its
+                                              // context-free projection still
+                                              // hold this customer's city in
+                                              // memory, and the next person to
+                                              // sign in on this handset would
+                                              // shop from it until their own
+                                              // location finished loading —
+                                              // the exact leak the account-
+                                              // owned model exists to close.
+                                              locationCubit.clearForSignOut();
                                               SharedPreferenceUtil.putString(
                                                   PrefKey.login, "false");
                                               go(RoutesKeys.kLogin, context);

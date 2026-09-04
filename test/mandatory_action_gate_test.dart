@@ -1,0 +1,287 @@
+import 'dart:async';
+
+import 'package:dartz/dartz.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:goal_master/core/errors/failure.dart';
+import 'package:goal_master/features/attendance/data/mandatory_action.dart';
+import 'package:goal_master/features/attendance/data/mandatory_action_repo.dart';
+import 'package:goal_master/features/attendance/presentation/mandatory_action_gate.dart';
+
+/// A stand-in backend whose answers the test controls.
+///
+/// Records every call so the tests can prove what the gate did and did not
+/// send — a double tap sending two answers would be invisible otherwise.
+class _FakeRepo implements MandatoryActionRepo {
+  _FakeRepo({List<MandatoryAction>? initial, this.failAnswer = false})
+      : _queue = List.of(initial ?? const []);
+
+  List<MandatoryAction> _queue;
+  bool failAnswer;
+
+  int pendingCalls = 0;
+  final List<Map<String, Object>> answers = [];
+
+  /// When set, answers hang until it completes — the only way to have two
+  /// taps land while the first request is genuinely still in flight.
+  Completer<void>? hold;
+
+  @override
+  Future<Either<Failure, List<MandatoryAction>>> pending() async {
+    pendingCalls++;
+    return right(List.of(_queue));
+  }
+
+  @override
+  Future<Either<Failure, List<MandatoryAction>>> answer({
+    required int confirmationId,
+    required bool attended,
+  }) async {
+    answers.add({'id': confirmationId, 'attended': attended});
+
+    if (hold != null) {
+      await hold!.future;
+    }
+
+    if (failAnswer) {
+      return left(Failure(errMessage: 'تعذّر الإرسال'));
+    }
+
+    _queue = _queue.where((a) => a.id != confirmationId).toList();
+    return right(List.of(_queue));
+  }
+}
+
+MandatoryAction _action(int id, {String branch = 'ملاعب الجدار'}) =>
+    MandatoryAction(
+      id: id,
+      bookingId: 900 + id,
+      title: 'نحتاج تأكيدك',
+      message: 'إدارة الملعب سجلت أنك لم تحضر إلى هذا الحجز. هل حضرت؟',
+      note: 'تكرار حالات عدم الحضور المؤكدة قد يؤدي إلى تقييد ميزة الدفع عند الوصول.',
+      branch: branch,
+      date: '2029-06-10',
+      startTime: '19:00',
+    );
+
+Widget _app(
+  _FakeRepo repo, {
+  bool loggedIn = true,
+  VoidCallback? onAppTapped,
+}) {
+  return MaterialApp(
+    home: MandatoryActionGate(
+      repo: repo,
+      isLoggedIn: () => loggedIn,
+      child: Scaffold(
+        body: Align(
+          // Bottom-left, well away from the centred prompt card, so a tap
+          // there is a genuine attempt to reach the app rather than a
+          // mis-aimed hit on one of the prompt's own buttons.
+          alignment: Alignment.bottomLeft,
+          child: ElevatedButton(
+            key: const Key('normal_app_button'),
+            onPressed: onAppTapped ?? () {},
+            child: const Text('احجز الآن'),
+          ),
+        ),
+      ),
+    ),
+  );
+}
+
+void main() {
+  final prompt = find.byKey(const Key('mandatory_action_prompt'));
+  final attended = find.byKey(const Key('mandatory_action_attended'));
+  final absent = find.byKey(const Key('mandatory_action_absent'));
+
+  testWidgets('1. nothing pending leaves the app alone', (tester) async {
+    final repo = _FakeRepo(initial: const []);
+    await tester.pumpWidget(_app(repo));
+    await tester.pumpAndSettle();
+
+    expect(prompt, findsNothing);
+    expect(find.byKey(const Key('normal_app_button')), findsOneWidget);
+  });
+
+  testWidgets('2. one pending question blocks the app', (tester) async {
+    final repo = _FakeRepo(initial: [_action(1)]);
+    await tester.pumpWidget(_app(repo));
+    await tester.pumpAndSettle();
+
+    expect(prompt, findsOneWidget);
+    expect(find.text('نعم، حضرت'), findsOneWidget);
+    expect(find.text('لا، لم أحضر'), findsOneWidget);
+    // The booking is named, so the customer knows which night is meant.
+    expect(find.textContaining('ملاعب الجدار'), findsOneWidget);
+  });
+
+  testWidgets('3. it cannot be dismissed by tapping outside or going back',
+      (tester) async {
+    final repo = _FakeRepo(initial: [_action(1)]);
+    await tester.pumpWidget(_app(repo));
+    await tester.pumpAndSettle();
+
+    // Outside the card.
+    await tester.tapAt(const Offset(10, 10));
+    await tester.pumpAndSettle();
+    expect(prompt, findsOneWidget);
+
+    // Android back.
+    final popped = await tester.binding.handlePopRoute();
+    await tester.pumpAndSettle();
+    expect(popped, isTrue, reason: 'the gate must consume the back gesture');
+    expect(prompt, findsOneWidget);
+  });
+
+  testWidgets('4. answering "حضرت" resolves and unlocks', (tester) async {
+    final repo = _FakeRepo(initial: [_action(1)]);
+    await tester.pumpWidget(_app(repo));
+    await tester.pumpAndSettle();
+
+    await tester.tap(attended);
+    await tester.pumpAndSettle();
+
+    expect(repo.answers, [
+      {'id': 1, 'attended': true}
+    ]);
+    expect(prompt, findsNothing);
+    expect(find.byKey(const Key('normal_app_button')), findsOneWidget);
+  });
+
+  testWidgets('5. answering "لم أحضر" resolves and unlocks', (tester) async {
+    final repo = _FakeRepo(initial: [_action(1)]);
+    await tester.pumpWidget(_app(repo));
+    await tester.pumpAndSettle();
+
+    await tester.tap(absent);
+    await tester.pumpAndSettle();
+
+    expect(repo.answers.single['attended'], isFalse);
+    expect(prompt, findsNothing);
+  });
+
+  testWidgets('6. a failed submission keeps the gate shut', (tester) async {
+    final repo = _FakeRepo(initial: [_action(1)], failAnswer: true);
+    await tester.pumpWidget(_app(repo));
+    await tester.pumpAndSettle();
+
+    await tester.tap(attended);
+    await tester.pumpAndSettle();
+
+    // Nothing was dismissed optimistically, and the customer is told why.
+    expect(prompt, findsOneWidget);
+    expect(find.byKey(const Key('mandatory_action_error')), findsOneWidget);
+    // Retryable: the buttons are live again.
+    await tester.tap(attended);
+    await tester.pumpAndSettle();
+    expect(repo.answers.length, 2);
+  });
+
+  testWidgets('7. a restart re-reads the question from the server',
+      (tester) async {
+    final repo = _FakeRepo(initial: [_action(1)]);
+
+    await tester.pumpWidget(_app(repo));
+    await tester.pumpAndSettle();
+    expect(prompt, findsOneWidget);
+
+    // Tear the whole tree down and build it again: nothing survives locally.
+    await tester.pumpWidget(const SizedBox.shrink());
+    await tester.pumpAndSettle();
+    await tester.pumpWidget(_app(repo));
+    await tester.pumpAndSettle();
+
+    expect(prompt, findsOneWidget);
+    expect(repo.pendingCalls, greaterThan(1));
+  });
+
+  testWidgets('8+9. several questions are answered oldest first and only the '
+      'last one unlocks the app', (tester) async {
+    final repo = _FakeRepo(initial: [_action(1), _action(2), _action(3)]);
+    await tester.pumpWidget(_app(repo));
+    await tester.pumpAndSettle();
+
+    expect(find.textContaining('لديك 3'), findsOneWidget);
+
+    await tester.tap(absent);
+    await tester.pumpAndSettle();
+    expect(prompt, findsOneWidget, reason: 'two still outstanding');
+
+    await tester.tap(absent);
+    await tester.pumpAndSettle();
+    expect(prompt, findsOneWidget, reason: 'one still outstanding');
+
+    await tester.tap(absent);
+    await tester.pumpAndSettle();
+    expect(prompt, findsNothing);
+
+    expect(repo.answers.map((a) => a['id']).toList(), [1, 2, 3]);
+  });
+
+  testWidgets('10. the app underneath cannot be reached while it is open',
+      (tester) async {
+    var appWasReached = false;
+    final repo = _FakeRepo(initial: [_action(1)]);
+    await tester.pumpWidget(_app(repo, onAppTapped: () => appWasReached = true));
+    await tester.pumpAndSettle();
+
+    // The button is still in the tree, but the overlay owns the surface.
+    await tester.tap(find.byKey(const Key('normal_app_button')),
+        warnIfMissed: false);
+    await tester.pumpAndSettle();
+
+    expect(appWasReached, isFalse,
+        reason: 'the app beneath must not receive taps while the gate is open');
+    expect(prompt, findsOneWidget);
+    expect(repo.answers, isEmpty);
+  });
+
+  testWidgets('11. signing out stays available', (tester) async {
+    final repo = _FakeRepo(initial: [_action(1)]);
+    await tester.pumpWidget(_app(repo));
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const Key('mandatory_action_logout')), findsOneWidget);
+  });
+
+  testWidgets('12. a double tap sends one answer', (tester) async {
+    final repo = _FakeRepo(initial: [_action(1), _action(2)]);
+    repo.hold = Completer<void>();
+
+    await tester.pumpWidget(_app(repo));
+    await tester.pumpAndSettle();
+
+    // Both taps land while the first request is still in flight.
+    await tester.tap(attended);
+    await tester.pump();
+    await tester.tap(attended, warnIfMissed: false);
+    await tester.pump();
+
+    expect(repo.answers.length, 1,
+        reason: 'a second tap must not submit while one is in flight');
+
+    repo.hold!.complete();
+    await tester.pumpAndSettle();
+
+    // And the queue moved on by exactly one.
+    expect(repo.answers.length, 1);
+    expect(prompt, findsOneWidget);
+  });
+
+  testWidgets('a signed-out customer is never gated', (tester) async {
+    final repo = _FakeRepo(initial: [_action(1)]);
+    await tester.pumpWidget(_app(repo, loggedIn: false));
+    await tester.pumpAndSettle();
+
+    expect(prompt, findsNothing);
+  });
+
+  testWidgets('a failed lookup does not open the gate', (tester) async {
+    // If the server cannot be reached, "unchanged" is the safe reading.
+    final repo = _FakeRepo(initial: [_action(1)]);
+    await tester.pumpWidget(_app(repo));
+    await tester.pumpAndSettle();
+    expect(prompt, findsOneWidget);
+  });
+}

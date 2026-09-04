@@ -70,6 +70,10 @@ class Booking {
   final String remarks;
   final String category;
 
+  /// Set only when this booking is one occurrence of a recurring booking,
+  /// so the list can badge it and open the series. Null for ordinary bookings.
+  final BookingSeriesRef? series;
+
   Booking({
     required this.id,
     required this.branch,
@@ -88,7 +92,10 @@ class Booking {
     required this.statusName,
     required this.remarks,
     required this.category,
+    this.series,
   });
+
+  bool get isPartOfSeries => series != null;
 
   factory Booking.fromJson(Map<String, dynamic> json) {
     return Booking(
@@ -103,12 +110,42 @@ class Booking {
       service: _asString(json['service']),
       serviceAmount: _asString(json['service_amount']),
       paidAmount: _asString(json['paid_amount']),
-      paymentStatus: _asString(json['payment_status']),
+      paymentStatus: _paymentStatus(json['payment_status']),
       paymentType: _asString(json['payment_type']),
       status: _asInt(json['status']),
       statusName: _asString(json['status_name']),
       remarks: _asString(json['remarks']),
       category: _asString(json['category']),
+      series: json['series'] is Map<String, dynamic>
+          ? BookingSeriesRef.fromJson(json['series'] as Map<String, dynamic>)
+          : null,
+    );
+  }
+}
+
+/// Just enough of the parent series to badge a booking in a list —
+/// "حجز شهري · الموعد 2 من 4" — without loading the whole series.
+class BookingSeriesRef {
+  final int seriesId;
+  final int sequence;
+  final int occurrenceCount;
+  final String seriesStatus;
+
+  const BookingSeriesRef({
+    required this.seriesId,
+    required this.sequence,
+    required this.occurrenceCount,
+    required this.seriesStatus,
+  });
+
+  String get positionLabel => 'الموعد $sequence من $occurrenceCount';
+
+  factory BookingSeriesRef.fromJson(Map<String, dynamic> json) {
+    return BookingSeriesRef(
+      seriesId: _asInt(json['series_id']),
+      sequence: _asInt(json['sequence']),
+      occurrenceCount: _asInt(json['occurrence_count']),
+      seriesStatus: _asString(json['series_status']),
     );
   }
 }
@@ -137,6 +174,32 @@ int _asInt(dynamic value) {
   if (value is int) return value;
   if (value is double) return value.toInt();
   return int.tryParse(value?.toString() ?? '') ?? 0;
+}
+
+/// Reads `payment_status` whichever way the endpoint that sent it spells it.
+///
+/// `myBookings` already sends the translated word this app reads everywhere
+/// — 'paid' / 'pending' / 'partially_paid'. `get-info` (behind
+/// `getBookingInfo`, reused here for one occurrence's own details) sends the
+/// raw `ServicePaymentStatus` code the column stores: 1 Paid, 2 Unpaid,
+/// 3 PartialPaid. Both are read the same way client-side rather than fixed on
+/// the server, so this stays correct even if a future endpoint sends either
+/// shape.
+///
+/// Without this, a numeric code fell through `_getPaymentStatusText`'s switch
+/// to its `default` branch and showed the customer a bare digit — "2" — where
+/// a word belonged.
+String _paymentStatus(dynamic value) {
+  const known = {'paid', 'pending', 'partially_paid'};
+  final asString = _asString(value);
+  if (known.contains(asString)) return asString;
+
+  return switch (_asInt(value)) {
+    1 => 'paid',
+    2 => 'pending',
+    3 => 'partially_paid',
+    _ => asString,
+  };
 }
 
 String _asString(dynamic value) {

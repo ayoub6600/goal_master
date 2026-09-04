@@ -28,6 +28,21 @@ class CoinsRepoImp extends CoinsRepo {
   }
 
   @override
+  Future<Either<Failure, CoinCheckoutQuote>> quoteForBooking({
+    required int serviceId,
+    required int employeeId,
+  }) {
+    return apiConsumer.handleRequest(
+      () => apiConsumer.post(
+        EndPoints.coinsQuote,
+        isFormData: false,
+        data: {'service_id': serviceId, 'employee_id': employeeId},
+      ),
+      (data) => CoinCheckoutQuote.fromJson(data),
+    );
+  }
+
+  @override
   Future<Either<Failure, Map<String, dynamic>>> redeem(int coins) {
     return apiConsumer.handleRequest(
       () => apiConsumer.post(

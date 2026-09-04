@@ -111,6 +111,16 @@ class LoginViewBody extends StatelessWidget {
                       listener: (context, state) {
                         if (state is LoginSuccess) {
                           GoRouter.of(context).go(RoutesKeys.kHome);
+                        } else if (state is LoginNeedsVerification) {
+                          // A code has already been sent — put them on the
+                          // screen that accepts it rather than on a refusal
+                          // they can do nothing about.
+                          showCustomFailureToast(state.message);
+                          push(
+                            RoutesKeys.kOtp,
+                            context,
+                            extra: {'phone': state.phone, 'forget': false},
+                          );
                         } else if (state is LoginError) {
                           showCustomFailureToast(state.errMessage);
                         } else if (state is LoginLoading) {

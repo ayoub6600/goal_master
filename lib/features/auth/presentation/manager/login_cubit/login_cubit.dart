@@ -5,6 +5,7 @@ import 'package:goal_master/core/components/preference_utility.dart';
 import 'package:goal_master/core/services/push_notification_service.dart';
 import 'package:goal_master/features/auth/data/model/login_model/user.dart';
 
+import 'package:goal_master/core/errors/failure.dart';
 import 'package:goal_master/features/auth/data/repo/auth_repo.dart';
 import 'package:goal_master/utils/input_validator.dart';
 
@@ -26,6 +27,13 @@ class LoginCubit extends Cubit<LoginState> {
     var result = await _repo.login(phone: email, password: password);
     result.fold(
       (error) {
+        if (error is PhoneUnverifiedFailure) {
+          emit(LoginNeedsVerification(
+            error.phone.isEmpty ? email : error.phone,
+            error.errMessage,
+          ));
+          return;
+        }
         emit(LoginError(error.errMessage));
       },
       (user) {
@@ -61,7 +69,10 @@ class LoginCubit extends Cubit<LoginState> {
       emit(LoginError(phoneError));
       return false;
     }
-    String? passwordError = InputValidator.validatePassword(password);
+    // Only that something was typed — a length rule here describes a
+    // constraint the customer is not breaking and hides the real problem,
+    // which is that the password is wrong.
+    String? passwordError = InputValidator.validateLoginPassword(password);
     if (passwordError != null) {
       emit(LoginError(passwordError));
       return false;

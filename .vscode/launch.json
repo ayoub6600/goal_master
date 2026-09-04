@@ -1,13 +1,37 @@
 {
-    // Use IntelliSense to learn about possible attributes.
-    // Hover to view descriptions of existing attributes.
-    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
+    "inputs": [
+        {
+            // Asked for at launch rather than committed, because this is a
+            // machine's current LAN address and it changes with the network.
+            // Hardcoding it here would put a stale IP in version control and
+            // send the next person back to "Connection Error".
+            "id": "apiBase",
+            "type": "promptString",
+            "description": "API base URL (leave as-is for Simulator; use your Mac's LAN IP for a physical device)",
+            "default": "http://127.0.0.1:8000/api/"
+        }
+    ],
     "configurations": [
         {
+            // Simulator / default. 127.0.0.1 is the Mac's loopback here
+            // because the Simulator shares the Mac's network stack.
             "name": "goal_master",
             "request": "launch",
             "type": "dart"
+        },
+        {
+            // Physical device. On a phone 127.0.0.1 is the PHONE, so the
+            // request is refused before it leaves the handset — this prompts
+            // for the Mac's LAN address instead.
+            //
+            // Pair it with: php artisan serve --host=0.0.0.0 --port=8000
+            // (the default artisan serve binds to loopback only, so the phone
+            // cannot reach it even with the right address).
+            "name": "goal_master (physical device)",
+            "request": "launch",
+            "type": "dart",
+            "args": ["--dart-define=API_BASE=${input:apiBase}"]
         },
         {
             "name": "goal_master (profile mode)",

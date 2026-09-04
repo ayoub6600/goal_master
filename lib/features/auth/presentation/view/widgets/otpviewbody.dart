@@ -110,8 +110,15 @@ class Otpviewbody extends StatelessWidget {
                     print(state..errMessage);
                   } else if (state is VerifyEmailSuccessRegister) {
                     if (state.model.data?.token != null) {
-                      pushReplacement(RoutesKeys.kLogin, context);
-                      showCustomSuccessToast("تم التسجيل بنجاح");
+                      // A moment of arrival before the login screen. The
+                      // destination is unchanged — this only stops signing up
+                      // ending on a form the customer has to fill in again
+                      // with no acknowledgement that anything worked.
+                      pushReplacement(
+                        RoutesKeys.kSignupSuccess,
+                        context,
+                        extra: state.model.data?.user?.name,
+                      );
                     }
                     // showCustomFailureToast("الكود غير صالح.");
                   }

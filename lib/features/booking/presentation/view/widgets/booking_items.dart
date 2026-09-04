@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:goal_master/features/booking/presentation/view/widgets/booking_case_sheet.dart';
+import 'package:goal_master/features/booking/presentation/view/widgets/cancellation_preview_sheet.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:goal_master/core/components/button_app.dart';
@@ -42,23 +44,7 @@ class BookingItems extends StatelessWidget {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Row(
-                    children: [
-                      Text(
-                        "# رقم الحجز" " : ",
-                        style: AppTextStyles.font16Bold.copyWith(
-                          color: AppColors.fontColor,
-                        ),
-                      ),
-                      WidthSpace(10.w),
-                      Text(
-                        booking.id.toString(),
-                        style: AppTextStyles.font16Bold.copyWith(
-                          color: AppColors.fontColor,
-                        ),
-                      ),
-                    ],
-                  ),
+                  Expanded(child: BookingIdentityLabel(booking: booking)),
                   Text(
                     "( ${_getPaymentStatusText(booking.paymentStatus)} )",
                     style: AppTextStyles.font16Bold.copyWith(
@@ -68,6 +54,13 @@ class BookingItems extends StatelessWidget {
                 ],
               ),
             ),
+            if (booking.isPartOfSeries) ...[
+              HeightSpace(8.h),
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 12.w),
+                child: _monthlyBadge(booking.series!),
+              ),
+            ],
             HeightSpace(10.h),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -215,7 +208,24 @@ class BookingItems extends StatelessWidget {
               ],
             ),
             HeightSpace(12.h),
-            if (booking.status == 0 || booking.status == 1)
+            // A booking inside a series never gets the plain "الغاء الحجز"
+            // button: on its own that label can't say whether it means this
+            // date or every date left. The series screen asks explicitly.
+            if (booking.isPartOfSeries)
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 12.w),
+                child: ButtonApp(
+                  text: "تفاصيل الحجز الشهري",
+                  textColor: Colors.white,
+                  backGround: AppColors.primary,
+                  onTap: () => push(
+                    RoutesKeys.kSeriesDetails,
+                    context,
+                    extra: booking.series!.seriesId,
+                  ),
+                ),
+              )
+            else if (booking.status == 0 || booking.status == 1)
               BlocConsumer<CancelBookingCubit, CancelBookingState>(
                 listener: (context, state) {
                   print("state: $state");
@@ -240,70 +250,26 @@ class BookingItems extends StatelessWidget {
                                 : "الغاء الحجز",
                             textColor: Colors.white,
                             backGround: AppColors.redcolor,
-                            onTap: () {
-                              showModalBottomSheet(
-                                context: context,
-                                shape: const RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.vertical(
-                                      top: Radius.circular(16)),
-                                ),
-                                builder: (context2) {
-                                  return Padding(
-                                    padding: EdgeInsets.all(16.w),
-                                    child: Column(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        Text(
-                                          'هل تريد إلغاء الحجز؟',
-                                          style: TextStyle(
-                                              fontSize: 16.sp,
-                                              fontWeight: FontWeight.bold),
-                                        ),
-                                        SizedBox(height: 20.h),
-                                        Row(
-                                          children: [
-                                            Expanded(
-                                              child: ElevatedButton(
-                                                style: ElevatedButton.styleFrom(
-                                                  backgroundColor:
-                                                      AppColors.primary,
-                                                ),
-                                                onPressed: () {
-                                                  Navigator.pop(
-                                                      context2); // اغلاق المودال
-                                                  context
-                                                      .read<
-                                                          CancelBookingCubit>()
-                                                      .cancelBooking(
-                                                          booking.id);
-                                                },
-                                                child: Text('نعم',
-                                                    style: TextStyle(
-                                                        color: Colors.white)),
-                                              ),
-                                            ),
-                                            SizedBox(width: 10.w),
-                                            Expanded(
-                                              child: ElevatedButton(
-                                                style: ElevatedButton.styleFrom(
-                                                  backgroundColor:
-                                                      Colors.grey[300],
-                                                ),
-                                                onPressed: () {
-                                                  Navigator.pop(context);
-                                                },
-                                                child: Text('لا',
-                                                    style: TextStyle(
-                                                        color: Colors.black)),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ],
-                                    ),
-                                  );
-                                },
-                              );
+                            onTap: () async {
+                              // Never cancel first and explain afterwards:
+                              // the sheet fetches the exact refund and fee
+                              // from the backend and only cancels once the
+                              // customer has seen them and confirmed.
+                              final cancelled =
+                                  await CancellationPreviewSheet.show(
+                                      context, booking.id);
+
+                              if (cancelled == true && context.mounted) {
+                                // Offered right here, while the customer is
+                                // still looking at the outcome — an appeal
+                                // buried in a menu is one nobody finds.
+                                await BookingCaseSheet.show(
+                                    context, booking.id);
+
+                                if (context.mounted) {
+                                  push(RoutesKeys.kHome, context);
+                                }
+                              }
                             },
                           ),
                         ),
@@ -315,6 +281,59 @@ class BookingItems extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+
+  /// "حجز شهري · الموعد 2 من 4" plus, quietly beneath it, this session's own
+  /// number — present for whoever needs to quote it, never competing with the
+  /// series identity above for attention.
+  Widget _monthlyBadge(BookingSeriesRef series) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Container(
+              padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
+              decoration: BoxDecoration(
+                color: AppColors.primary.withOpacity(0.12),
+                borderRadius: BorderRadius.circular(20.r),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.event_repeat,
+                      size: 14.sp, color: AppColors.primary),
+                  WidthSpace(4.w),
+                  Text(
+                    "حجز شهري",
+                    style: AppTextStyles.font12Bold.copyWith(
+                      color: AppColors.primary,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            WidthSpace(8.w),
+            Flexible(
+              child: Text(
+                series.positionLabel,
+                overflow: TextOverflow.ellipsis,
+                style: AppTextStyles.font12Regular.copyWith(
+                  color: AppColors.fontColor,
+                ),
+              ),
+            ),
+          ],
+        ),
+        HeightSpace(4.h),
+        Text(
+          "رقم الموعد" " #${booking.id}",
+          style: AppTextStyles.font10Regular.copyWith(
+            color: AppColors.fontColor.withOpacity(0.6),
+          ),
+        ),
+      ],
     );
   }
 
@@ -342,5 +361,57 @@ class BookingItems extends StatelessWidget {
       default:
         return AppColors.fontColor; // اللون الافتراضي
     }
+  }
+}
+
+/// The booking's identity, as it must read identically to the Manager App.
+///
+/// A monthly occurrence's primary number used to be its OWN
+/// sch_service_bookings.id — invisible to the venue, which only ever knows
+/// the series id. The same booking then had two different "numbers"
+/// depending on who was looking at it. The series id is now the identity;
+/// the occurrence keeps its own id as a secondary detail, never the
+/// headline.
+///
+/// A standalone widget (rather than a private helper on [BookingItems]) so it
+/// can be pumped and measured on its own — the surrounding card carries
+/// unrelated rows with their own narrow-screen behaviour that this identity
+/// does not need to inherit into its own tests.
+class BookingIdentityLabel extends StatelessWidget {
+  const BookingIdentityLabel({super.key, required this.booking});
+
+  final Booking booking;
+
+  @override
+  Widget build(BuildContext context) {
+    final series = booking.series;
+
+    if (series == null) {
+      // An ordinary booking, or a monthly row from a server that has not
+      // sent series data yet. Unchanged: this is the id it has always shown.
+      //
+      // One Text rather than a Row of two: this card sits beside the payment
+      // status label, and on a narrow phone two unconstrained Text widgets in
+      // a Row can ask for more width than either has — a RenderFlex overflow,
+      // not a readability choice. A single Text always respects the space it
+      // is given.
+      return Text(
+        "# رقم الحجز" " : ${booking.id}",
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: AppTextStyles.font16Bold.copyWith(
+          color: AppColors.fontColor,
+        ),
+      );
+    }
+
+    return Text(
+      "الحجز الشهري" " #${series.seriesId}",
+      maxLines: 1,
+      overflow: TextOverflow.ellipsis,
+      style: AppTextStyles.font16Bold.copyWith(
+        color: AppColors.fontColor,
+      ),
+    );
   }
 }

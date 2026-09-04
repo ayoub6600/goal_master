@@ -21,9 +21,14 @@ class CalendarCubit extends Cubit<CalendarState> {
     print("تم تحديد التاريخ: ${selectedDay.toLocal()}");
   }
 
+  /// Load the whole night the customer picked.
+  ///
+  /// `employeeId` is gone from the signature: the time band is an internal
+  /// scheduling detail the server resolves per slot. The selected day is the
+  /// OPERATIONAL night, so slots after midnight come back carrying the
+  /// following calendar date — and this cubit never adds a day to anything.
   Future<void> listTimeslot({
     required int branchId,
-    required int employeeId,
     required int serviceId,
   }) async {
     final formattedDate = DateFormat('yyyy-MM-dd').format(state.selectedDay);
@@ -35,11 +40,10 @@ class CalendarCubit extends Cubit<CalendarState> {
       selectedTime: state.selectedTime,
     ));
 
-    final result = await bookingRepo.listTimeslot(
+    final result = await bookingRepo.listNightSlots(
       branchId: branchId,
-      employeeId: employeeId,
       serviceId: serviceId,
-      date: formattedDate,
+      operationalDate: formattedDate,
     );
 
     result.fold(
@@ -51,7 +55,6 @@ class CalendarCubit extends Cubit<CalendarState> {
         selectedTime: state.selectedTime,
       )),
       (time) {
-        print("---->time: ${time[0].startTime}");
         emit(TimeSuccess(
           time: time,
           selectedDay: state.selectedDay,

@@ -27,8 +27,26 @@ class LayoutCubit extends Cubit<LayoutState> {
     emit(state.copyWith(isUpdate: value));
   }
 
+  /// The acquisition currently in flight, if any.
+  ///
+  /// Shared across callers rather than one per caller. The map screen, the
+  /// location chooser and the gate can each ask at once, and instrumentation
+  /// caught two overlapping runs from a single tap — a second request is a
+  /// second subscription to the platform's location manager competing with the
+  /// first, which is the opposite of helping.
+  Future<void>? _locationInFlight;
+
   /// ✅ تحميل الموقع الحالي
-  Future<void> initUserLocation() async {
+  ///
+  /// A caller arriving while a fix is already on its way joins that operation
+  /// instead of starting another: one tap really is one location request.
+  Future<void> initUserLocation() {
+    return _locationInFlight ??= _acquireLocation().whenComplete(() {
+      _locationInFlight = null;
+    });
+  }
+
+  Future<void> _acquireLocation() async {
     emit(state.copyWith(
         currentLocationStatus: CurrentLocationStatus.submitting));
 
@@ -151,37 +169,17 @@ class LayoutCubit extends Cubit<LayoutState> {
       debugPrint("⚠️ فشل location stream، سأستخدم آخر موقع معروف: $e");
     }
 
-    final fallback = _lastKnownLocationData();
-    if (fallback != null) {
-      return fallback;
-    }
-
+    // Deliberately NOT falling back to the last known position.
+    //
+    // That fallback returned whatever was already in state — precisely the
+    // position the customer is trying to move away from — and the caller could
+    // not tell it apart from a real fix. So the spinner ended, the screen
+    // looked like it had worked, and the location silently had not changed.
+    // That is the "loading finishes but nothing happens" report.
+    //
+    // A visible failure the customer can retry is worth more than a success
+    // that is not one.
     throw TimeoutException('Location provider did not return coordinates');
-  }
-
-  LocationData? _lastKnownLocationData() {
-    final statePosition = state.currentPosition;
-    if (statePosition != null) {
-      return _locationDataFromLatLng(statePosition);
-    }
-
-    final hasSavedLat = SharedPreferenceUtil.haveKey(PrefKey.savedLat) == true;
-    final hasSavedLng = SharedPreferenceUtil.haveKey(PrefKey.savedLng) == true;
-    if (!hasSavedLat || !hasSavedLng) return null;
-
-    return _locationDataFromLatLng(
-      LatLng(
-        SharedPreferenceUtil.getDouble(PrefKey.savedLat),
-        SharedPreferenceUtil.getDouble(PrefKey.savedLng),
-      ),
-    );
-  }
-
-  LocationData _locationDataFromLatLng(LatLng position) {
-    return LocationData.fromMap({
-      'latitude': position.latitude,
-      'longitude': position.longitude,
-    });
   }
 
   /// ✅ أيقونة العلامة المخصصة (لاعب كرة قدم كرتوني بدل الدبوس الأحمر الافتراضي)
@@ -205,7 +203,17 @@ class LayoutCubit extends Cubit<LayoutState> {
     emit(state.copyWith(currentMarker: marker));
   }
 
-  /// ✅ تحديث الموقع الحالي في الحالة وحفظه في المحفوظات
+  /// The MAP's working position — not the customer's Active Location.
+  ///
+  /// This is the pin the picker is currently showing, and savedLat/savedLng
+  /// are now only its "resume where you left the camera" memory. Nothing in
+  /// the marketplace reads them any more: Home, search, the captain and the
+  /// booking flow all read the account-owned Active Location instead.
+  ///
+  /// Keep it that way. Wiring a discovery request back to this position is how
+  /// the app grew two ideas of where the customer was — the map would move
+  /// them every time their handset did, silently overriding a place they had
+  /// deliberately chosen.
   void updateCurrentPosition(LatLng currentPosition) {
     emit(state.copyWith(currentPosition: currentPosition));
     SharedPreferenceUtil.putDouble(PrefKey.savedLat, currentPosition.latitude);

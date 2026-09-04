@@ -3,7 +3,8 @@ import 'package:goal_master/core/errors/failure.dart';
 import 'package:goal_master/features/auth/data/model/login_model/login_model.dart';
 import 'package:goal_master/features/auth/data/model/login_model/user.dart';
 import 'package:goal_master/features/auth/data/model/new_password/new_password_model.dart';
-import 'package:goal_master/features/auth/data/model/verify_otp_model/verify_otp_model..dart';
+import 'package:goal_master/features/auth/data/model/onboarding/onboarding_screen_model.dart';
+import 'package:goal_master/features/auth/data/model/verify_otp_model/verify_otp_model.dart';
 
 abstract class AuthRepo {
   // Future<Either<Failure, UserModel>> profile();
@@ -25,11 +26,14 @@ abstract class AuthRepo {
     required String otp,
     required bool forget,
   });
+
+  /// Name, phone, password — the only three things the customer decides.
+  ///
+  /// The account handle is generated server-side (it retries on collision,
+  /// which a client cannot do safely), and the password is typed once.
   Future<Either<Failure, LoginModel>> register({
     required String name,
-    required String username,
     required String password,
-    required String passwordConfirm,
     required String phone,
   });
   Future<Either<Failure, String>> changePassword({
@@ -37,6 +41,12 @@ abstract class AuthRepo {
     required String passwordConfirm,
     required String token,
   });
+  /// The signup walkthrough as the admin panel configured it.
+  ///
+  /// Public — it is read while the customer is still creating the account
+  /// they would otherwise need in order to read it.
+  Future<Either<Failure, List<OnboardingScreenModel>>> onboardingScreens();
+
   Future<Either<Failure, String>> profile();
   Future<Either<Failure, Unit>> deleteAccount();
 }

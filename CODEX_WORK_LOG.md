@@ -6667,3 +6667,49 @@ Known Issues / Next Steps:
 - `QUEUE_CONNECTION=sync` means nothing is truly async. If reward/notification work grows, a real queue worker is needed before it starts affecting checkout latency.
 - Phases 2-5 (referrals, levels/streaks/challenges, teams, deals/campaigns/segments) are **not started** — per the user's explicit instruction not to begin Phase 2 until Phase 1 is confirmed stable.
 - Still not committed to git in either repo.
+
+---
+
+## 2026-09-03 — Monthly booking UI overhaul (Customer + Manager) + payment forensic audit
+
+**Undocumented work from the past several sessions, logged retroactively:**
+
+- Customer App: unified booking identity (series id headlines a monthly
+  occurrence instead of its own booking id — mirrors Manager App), grouped
+  4-occurrence series into one list card (`MonthlySeriesCard`,
+  `isFirstOfItsSeries`), enriched `SeriesDetailsView` with a payment summary
+  and made every occurrence row tappable — reuses the existing
+  `BookingItemsDetails`/`getBookingInfo` flow, no duplicate screen. Fixed a
+  dormant bug where `get-info`'s raw `payment_status` int (1/2/3) would have
+  displayed as a bare digit once this path was wired up (`_paymentStatus()`
+  parser added, tolerant of both shapes).
+- Manager App (`goal_master_admin`): fixed the `int`/`FormatException` crash
+  on «الحجز الشهري», redesigned it into a smart series-grouped screen with
+  per-occurrence attendance actions (reuses `AttendanceActionsSheet`, no
+  second attendance system), rebuilt «فترات الحجز» as "متى يفتح ملعبك؟" (one
+  opening-hours input, split into evening/after-midnight bands client-side —
+  zero backend change), redesigned «بيانات الملعب», and removed the legacy
+  مسائي/بعد منتصف الليل chips from the service editor (bands now derived,
+  not asked, for a new service).
+- **No `goal_master_admin/CODEX_WORK_LOG.md` existed before now** — started
+  one (see that repo) since this app carried no persistent context at all.
+- Full payment/attribution forensic audit performed 2026-09-03 (read-only,
+  series #100002 used as the live specimen, unmodified). Conclusions:
+  monthly booking source is decided purely by `BookingSource::forActor()`
+  (actor's own `is_sys_adm`/`user_type`/branch membership) — customer phone
+  is never read, confirmed structurally in
+  `goal-master-web/app/Enums/BookingSource.php`. Customer+wallet monthly
+  charges the full series total in one transaction
+  (`BookingSeriesService::create()`), held (not earned) until each
+  occurrence settles. Customer POA and customer-wallet monthly bookings both
+  start `ServiceStatus::Processing` (manager approval required) regardless
+  of payment. Manager-recorded cash allocates oldest-occurrence-first
+  (`SeriesPaymentService::allocateOldestFirst`). No BLOCKER/HIGH risk found;
+  one LOW item (a redundant, non-authoritative single-occurrence balance
+  pre-check in `BookingController::saveBooking()` that doesn't reflect ×4 for
+  monthly — the real gate inside `BookingSeriesService` is correct).
+- Not re-verified in this pass (flag for whoever picks this up next):
+  replacement-occurrence double-charge risk was audited in an earlier
+  session phase but no fresh evidence was pulled this time.
+
+**Status:** read-only audit, no code changed. Not committed. Not deployed.

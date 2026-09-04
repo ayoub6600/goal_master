@@ -1,10 +1,13 @@
 import 'package:get_it/get_it.dart';
 import 'package:dio/dio.dart';
+import 'package:goal_master/features/attendance/data/mandatory_action_repo.dart';
 import 'package:goal_master/features/auth/data/repo/auth_repo_imp.dart';
 import 'package:goal_master/features/balance/data/repo/balance_repo.dart';
 import 'package:goal_master/features/balance/data/repo/balance_repo_imp.dart';
 import 'package:goal_master/features/card/data/repo/card_repo_imp.dart';
 import 'package:goal_master/features/home/data/repo/analysis_repo_imp.dart';
+import 'package:goal_master/features/location/data/repo/location_repo.dart';
+import 'package:goal_master/features/location/data/repo/location_repo_imp.dart';
 import 'package:goal_master/features/notification/data/repo/notifaction_repo.dart';
 import 'package:goal_master/features/notification/data/repo/notifaction_repo_imp.dart';
 import 'package:goal_master/features/profile/data/repo/profile_repo_imp.dart';
@@ -21,6 +24,9 @@ void setupServiceLocator() {
 
   getIt.registerSingleton<AuthRepoImpl>(
     AuthRepoImpl(getIt.get<DioConsumer>()),
+  );
+  getIt.registerSingleton<MandatoryActionRepo>(
+    MandatoryActionRepoImpl(getIt.get<DioConsumer>()),
   );
   getIt.registerSingleton<ProfileRepoImp>(
     ProfileRepoImp(getIt.get<DioConsumer>()),
@@ -51,5 +57,10 @@ void setupServiceLocator() {
   );
   getIt.registerSingleton<CoinsRepoImp>(
     CoinsRepoImp(getIt.get<DioConsumer>()),
+  );
+  // Where the customer is shopping from. A singleton because every
+  // marketplace surface asks the same question and must get the same answer.
+  getIt.registerSingleton<LocationRepo>(
+    LocationRepoImp(getIt.get<DioConsumer>()),
   );
 }

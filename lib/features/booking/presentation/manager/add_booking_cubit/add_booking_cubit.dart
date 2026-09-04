@@ -11,11 +11,37 @@ class AddBookingCubit extends Cubit<AddBookingState> {
   AddBookingCubit(this.bookingRepo) : super(AddBookingInitial());
 
   final BookingRepo bookingRepo;
-  int _paymentType = 0; // default is cash
+
+  /// Wallet, pre-selected.
+  ///
+  /// It used to start at 0 — no method at all — so a customer who read the
+  /// page and pressed "احجز" without noticing the choice was refused for a
+  /// reason that was not their mistake. Wallet is the sensible default: it
+  /// confirms instantly and needs nothing from the venue. Pay-on-arrival
+  /// remains one tap away for anyone who wants it.
+  int _paymentType = 4; // PaymentType::UserBalance
   bool _isSubmitting = false;
+
+  /// Stable for as long as the customer stays on one checkout. Regenerated
+  /// only after a booking actually succeeds, so a retry after a timeout or a
+  /// double-tapped confirm reuses it and the backend can reject the repeat
+  /// instead of spending the customer's coins twice.
+  String? _checkoutReference;
 
   void setPaymentType(int value) {
     _paymentType = value;
+  }
+
+  /// The payment method chosen on this checkout. Exposed so the recurring
+  /// booking flow can read the same choice rather than tracking its own — a
+  /// second copy could disagree with what the customer selected.
+  int get selectedPaymentType => _paymentType;
+
+  /// Called when a checkout screen opens, so each new booking attempt gets its
+  /// own reference.
+  void beginCheckout() {
+    _checkoutReference =
+        'chk_${DateTime.now().microsecondsSinceEpoch}_${identityHashCode(this)}';
   }
 
   Future<void> addBooking({
@@ -26,6 +52,12 @@ class AddBookingCubit extends Cubit<AddBookingState> {
     required String date,
     required dynamic startTime, // String or DateTime
     required dynamic endTime, // String or DateTime
+    // The server's authoritative occurrence datetimes. Sent so the backend
+    // can prove `date`/`startTime`/`endTime` describe the same moment it
+    // offered, instead of trusting a bare calendar date.
+    String? startAt,
+    String? endAt,
+    int coinsToRedeem = 0,
   }) async {
     if (_isSubmitting) {
       return;
@@ -43,14 +75,19 @@ class AddBookingCubit extends Cubit<AddBookingState> {
     print("startTime: $formattedStartTime");
     print("endTime: $formattedEndTime");
 
+    // The duration check needs real timestamps, not clocks. A 23:00 → 00:00
+    // booking is an hour long, but as two bare clock values it reads as minus
+    // twenty-three hours and gets refused for being too short. `start_at` and
+    // `end_at` already carry the day; fall back to the raw arguments for
+    // callers that have none.
     if (!_validateBookingData(
       employeeId: employeeId,
       serviceId: serviceId,
       zoneId: zoneId,
       clubId: clubId,
       date: formattedDate,
-      startTime: startTime,
-      endTime: endTime,
+      startTime: DateTime.tryParse(startAt ?? '') ?? startTime,
+      endTime: DateTime.tryParse(endAt ?? '') ?? endTime,
     )) {
       _isSubmitting = false;
       return;
@@ -67,9 +104,14 @@ class AddBookingCubit extends Cubit<AddBookingState> {
       date: formattedDate,
       startTime: formattedStartTime,
       endTime: formattedEndTime,
+      startAt: startAt,
+      endAt: endAt,
       fullName: fullname,
       phone: phone,
       state: '1',
+      coinsToRedeem: coinsToRedeem,
+      checkoutReference: _checkoutReference ??=
+          'chk_${DateTime.now().microsecondsSinceEpoch}',
     );
 
     result.fold(
@@ -79,7 +121,10 @@ class AddBookingCubit extends Cubit<AddBookingState> {
       },
       (data) {
         _isSubmitting = false;
-        emit(AddBookingSuccess(massage: data));
+        // Consumed — a genuinely new booking must not reuse this reference,
+        // or the backend would reject it as a duplicate.
+        _checkoutReference = null;
+        emit(AddBookingSuccess(massage: data, coinsRedeemed: coinsToRedeem));
       },
     );
   }

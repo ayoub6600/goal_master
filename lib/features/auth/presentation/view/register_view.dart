@@ -6,6 +6,15 @@ class RegisterView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return RegisterViewBody();
+    // The body used to carry its own Scaffold; splitting it into steps left
+    // it with none, so the screen rendered on bare black with Flutter's
+    // yellow "no Material ancestor" underlines under every line of text.
+    return const Scaffold(
+      backgroundColor: Colors.white,
+      // The keyboard must not shove a fixed-height step into a negative
+      // space — each step scrolls its own content instead.
+      resizeToAvoidBottomInset: true,
+      body: RegisterViewBody(),
+    );
   }
 }

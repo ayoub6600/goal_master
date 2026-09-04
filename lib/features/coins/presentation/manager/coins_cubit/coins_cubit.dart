@@ -68,4 +68,47 @@ class CoinsCubit extends Cubit<CoinsState> {
   void clearJustEarned() {
     emit(state.copyWith(clearJustEarned: true));
   }
+
+  /// Asks the backend what may be spent on this specific booking. Called when
+  /// the checkout screen opens — including after the app was backgrounded and
+  /// resumed, so a stale offer is never shown.
+  Future<void> loadCheckoutQuote({
+    required int serviceId,
+    required int employeeId,
+  }) async {
+    final result = await coinsRepo.quoteForBooking(
+      serviceId: serviceId,
+      employeeId: employeeId,
+    );
+    result.fold(
+      // A failed quote just means no coins option is offered — it must never
+      // block the customer from booking.
+      (_) => emit(state.copyWith(clearCheckout: true)),
+      (quote) => emit(state.copyWith(
+        checkoutQuote: quote,
+        // Default to spending the most that's allowed, which is what a
+        // customer toggling "use my coins" almost always intends.
+        selectedCheckoutCoins: quote.maxRedeemableCoins,
+        useCoinsAtCheckout: false,
+      )),
+    );
+  }
+
+  void setUseCoinsAtCheckout(bool value) {
+    emit(state.copyWith(useCoinsAtCheckout: value));
+  }
+
+  void setCheckoutCoins(int coins) {
+    final quote = state.checkoutQuote;
+    if (quote == null) return;
+    emit(state.copyWith(
+      selectedCheckoutCoins: coins.clamp(0, quote.maxRedeemableCoins),
+    ));
+  }
+
+  /// Clears the checkout selection once a booking is submitted, so the next
+  /// checkout starts from a fresh server quote rather than a stale one.
+  void clearCheckout() {
+    emit(state.copyWith(clearCheckout: true));
+  }
 }

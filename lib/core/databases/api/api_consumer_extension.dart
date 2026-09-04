@@ -33,6 +33,13 @@ extension ApiConsumerExtension on ApiConsumer {
       if (e is DioException) {
         if (e.response?.data is Map<String, dynamic>) {
           final data = e.response!.data;
+          // Carries a destination, not just wording — see PhoneUnverifiedFailure.
+          if (data['reason'] == 'phone_unverified') {
+            return left(PhoneUnverifiedFailure(
+              errMessage: (data['message'] ?? 'رقمك لسه ما تأكدش.').toString(),
+              phone: (data['data']?['phone'] ?? '').toString(),
+            ));
+          }
           if (data.containsKey('errors')) {
             final errors = data['errors'] as Map<String, dynamic>;
             final messages = errors.values.expand((e) => e as List).join('\n');
@@ -63,6 +70,13 @@ extension ApiConsumerExtension on ApiConsumer {
       if (e is DioException) {
         if (e.response?.data is Map<String, dynamic>) {
           final data = e.response!.data;
+          // Carries a destination, not just wording — see PhoneUnverifiedFailure.
+          if (data['reason'] == 'phone_unverified') {
+            return left(PhoneUnverifiedFailure(
+              errMessage: (data['message'] ?? 'رقمك لسه ما تأكدش.').toString(),
+              phone: (data['data']?['phone'] ?? '').toString(),
+            ));
+          }
           if (data.containsKey('errors')) {
             final errors = data['errors'] as Map<String, dynamic>;
             final messages = errors.values.expand((e) => e as List).join('\n');

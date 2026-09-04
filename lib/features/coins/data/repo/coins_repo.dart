@@ -6,4 +6,8 @@ abstract class CoinsRepo {
   Future<Either<Failure, CoinBalance>> getBalance();
   Future<Either<Failure, CoinHistoryPage>> getHistory({int page = 1});
   Future<Either<Failure, Map<String, dynamic>>> redeem(int coins);
+  Future<Either<Failure, CoinCheckoutQuote>> quoteForBooking({
+    required int serviceId,
+    required int employeeId,
+  });
 }

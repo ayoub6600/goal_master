@@ -23,6 +23,15 @@ class PushNotificationService {
       sound: true,
     );
 
+    // In the foreground, the authenticated socket flow renders the correct
+    // Captain persona. FCM remains responsible for background/terminated UI.
+    await FirebaseMessaging.instance
+        .setForegroundNotificationPresentationOptions(
+      alert: false,
+      badge: false,
+      sound: false,
+    );
+
     FirebaseMessaging.instance.onTokenRefresh.listen(_registerToken);
   }
 

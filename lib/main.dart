@@ -10,9 +10,14 @@ import 'package:goal_master/core/routing/app_router.dart';
 import 'package:goal_master/core/routing/routes_keys.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:goal_master/core/app_update/app_update_gate.dart';
+import 'package:goal_master/features/attendance/presentation/mandatory_action_gate.dart';
 import 'package:goal_master/core/services/notification_navigation_service.dart';
+import 'package:goal_master/core/services/in_app_banner.dart';
 import 'package:goal_master/core/services/push_notification_service.dart';
 import 'package:goal_master/core/services/service_locator.dart';
+import 'package:goal_master/features/location/data/repo/location_repo.dart';
+import 'package:goal_master/features/location/presentation/manager/active_location_cubit.dart';
+import 'package:goal_master/features/location/presentation/required_location_gate.dart';
 import 'package:goal_master/firebase_options.dart';
 import 'package:goal_master/core/styles/app_colors.dart';
 import 'package:goal_master/core/utils/storage_service.dart';
@@ -20,6 +25,7 @@ import 'package:goal_master/core/view/connection_cubit.dart';
 import 'package:goal_master/core/view/no_internet_view.dart';
 import 'package:goal_master/features/assistant/data/repo/assistant_repo_imp.dart';
 import 'package:goal_master/features/assistant/presentation/manager/assistant_chat_cubit/assistant_chat_cubit.dart';
+import 'package:goal_master/features/assistant/data/assistant_history_cache.dart';
 import 'package:goal_master/features/assistant/presentation/view/widgets/captain_ayoub_bubble.dart';
 import 'package:goal_master/features/auth/data/repo/auth_repo_imp.dart';
 import 'package:goal_master/features/balance/data/repo/balance_repo_imp.dart';
@@ -126,6 +132,22 @@ class GoalMaster extends StatelessWidget {
                     notificationRepo: getIt<NotificationRepo>(),
                     userId: SharedPreferenceUtil.getInt(PrefKey.userId),
                     onVisualNotification: (notification) async {
+                      if (notification.data.type ==
+                          NotificationNavigationService.captainOffer) {
+                        AssistantHistoryCache.invalidate();
+                        InAppBanner.show(
+                          title: notification.data.assistantName.isNotEmpty
+                              ? notification.data.assistantName
+                              : 'كابتن أيوب',
+                          body:
+                              'للأسف الملعب ما وافقش على حجزك 😔 بس عندي حل، افتح المحادثة.',
+                          avatarUrl: notification.data.assistantAvatar,
+                          onTap: () =>
+                              AppRouter.router.push(RoutesKeys.kAssistantChat),
+                        );
+                        return;
+                      }
+
                       const androidDetails = AndroidNotificationDetails(
                         'goal_channel_id',
                         'Goal Notifications',
@@ -167,6 +189,15 @@ class GoalMaster extends StatelessWidget {
                 },
               ),
               BlocProvider(create: (_) => LayoutCubit()),
+              // Provided ABOVE the router, so it outlives every route.
+              //
+              // This placement is the fix for the original bug: location used
+              // to be derived per screen, so Home → Account → Home rebuilt
+              // Home with nothing and it fell back to un-scoped results. A
+              // cubit that survives navigation cannot lose the answer.
+              BlocProvider(
+                create: (_) => ActiveLocationCubit(getIt<LocationRepo>()),
+              ),
               BlocProvider(create: (_) => UserInfoCubit(getIt<AuthRepoImpl>())),
               BlocProvider(
                   create: (_) =>
@@ -212,13 +243,28 @@ class GoalMaster extends StatelessWidget {
                         GlobalCupertinoLocalizations.delegate,
                       ],
                       builder: (context, child) {
-                        return Stack(
-                          children: [
-                            if (child != null) child,
-                            if (!state)
-                              const Positioned.fill(child: NoInternetView()),
-                            if (state) const CaptainAyoubBubble(),
-                          ],
+                        // The mandatory-action gate wraps the ROUTED content
+                        // and everything drawn over it — Captain Ayoub's
+                        // bubble included. Sitting here rather than on
+                        // individual screens is what makes it survive tab
+                        // switches, route changes and Android back, and is why
+                        // there is no second entrance to find later.
+                        // Gate order, deliberately: the attendance question
+                        // is an obligation the customer already owes, so it
+                        // comes first. Letting "where are you?" jump ahead
+                        // would let somebody dodge attendance by never
+                        // choosing a location.
+                        return MandatoryActionGate(
+                          child: RequiredLocationGate(
+                            child: Stack(
+                            children: [
+                              if (child != null) child,
+                              if (!state)
+                                const Positioned.fill(child: NoInternetView()),
+                              if (state) const CaptainAyoubBubble(),
+                            ],
+                            ),
+                          ),
                         );
                       },
                       routerConfig: AppRouter.router,

@@ -7,6 +7,7 @@ class RoutesKeys {
   static const kForgotPassword = '/kForgotPassword';
   static const kOtp = '/kOtp';
   static const kNewPassword = '/kNewPassword';
+  static const kSignupSuccess = '/kSignupSuccess';
   static const kProfile = '/kProfile';
   static const kChangePassword = '/kChangePassword';
   static const kContact = '/kContact';
@@ -16,6 +17,7 @@ class RoutesKeys {
   static const kBookingDetails = '/kBookingDetails';
   static const kNotification = '/kNotification';
   static const kBookingItemsDetails = '/kBookingItemsDetails';
+  static const kSeriesDetails = '/kSeriesDetails';
   static const kNotificationItemsDetails = '/kNotificationItemsDetails';
   static const kCard = '/kCard';
   static const kFilter = '/kFilter';

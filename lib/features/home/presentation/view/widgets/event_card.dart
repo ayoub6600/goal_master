@@ -1,11 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:goal_master/core/styles/app_text_styles.dart';
 import 'package:goal_master/core/styles/spaces.dart';
+import 'package:goal_master/core/utils/arabic_dates.dart';
 
 class EventCard extends StatelessWidget {
   final String date;
   final String startTime;
   final String endTime;
+
+  /// The booking's real start and end.
+  ///
+  /// Optional so the older caller keeps working, but strongly preferred: with
+  /// them the card can say «11:00 مساءً – 12:00 منتصف الليل» and name the day
+  /// the session actually STARTS. Without them it falls back to whatever
+  /// pre-formatted strings it was handed — which is how this card came to
+  /// print «00:00 - 23:00» under a date a day later than the booking.
+  final DateTime? startAt;
+  final DateTime? endAt;
   final String club;
   final String categoryName;
   final String serviceTitle;
@@ -16,11 +27,23 @@ class EventCard extends StatelessWidget {
     required this.date,
     required this.startTime,
     required this.endTime,
+    this.startAt,
+    this.endAt,
     required this.club,
     required this.categoryName,
     required this.serviceTitle,
     required this.address,
   }) : super(key: key);
+
+  bool get _crossesMidnight =>
+      startAt != null &&
+      endAt != null &&
+      (startAt!.year != endAt!.year ||
+          startAt!.month != endAt!.month ||
+          startAt!.day != endAt!.day);
+
+  String _clock(DateTime t) =>
+      '${t.hour.toString().padLeft(2, '0')}:${t.minute.toString().padLeft(2, '0')}:00';
 
   @override
   Widget build(BuildContext context) {
@@ -48,42 +71,75 @@ class EventCard extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              // Date and time, stacked rather than squeezed side by side.
+              //
+              // The old two-column row could not fit a readable Arabic time,
+              // so it showed a bare "23:00" — and because the range was built
+              // as '$startTime - $endTime' inside an Arabic paragraph, the
+              // bidi algorithm reordered it on screen into "00:00 - 23:00".
+              // One phrase, written right-to-left, cannot be reordered.
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'التاريخ',
-                        style: AppTextStyles.font16Bold.copyWith(
-                          color: Colors.grey[600],
-                        ),
-                      ),
-                      HeightSpace(4),
-                      _buildInfoChip(
-                        icon: Icons.calendar_month,
-                        text: date,
-                        color: Colors.blue[700]!,
-                      ),
-                    ],
+                  Text(
+                    'التاريخ',
+                    style: AppTextStyles.font16Bold.copyWith(
+                      color: Colors.grey[600],
+                    ),
                   ),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'الوقت',
-                        style: AppTextStyles.font16Bold.copyWith(
-                          color: Colors.grey[600],
+                  HeightSpace(4),
+                  _buildInfoChip(
+                    icon: Icons.calendar_month,
+                    // The day the session STARTS. A booking at 11 at night
+                    // belongs to that night, not to the morning it spills into.
+                    text: startAt != null
+                        ? formatArabicDayAndDate(startAt!)
+                        : date,
+                    color: Colors.blue[700]!,
+                  ),
+
+                  // Only when it genuinely crosses midnight — otherwise this
+                  // is noise on every ordinary booking.
+                  if (_crossesMidnight) ...[
+                    HeightSpace(6),
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.nightlight_round,
+                          size: 14,
+                          color: Colors.indigo[400],
                         ),
-                      ),
-                      HeightSpace(4),
-                      _buildInfoChip(
-                        icon: Icons.access_time,
-                        text: '$startTime - $endTime',
-                        color: Colors.orange[700]!,
-                      ),
-                    ],
+                        const SizedBox(width: 6),
+                        Expanded(
+                          child: Text(
+                            'ينتهي بعد منتصف الليل — ${formatArabicDayAndDate(endAt!)}',
+                            style: AppTextStyles.font12Medium.copyWith(
+                              color: Colors.indigo[400],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+
+                  HeightSpace(14),
+
+                  Text(
+                    'الوقت',
+                    style: AppTextStyles.font16Bold.copyWith(
+                      color: Colors.grey[600],
+                    ),
+                  ),
+                  HeightSpace(4),
+                  _buildInfoChip(
+                    icon: Icons.access_time,
+                    text: (startAt != null && endAt != null)
+                        ? formatArabicTimeRange(
+                            _clock(startAt!),
+                            _clock(endAt!),
+                          )
+                        : '$startTime - $endTime',
+                    color: Colors.orange[700]!,
                   ),
                 ],
               ),

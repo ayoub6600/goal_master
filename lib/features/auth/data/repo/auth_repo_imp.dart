@@ -8,7 +8,8 @@ import 'package:goal_master/core/errors/failure.dart';
 import 'package:goal_master/features/auth/data/model/login_model/login_model.dart';
 import 'package:goal_master/features/auth/data/model/login_model/user.dart';
 import 'package:goal_master/features/auth/data/model/new_password/new_password_model.dart';
-import 'package:goal_master/features/auth/data/model/verify_otp_model/verify_otp_model..dart';
+import 'package:goal_master/features/auth/data/model/onboarding/onboarding_screen_model.dart';
+import 'package:goal_master/features/auth/data/model/verify_otp_model/verify_otp_model.dart';
 import 'package:goal_master/features/auth/data/repo/auth_repo.dart';
 
 class AuthRepoImpl implements AuthRepo {
@@ -81,18 +82,19 @@ class AuthRepoImpl implements AuthRepo {
 
   @override
   Future<Either<Failure, LoginModel>> register(
-      {required String name,
-      required String username,
-      required String password,
-      required String passwordConfirm,
-      required String phone}) {
+      {required String name, required String password, required String phone}) {
     return consumer.handleRequestCustom(
       () => consumer.post(EndPoints.register, data: {
         'name': name,
-        'username': username,
         'password': password,
-        'password_confirmation': passwordConfirm,
         'phone_number': phone,
+        // No `username`: the backend generates one and retries on collision,
+        // which the app cannot do safely — two devices checking a handle at
+        // the same instant both find it free.
+        //
+        // No `password_confirmation` either: the API dropped the `confirmed`
+        // rule, and the web signup form keeps its own validator, so nothing
+        // else is affected.
       }),
       (res) async {
         var data = res['data'];
@@ -126,6 +128,22 @@ class AuthRepoImpl implements AuthRepo {
   Future<Either<Failure, Unit>> logout() async {
     // await userInfoCubit.logout();
     return right(unit);
+  }
+
+  @override
+  Future<Either<Failure, List<OnboardingScreenModel>>> onboardingScreens() {
+    return consumer.handleRequestCustom(
+      () => consumer.get(EndPoints.onboardingScreens),
+      (res) async {
+        final raw = res['data'];
+        if (raw is! List) return <OnboardingScreenModel>[];
+        return raw
+            .whereType<Map<String, dynamic>>()
+            .map(OnboardingScreenModel.fromJson)
+            .where((screen) => screen.slug.isNotEmpty)
+            .toList();
+      },
+    );
   }
 
   @override

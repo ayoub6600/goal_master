@@ -74,6 +74,53 @@ class CoinRedeemQuote {
   }
 }
 
+/// What the customer may spend on one specific booking. Every figure here
+/// is computed by the backend (including the booking price itself, which the
+/// checkout screen otherwise has no way to know) — the app only renders it.
+class CoinCheckoutQuote {
+  final double bookingAmount;
+  final int coinsBalance;
+  final int maxRedeemableCoins;
+  final double maxDiscountValue;
+  final int minRedeemCoins;
+  final int redeemRate;
+  final bool isActive;
+
+  CoinCheckoutQuote({
+    required this.bookingAmount,
+    required this.coinsBalance,
+    required this.maxRedeemableCoins,
+    required this.maxDiscountValue,
+    required this.minRedeemCoins,
+    required this.redeemRate,
+    required this.isActive,
+  });
+
+  /// Whether it's even worth showing the control — an inactive module or a
+  /// balance under the minimum means there is nothing to offer.
+  bool get canRedeem => isActive && maxRedeemableCoins >= minRedeemCoins;
+
+  double discountFor(int coins) =>
+      redeemRate > 0 ? (coins / redeemRate) : 0;
+
+  factory CoinCheckoutQuote.fromJson(Map<String, dynamic> json) {
+    final data = Map<String, dynamic>.from(json['data'] ?? {});
+    int asInt(String key) => data[key] is int
+        ? data[key]
+        : int.tryParse('${data[key]}') ?? 0;
+
+    return CoinCheckoutQuote(
+      bookingAmount: (data['booking_amount'] as num?)?.toDouble() ?? 0,
+      coinsBalance: asInt('coins_balance'),
+      maxRedeemableCoins: asInt('max_redeemable_coins'),
+      maxDiscountValue: (data['max_discount_value'] as num?)?.toDouble() ?? 0,
+      minRedeemCoins: asInt('min_redeem_coins'),
+      redeemRate: asInt('redeem_rate') == 0 ? 1 : asInt('redeem_rate'),
+      isActive: data['is_active'] == true,
+    );
+  }
+}
+
 class CoinHistoryPage {
   final List<CoinTransaction> transactions;
   final int currentPage;

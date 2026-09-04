@@ -34,6 +34,14 @@ class AssistantMessage {
   final String? createdAt;
   final String assistantState;
 
+  /// Whether this moment earns the full-screen avatar.
+  ///
+  /// Decided by the backend, not inferred from [assistantState]: the app used
+  /// to pop the character out for ANY non-default state, which is every
+  /// routine warning and the welcome message — so it leapt onto the screen
+  /// while somebody was just chatting.
+  final bool showAvatarPopup;
+
   AssistantMessage({
     required this.sender,
     required this.body,
@@ -41,6 +49,7 @@ class AssistantMessage {
     this.voiceUrl,
     this.createdAt,
     this.assistantState = 'default',
+    this.showAvatarPopup = false,
   });
 
   bool get isCaptain => sender == 'captain';
@@ -50,6 +59,7 @@ class AssistantMessage {
     List<QuickReply>? replies;
     String? voiceUrl;
     String assistantState = 'default';
+    bool showAvatarPopup = false;
     if (payload is Map) {
       if (payload['quick_replies'] is List) {
         replies = (payload['quick_replies'] as List)
@@ -58,6 +68,7 @@ class AssistantMessage {
       }
       voiceUrl = payload['voice_url']?.toString();
       assistantState = payload['assistant_state']?.toString() ?? 'default';
+      showAvatarPopup = payload['show_avatar_popup'] == true;
     }
     return AssistantMessage(
       sender: json['sender']?.toString() ?? 'captain',
@@ -66,6 +77,7 @@ class AssistantMessage {
       voiceUrl: voiceUrl,
       createdAt: json['created_at']?.toString(),
       assistantState: assistantState,
+      showAvatarPopup: showAvatarPopup,
     );
   }
 }

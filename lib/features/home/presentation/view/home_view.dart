@@ -19,6 +19,7 @@ import 'package:goal_master/features/home/presentation/view/widgets/build_locati
 import 'package:goal_master/features/home/presentation/view/widgets/list_section_play.dart';
 import 'package:goal_master/features/home/presentation/view/widgets/services_info_view.dart';
 import 'package:goal_master/features/layout/presentation/manager/layout_cubit.dart';
+import 'package:goal_master/features/location/presentation/manager/active_location_cubit.dart';
 import 'package:goal_master/features/layout/presentation/manager/layout_state.dart';
 import 'package:goal_master/features/layout/presentation/view/widget/banner_carousel_view.dart';
 
@@ -64,18 +65,20 @@ class _HomeViewState extends State<HomeView> {
       body: SafeArea(
         child: MultiBlocListener(
           listeners: [
-            BlocListener<LayoutCubit, LayoutState>(
+            // Home follows the ACTIVE location, not the device's position.
+            //
+            // This used to listen to LayoutCubit.currentPosition — the raw GPS
+            // fix — so the venue list moved whenever the handset did, quietly
+            // overriding a location the customer had deliberately chosen. It
+            // now reacts to the one thing that represents that choice.
+            BlocListener<ActiveLocationCubit, ActiveLocationState>(
               listenWhen: (previous, current) =>
-                  current.currentPosition != null &&
-                  previous.currentPosition != current.currentPosition,
+                  current.location != null &&
+                  previous.location != current.location,
               listener: (context, state) {
-                final position = state.currentPosition;
-                if (position != null) {
-                  context.read<GetServicesInfoCubit>().getServicesInfo(
-                        lat: position.latitude,
-                        lng: position.longitude,
-                      );
-                }
+                // No coordinates passed: the repository reads the Active
+                // Location itself, so there is one path to the fact.
+                context.read<GetServicesInfoCubit>().getServicesInfo();
               },
             ),
             BlocListener<CoinsCubit, CoinsState>(
@@ -95,14 +98,13 @@ class _HomeViewState extends State<HomeView> {
               onRefresh: () async {
                 final servicesCubit = context.read<GetServicesInfoCubit>();
                 final analysisCubit = context.read<AnalysisCubit>();
-                await layoutCubit.getMyCurrentLocation();
-                final position = layoutCubit.state.currentPosition;
-                if (position != null) {
-                  await servicesCubit.getServicesInfo(
-                    lat: position.latitude,
-                    lng: position.longitude,
-                  );
-                }
+
+                // Pull-to-refresh reloads CONTENT, not the customer's
+                // location. It used to call getMyCurrentLocation(), which
+                // re-read GPS and silently moved anyone who had chosen a
+                // different city — a refresh that changes where you are is
+                // not a refresh.
+                await servicesCubit.getServicesInfo();
                 await analysisCubit.getAnalysis();
               },
               child: ListView(

@@ -10,6 +10,11 @@ class AssistantChatState extends Equatable {
   final bool sending;
   final String? error;
 
+  /// Captain messages the customer has not seen. Drives the badge on the
+  /// floating bubble — an unprompted message is worthless if nothing points
+  /// at it.
+  final int unreadCount;
+
   const AssistantChatState({
     this.messages = const [],
     this.avatarUrl,
@@ -19,6 +24,7 @@ class AssistantChatState extends Equatable {
     this.loading = false,
     this.sending = false,
     this.error,
+    this.unreadCount = 0,
   });
 
   /// Picks the avatar for a given message's state, falling back to the
@@ -37,6 +43,7 @@ class AssistantChatState extends Equatable {
     bool? loading,
     bool? sending,
     String? error,
+    int? unreadCount,
   }) {
     return AssistantChatState(
       messages: messages ?? this.messages,
@@ -47,6 +54,7 @@ class AssistantChatState extends Equatable {
       loading: loading ?? this.loading,
       sending: sending ?? this.sending,
       error: error,
+      unreadCount: unreadCount ?? this.unreadCount,
     );
   }
 
@@ -60,5 +68,6 @@ class AssistantChatState extends Equatable {
         loading,
         sending,
         error,
+        unreadCount,
       ];
 }

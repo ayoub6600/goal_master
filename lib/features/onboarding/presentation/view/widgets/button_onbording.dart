@@ -27,10 +27,12 @@ class OnboardingPreviousPageButton extends StatelessWidget {
             onTap: () {
               bool done = cubit.increment(context);
               if (!done) {
-                pushReplacement(RoutesKeys.kLogin, context);
+                // Someone who has just installed the app has no account, so
+                // the walkthrough hands them to signup. The other button on
+                // this page is the door back to login for anyone reinstalling.
+                pushReplacement(RoutesKeys.kRegister, context);
 
                 SharedPreferenceUtil.putString(PrefKey.login, "false");
-                print("----->$done");
               }
             },
             child: Container(
@@ -41,7 +43,7 @@ class OnboardingPreviousPageButton extends StatelessWidget {
                 borderRadius: BorderRadius.circular(12.r),
               ),
               child: Text(
-                isLastPage ? "تسجيل دخول" : "استمرار",
+                isLastPage ? "إنشاء حساب" : "استمرار",
                 style: AppTextStyles.font16Regular.copyWith(
                   color: Colors.white,
                 ),
