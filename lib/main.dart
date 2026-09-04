@@ -199,6 +199,7 @@ class GoalMaster extends StatelessWidget {
                     },
                   );
                   cubit.startSocket();
+                  cubit.listenForForegroundFcm();
                   return cubit;
                 },
               ),

@@ -4,6 +4,7 @@ import 'package:goal_master/core/components/preference_utility.dart';
 import 'dart:async';
 
 import 'package:audioplayers/audioplayers.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:goal_master/features/notification/data/model/notification_response.dart';
 import 'package:goal_master/features/notification/data/repo/notifaction_repo.dart';
@@ -22,6 +23,7 @@ class NotificationCubit extends Cubit<NotificationState>
   late final PagingController<int, NotificationItem> _pagingController;
   late final NotificationSocketService _socketService;
   final AudioPlayer _audioPlayer = AudioPlayer();
+  StreamSubscription<RemoteMessage>? _fcmForegroundSubscription;
 
   bool _isDisposed = false;
 
@@ -78,6 +80,22 @@ class NotificationCubit extends Cubit<NotificationState>
     _socketService.initialize();
     WidgetsBinding.instance.addObserver(this);
     _startPolling();
+  }
+
+  /// A foreground FCM message never auto-displays the way a
+  /// background/terminated one does — the OS hands it to app code instead,
+  /// which is exactly why nothing was visibly happening for it before this.
+  /// Deliberately just another wake-up, exactly like the socket's own
+  /// `onNotificationReceived` above: the actual notification always comes
+  /// from re-fetching the authoritative database record, never from the
+  /// push payload itself, so the existing watermark
+  /// (`_lastNotificationId`/`_rememberLatest`) is what prevents a socket
+  /// wake-up and an FCM wake-up for the same backend event from showing it
+  /// twice — no separate id-matching needed here.
+  void listenForForegroundFcm() {
+    if (_isDisposed) return;
+    _fcmForegroundSubscription =
+        FirebaseMessaging.onMessage.listen((_) => _checkForNewNotification());
   }
 
   void _startPolling() {
@@ -319,6 +337,7 @@ class NotificationCubit extends Cubit<NotificationState>
     _isDisposed = true;
     WidgetsBinding.instance.removeObserver(this);
     _socketService.dispose();
+    _fcmForegroundSubscription?.cancel();
     _pagingController.dispose();
     _stopPolling();
     _audioPlayer.dispose();

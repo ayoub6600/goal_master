@@ -24,7 +24,7 @@ class NotificationSocketService {
   }
 
   void _connectToSocket() {
-    _socket = IO.io('https://socket.goalmasters.online', <String, dynamic>{
+    _socket = IO.io('https://socket.goalmaster.aljidartech.com', <String, dynamic>{
       'transports': ['websocket'],
       'autoConnect': true,
       'reconnection': true,
