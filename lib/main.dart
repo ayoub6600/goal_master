@@ -1,5 +1,7 @@
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/foundation.dart' show kReleaseMode;
 import 'package:flutter/material.dart';
+import 'package:goal_master/core/databases/api/end_points.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -47,6 +49,18 @@ final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
     FlutterLocalNotificationsPlugin();
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // A real, unconditional check — not `assert`, which release builds strip.
+  // A release build made without a valid production --dart-define=API_BASE
+  // must crash here, loudly, at first launch, instead of silently shipping
+  // an app that talks to localhost or a LAN address.
+  if (kReleaseMode) {
+    final violation = EndPoints.releaseSafetyViolation;
+    if (violation != null) {
+      throw StateError('Release build refused: $violation');
+    }
+  }
+
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   await SharedPreferenceUtil.getInstance();
 

@@ -1,3 +1,5 @@
+import 'package:goal_master/core/databases/api/api_base_safety.dart';
+
 class EndPoints {
   //********  base url
   //
@@ -34,11 +36,13 @@ class EndPoints {
   /// API endpoint that resolves to the customer's own phone. See the assert
   /// in DioConsumer, which turns that into a loud failure during development
   /// instead of a silent "Connection Error" after release.
-  static bool get isLocalApi =>
-      baserUrl.contains('127.0.0.1') ||
-      baserUrl.contains('localhost') ||
-      baserUrl.contains('10.0.2.2') ||
-      RegExp(r'//(192\.168\.|10\.|172\.(1[6-9]|2[0-9]|3[01])\.)').hasMatch(baserUrl);
+  static bool get isLocalApi => ApiBaseSafety.isLocalOrLan(baserUrl);
+
+  /// Null when this build's [baserUrl] is safe to ship in a release build;
+  /// otherwise the reason it isn't. Checked for real (not via `assert`,
+  /// which release builds strip) at app startup — see `main()`.
+  static String? get releaseSafetyViolation =>
+      ApiBaseSafety.releaseViolation(baserUrl);
 
   //******* routes
   static const String id = 'id'; //! example route, remove this
