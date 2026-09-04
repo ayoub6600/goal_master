@@ -15,6 +15,7 @@ abstract class MandatoryActionRepo {
   Future<Either<Failure, List<MandatoryAction>>> answer({
     required int confirmationId,
     required bool attended,
+    String type = MandatoryAction.kAttendanceConfirmation,
   });
 }
 
@@ -35,11 +36,13 @@ class MandatoryActionRepoImpl implements MandatoryActionRepo {
   Future<Either<Failure, List<MandatoryAction>>> answer({
     required int confirmationId,
     required bool attended,
+    String type = MandatoryAction.kAttendanceConfirmation,
   }) {
     return consumer.handleRequestCustom(
       () => consumer.post(EndPoints.attendanceConfirmation, data: {
         'confirmation_id': confirmationId,
         'attended': attended ? 1 : 0,
+        'type': type,
       }),
       // The answer response carries what is LEFT, so the caller never has to
       // guess whether the queue is empty — a wrong guess would either strand

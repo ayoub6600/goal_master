@@ -103,6 +103,7 @@ class _MandatoryActionGateState extends State<MandatoryActionGate>
     final result = await _repo.answer(
       confirmationId: _pending.first.id,
       attended: attended,
+      type: _pending.first.type,
     );
 
     if (!mounted) return;

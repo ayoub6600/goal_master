@@ -579,6 +579,7 @@ class _FakeMandatoryRepo implements MandatoryActionRepo {
   Future<Either<Failure, List<MandatoryAction>>> answer({
     required int confirmationId,
     required bool attended,
+    String type = MandatoryAction.kAttendanceConfirmation,
   }) async =>
       right(const []);
 }

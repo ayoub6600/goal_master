@@ -6713,3 +6713,66 @@ Known Issues / Next Steps:
   session phase but no fresh evidence was pulled this time.
 
 **Status:** read-only audit, no code changed. Not committed. Not deployed.
+
+---
+
+## Entry 29
+
+Date: 2026-09-04
+
+Requested Work:
+
+- Phase 2 of the no-show dispute workflow (Phase 1 was backend +
+  `goal_master_admin` manager proposal — see that app's own worklog):
+  customer-facing confirmation of a manager's proposed dispute settlement.
+
+Analysis performed first:
+
+- `MandatoryActionGate` (`lib/features/attendance/presentation/mandatory_action_gate.dart`)
+  already exists — a server-authoritative, fully generic blocking prompt
+  (title/message/button labels all server-worded) that already anticipated
+  a second kind of question ("a new kind never needs a client release," per
+  its own doc comment). Backend's `pending()` payload already sent a `type`
+  key per item, but the Flutter model never parsed it and `answer()` never
+  sent it back — a router with no dispatch value.
+- `BookingAttendanceConfirmation` (the table behind the *original*
+  "did you attend?" question) does not fit the new "do you agree with the
+  proposed settlement?" question — it's a different question asked later,
+  on a booking whose attendance-confirmation row is already answered
+  (that's literally what opened the dispute). Reusing it would collide with
+  that row. Extended `BookingDispute` instead (Phase 1's own extension
+  point), not a new table.
+
+Work performed:
+
+- Backend: `booking_disputes` gained `customer_proposal_response` /
+  `customer_responded_at` (additive migration). New
+  `DisputeService::pendingProposalsFor()` / `disputePromptPayload()` /
+  `respondToProposal()`. `AttendanceConfirmationController` now merges
+  attendance-confirmation and dispute-agreement prompts into the same
+  `mandatory-actions` list and routes `attendance-confirmation` POSTs by a
+  new optional `type` field (defaults to the original kind for any client
+  that doesn't send one — no behavior change for an unmigrated build).
+  Confirming "attended" clears the customer fully via the existing bounded
+  `resolve()` (no new financial rule); confirming "no_show" upholds the
+  venue, no money moves; rejecting escalates and never lets the manager
+  close it unilaterally.
+- `goal_master`: `MandatoryAction` now carries `type`
+  (`kAttendanceConfirmation` / `kNoShowDisputeAgreement`), and
+  `MandatoryActionRepo.answer()` sends it back — the only change the gate
+  itself needed; no new widget, no second mandatory-action framework.
+- Fixed two pre-existing test doubles (`test/mandatory_action_gate_test.dart`,
+  `test/active_location_test.dart`) whose `MandatoryActionRepo` overrides
+  needed the new optional `type` parameter to keep compiling.
+
+Tests: backend `NoShowDisputeCustomerConfirmationTest.php` (10, new) +
+`MandatoryActionGateTest.php` (14) + `NoShowDisputeManagerProposalTest.php`
+(7, Phase 1) all re-verified clean. Flutter `mandatory_action_gate_test.dart`
+(20 — 13 pre-existing + 7 new) and `active_location_test.dart` (26) clean.
+`flutter analyze` — 0 errors project-wide. `php -l` clean. Migration applied
+to the shared dev DB (additive/nullable only); all backend tests run inside
+`DatabaseTransactions`.
+
+Explicitly not built (staged): Admin dispute center/notifications, venue
+customer block/unblock, Captain/chatbot. **Status:** not committed, not
+deployed.

@@ -36,8 +36,9 @@ class _FakeRepo implements MandatoryActionRepo {
   Future<Either<Failure, List<MandatoryAction>>> answer({
     required int confirmationId,
     required bool attended,
+    String type = MandatoryAction.kAttendanceConfirmation,
   }) async {
-    answers.add({'id': confirmationId, 'attended': attended});
+    answers.add({'id': confirmationId, 'attended': attended, 'type': type});
 
     if (hold != null) {
       await hold!.future;
@@ -59,6 +60,29 @@ MandatoryAction _action(int id, {String branch = 'ملاعب الجدار'}) =>
       title: 'نحتاج تأكيدك',
       message: 'إدارة الملعب سجلت أنك لم تحضر إلى هذا الحجز. هل حضرت؟',
       note: 'تكرار حالات عدم الحضور المؤكدة قد يؤدي إلى تقييد ميزة الدفع عند الوصول.',
+      branch: branch,
+      date: '2029-06-10',
+      startTime: '19:00',
+    );
+
+/// A pending manager proposal on an already-open no-show dispute — the
+/// question wording is entirely server-driven, exactly as the real payload
+/// from `DisputeService::disputePromptPayload()` sends it.
+MandatoryAction _disputeAgreement(
+  int id, {
+  required String proposedResult, // 'attended' | 'no_show'
+  String branch = 'ملاعب الجدار',
+}) =>
+    MandatoryAction(
+      id: id,
+      bookingId: 900 + id,
+      type: MandatoryAction.kNoShowDisputeAgreement,
+      title: 'تأكيد نتيجة الحجز',
+      message: 'إدارة الملعب أفادت بأنه تم الاتفاق على نتيجة هذا الحجز.\n\n'
+          'النتيجة المقترحة: '
+          '${proposedResult == 'attended' ? 'حضرت إلى الموعد' : 'لم تحضر إلى الموعد'}',
+      confirmLabel: 'أؤكد الاتفاق',
+      denyLabel: 'لم نتفق',
       branch: branch,
       date: '2029-06-10',
       startTime: '19:00',
@@ -143,7 +167,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(repo.answers, [
-      {'id': 1, 'attended': true}
+      {'id': 1, 'attended': true, 'type': MandatoryAction.kAttendanceConfirmation}
     ]);
     expect(prompt, findsNothing);
     expect(find.byKey(const Key('normal_app_button')), findsOneWidget);
@@ -283,5 +307,120 @@ void main() {
     await tester.pumpWidget(_app(repo));
     await tester.pumpAndSettle();
     expect(prompt, findsOneWidget);
+  });
+
+  group('Phase 2 — manager dispute-proposal agreement', () {
+    testWidgets('a pending manager proposal is shown, worded by the server',
+        (tester) async {
+      final repo = _FakeRepo(
+        initial: [_disputeAgreement(5, proposedResult: 'attended')],
+      );
+      await tester.pumpWidget(_app(repo));
+      await tester.pumpAndSettle();
+
+      expect(prompt, findsOneWidget);
+      expect(find.text('تأكيد نتيجة الحجز'), findsOneWidget);
+      expect(find.textContaining('النتيجة المقترحة: حضرت إلى الموعد'),
+          findsOneWidget);
+      expect(find.text('أؤكد الاتفاق'), findsOneWidget);
+      expect(find.text('لم نتفق'), findsOneWidget);
+    });
+
+    testWidgets('the no_show proposal renders its own Arabic label',
+        (tester) async {
+      final repo = _FakeRepo(
+        initial: [_disputeAgreement(6, proposedResult: 'no_show')],
+      );
+      await tester.pumpWidget(_app(repo));
+      await tester.pumpAndSettle();
+
+      expect(find.textContaining('النتيجة المقترحة: لم تحضر إلى الموعد'),
+          findsOneWidget);
+    });
+
+    testWidgets('confirming sends the dispute type and attended=true',
+        (tester) async {
+      final repo = _FakeRepo(
+        initial: [_disputeAgreement(5, proposedResult: 'attended')],
+      );
+      await tester.pumpWidget(_app(repo));
+      await tester.pumpAndSettle();
+
+      await tester.tap(attended); // "أؤكد الاتفاق"
+      await tester.pumpAndSettle();
+
+      expect(repo.answers, [
+        {
+          'id': 5,
+          'attended': true,
+          'type': MandatoryAction.kNoShowDisputeAgreement,
+        }
+      ]);
+    });
+
+    testWidgets('rejecting sends the dispute type and attended=false',
+        (tester) async {
+      final repo = _FakeRepo(
+        initial: [_disputeAgreement(5, proposedResult: 'no_show')],
+      );
+      await tester.pumpWidget(_app(repo));
+      await tester.pumpAndSettle();
+
+      await tester.tap(absent); // "لم نتفق"
+      await tester.pumpAndSettle();
+
+      expect(repo.answers, [
+        {
+          'id': 5,
+          'attended': false,
+          'type': MandatoryAction.kNoShowDisputeAgreement,
+        }
+      ]);
+    });
+
+    testWidgets('no proposal pending means no agreement prompt at all',
+        (tester) async {
+      final repo = _FakeRepo(initial: const []);
+      await tester.pumpWidget(_app(repo));
+      await tester.pumpAndSettle();
+
+      expect(prompt, findsNothing);
+      expect(find.text('تأكيد نتيجة الحجز'), findsNothing);
+    });
+
+    testWidgets('once resolved, the server stops sending it and the prompt disappears',
+        (tester) async {
+      final repo = _FakeRepo(
+        initial: [_disputeAgreement(5, proposedResult: 'attended')],
+      );
+      await tester.pumpWidget(_app(repo));
+      await tester.pumpAndSettle();
+      expect(prompt, findsOneWidget);
+
+      await tester.tap(attended);
+      await tester.pumpAndSettle();
+
+      // The fake mirrors the real server: answering removes it from the
+      // pending queue, so the very next read shows the case closed.
+      expect(prompt, findsNothing);
+    });
+
+    testWidgets('a network failure keeps the proposal unresolved on screen',
+        (tester) async {
+      final repo = _FakeRepo(
+        initial: [_disputeAgreement(5, proposedResult: 'attended')],
+        failAnswer: true,
+      );
+      await tester.pumpWidget(_app(repo));
+      await tester.pumpAndSettle();
+
+      await tester.tap(attended);
+      await tester.pumpAndSettle();
+
+      // Nothing dismissed, nothing silently agreed to.
+      expect(prompt, findsOneWidget);
+      expect(find.byKey(const Key('mandatory_action_error')), findsOneWidget);
+      expect(find.text('أؤكد الاتفاق'), findsOneWidget);
+    });
   });
 }

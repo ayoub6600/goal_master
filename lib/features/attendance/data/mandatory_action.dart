@@ -9,6 +9,7 @@ class MandatoryAction {
     required this.bookingId,
     required this.title,
     required this.message,
+    this.type = kAttendanceConfirmation,
     this.note,
     this.confirmLabel,
     this.denyLabel,
@@ -18,10 +19,27 @@ class MandatoryAction {
     this.startTime,
   });
 
+  /// The original question: "the venue reported you as a no-show — did you
+  /// attend?". Every server response before this kind existed sent this
+  /// implicitly, so it stays the default for a payload that omits `type`.
+  static const kAttendanceConfirmation = 'attendance_confirmation';
+
+  /// A later, different question on an already-open dispute: "the manager
+  /// proposed an agreed result — do you confirm it?". Answering this one
+  /// resolves or escalates a `BookingDispute`, never a fresh attendance
+  /// report, so the two must never be routed to the same backend table.
+  static const kNoShowDisputeAgreement = 'no_show_dispute_agreement';
+
   final int id;
   final int bookingId;
   final String title;
   final String message;
+
+  /// Which question this is — travels back on [MandatoryActionRepo.answer]
+  /// unchanged, so the server routes the answer to the right authority
+  /// instead of guessing from the id alone.
+  final String type;
+
   final String? note;
 
   /// The button labels, worded by the SERVER.
@@ -49,6 +67,7 @@ class MandatoryAction {
     return MandatoryAction(
       id: int.tryParse('${json['id']}') ?? 0,
       bookingId: int.tryParse('${json['booking_id']}') ?? 0,
+      type: _clean(json['type']) ?? kAttendanceConfirmation,
       title: _clean(json['title']) ?? 'نحتاج تأكيدك',
       message: _clean(json['message']) ??
           'إدارة الملعب سجلت أنك لم تحضر إلى هذا الحجز. هل حضرت؟',
