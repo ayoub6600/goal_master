@@ -7,7 +7,7 @@
 # Usage: scripts/build_release.sh apk   (or appbundle / ipa / ...)
 set -euo pipefail
 
-API_BASE="${API_BASE:-https://web.goalmasters.online/api/}"
+API_BASE="${API_BASE:-https://goalmaster.aljidartech.com/api/}"
 
 case "$API_BASE" in
   https://*) ;;
