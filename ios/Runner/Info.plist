@@ -27,11 +27,19 @@
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSKeychainUsageDescription</key>
-	<string>Your description for using Keychain</string>
+	<string>Goal Master uses the Keychain to securely store your login session so you don't have to sign in every time.</string>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
 	<string>نحتاج الوصول إلى موقعك لتقديم خدمات دقيقة</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>نحتاج الوصول إلى موقعك لتقديم تجربة أفضل</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Goal Master needs camera access so you can take photos when booking or managing your activities.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Goal Master needs access to your photo library so you can attach photos when booking or managing your activities.</string>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>remote-notification</string>
+	</array>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 	<key>UILaunchStoryboardName</key>
