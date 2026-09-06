@@ -16,23 +16,39 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {}
 
 class PushNotificationService {
   /// Call once, right after Firebase.initializeApp().
+  ///
+  /// Wrapped end to end: this runs unconditionally in main(), before
+  /// runApp(), with nothing above it to catch a throw. requestPermission()
+  /// is not expected to throw on a normally-configured device, but an
+  /// unusual permission/entitlement state turning into an uncaught
+  /// exception here would crash app startup entirely — never rendering a
+  /// single frame — which is a strictly worse failure than the one
+  /// registerTokenIfLoggedIn() already guards against below. The
+  /// onTokenRefresh subscription still has to be reached even when
+  /// requestPermission() itself fails, since that subscription is what
+  /// later registers a token if APNS only becomes available afterwards.
   static Future<void> initialize() async {
     FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
 
-    await FirebaseMessaging.instance.requestPermission(
-      alert: true,
-      badge: true,
-      sound: true,
-    );
+    try {
+      await FirebaseMessaging.instance.requestPermission(
+        alert: true,
+        badge: true,
+        sound: true,
+      );
 
-    // In the foreground, the authenticated socket flow renders the correct
-    // Captain persona. FCM remains responsible for background/terminated UI.
-    await FirebaseMessaging.instance
-        .setForegroundNotificationPresentationOptions(
-      alert: false,
-      badge: false,
-      sound: false,
-    );
+      // In the foreground, the authenticated socket flow renders the correct
+      // Captain persona. FCM remains responsible for background/terminated UI.
+      await FirebaseMessaging.instance
+          .setForegroundNotificationPresentationOptions(
+        alert: false,
+        badge: false,
+        sound: false,
+      );
+    } catch (_) {
+      // Best-effort — the app must still start, and a token can still
+      // arrive later via onTokenRefresh below.
+    }
 
     FirebaseMessaging.instance.onTokenRefresh.listen(_registerToken);
   }
