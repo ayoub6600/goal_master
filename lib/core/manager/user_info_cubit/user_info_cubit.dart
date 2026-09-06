@@ -2,6 +2,7 @@
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:goal_master/core/routing/app_router.dart';
+import 'package:goal_master/core/services/push_notification_service.dart';
 import 'package:goal_master/core/utils/functions/auth_manager.dart';
 import 'package:goal_master/features/auth/data/model/login_model/user.dart';
 import 'package:goal_master/features/auth/data/repo/auth_repo.dart';
@@ -61,6 +62,10 @@ class UserInfoCubit extends Cubit<UserInfoState> {
 
   Future<void> logout() async {
     emit(state.copyWith(loading: true));
+    // Must run before AuthManager.logout() clears the stored auth token —
+    // this call needs to still be authenticated to tell the backend which
+    // device's push registration to remove.
+    await PushNotificationService.unregisterToken();
     await AuthManager.logout();
     user = null;
     token = null;

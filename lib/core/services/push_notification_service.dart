@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:goal_master/core/components/keys_values.dart';
 import 'package:goal_master/core/components/preference_utility.dart';
@@ -56,10 +58,35 @@ class PushNotificationService {
     try {
       await getIt<DioConsumer>().post(
         EndPoints.saveFcmToken,
-        data: {'fcm_token': token},
+        data: {
+          'fcm_token': token,
+          // Lets the backend keep this device's token in its own row,
+          // separate from whatever the Manager App registered for the same
+          // person — see user_device_tokens / SendPushNotification().
+          'app_domain': 'customer',
+          'platform': Platform.isIOS ? 'ios' : 'android',
+        },
       );
     } catch (_) {
       // Best-effort — retried on next app open or token refresh.
+    }
+  }
+
+  /// Call right before clearing the local session on logout — removes only
+  /// THIS device's Customer-app registration, not every token this person
+  /// has (e.g. their Manager App on another device keeps working).
+  static Future<void> unregisterToken() async {
+    try {
+      final token = await FirebaseMessaging.instance.getToken();
+      if (token == null) return;
+
+      await getIt<DioConsumer>().post(
+        EndPoints.logout,
+        data: {'fcm_token': token},
+      );
+    } catch (_) {
+      // Best-effort — a missed removal just means one stale token to be
+      // cleaned up server-side the next time Firebase reports it invalid.
     }
   }
 }

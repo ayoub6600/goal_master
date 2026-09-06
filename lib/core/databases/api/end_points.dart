@@ -82,6 +82,7 @@ class EndPoints {
   static String refresh = 'user/refresh';
   static String appVersionCheck = 'app-version/check';
   static String saveFcmToken = 'user/save-fcm-token';
+  static String logout = 'user/logout';
 
   /// Questions the customer must answer before ordinary use continues.
   /// Both stay reachable while the gate is closed — they are the way out.
