@@ -83,7 +83,12 @@ class NotificationFetchCubit extends Cubit<NotificationFetchState> {
     if (_isDisposed) return;
 
     final currentItems = _pagingController.itemList;
-    if (!hasUnreadNotifications()) return;
+    // Only skip when the list has actually loaded and is confirmed all-read
+    // — a null itemList means the first page hasn't arrived yet, not that
+    // there's nothing unread. Bailing out on that (as this used to) meant
+    // the auto-mark-as-read fired on screen open, before the paged list had
+    // loaded anything, and silently did nothing every time.
+    if (currentItems != null && !hasUnreadNotifications()) return;
 
     emit(NotificationMarkingAllAsReadState());
 

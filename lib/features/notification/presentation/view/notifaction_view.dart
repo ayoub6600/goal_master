@@ -50,6 +50,12 @@ class _NotificationViewState extends State<NotificationView> {
       child: PageWrapper(
         title: 'الاشعارات',
         allowBack: true,
+        trailing: IconButton(
+          tooltip: 'تحديد الكل كمقروء',
+          icon: const Icon(Icons.done_all, color: Colors.white),
+          onPressed: () =>
+              context.read<NotificationFetchCubit>().markAllAsRead(),
+        ),
         child: Padding(
           padding: EdgeInsets.all(16.r),
           child: RefreshIndicator(
