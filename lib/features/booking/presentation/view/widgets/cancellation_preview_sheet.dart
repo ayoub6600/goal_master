@@ -184,11 +184,10 @@ class _CancellationPreviewSheetState extends State<CancellationPreviewSheet> {
 
   /// The money, in dinars rather than percentages.
   Widget _amounts(CancellationQuote quote) {
+    // Nothing was ever paid through the app — there is nothing to say about
+    // a refund, so the confirmation stays a plain "cancel or go back".
     if (quote.eligibleAmount <= 0) {
-      return _note(
-        'هذا الحجز ما تم دفعه عبر التطبيق، فما فيش مبلغ مسترجع.',
-        Colors.grey.shade700,
-      );
+      return const SizedBox.shrink();
     }
 
     if (quote.isFree) {
