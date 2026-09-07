@@ -74,6 +74,10 @@ class Booking {
   /// so the list can badge it and open the series. Null for ordinary bookings.
   final BookingSeriesRef? series;
 
+  /// Set only for a cancelled booking that actually moved platform money —
+  /// null for one still active, or one paid on arrival.
+  final BookingCancellation? cancellation;
+
   Booking({
     required this.id,
     required this.branch,
@@ -93,6 +97,7 @@ class Booking {
     required this.remarks,
     required this.category,
     this.series,
+    this.cancellation,
   });
 
   bool get isPartOfSeries => series != null;
@@ -119,6 +124,35 @@ class Booking {
       series: json['series'] is Map<String, dynamic>
           ? BookingSeriesRef.fromJson(json['series'] as Map<String, dynamic>)
           : null,
+      cancellation: json['cancellation'] is Map<String, dynamic>
+          ? BookingCancellation.fromJson(
+              json['cancellation'] as Map<String, dynamic>)
+          : null,
+    );
+  }
+}
+
+/// What actually happened to the money on a cancelled booking — how much
+/// came back, and how much the venue kept as a fee.
+class BookingCancellation {
+  final double paidAmount;
+  final double refundAmount;
+  final double retainedAmount;
+
+  const BookingCancellation({
+    required this.paidAmount,
+    required this.refundAmount,
+    required this.retainedAmount,
+  });
+
+  /// A real fee was retained — the case worth calling out visually.
+  bool get hasPenalty => retainedAmount > 0.001;
+
+  factory BookingCancellation.fromJson(Map<String, dynamic> json) {
+    return BookingCancellation(
+      paidAmount: _asDouble(json['paid_amount']),
+      refundAmount: _asDouble(json['refund_amount']),
+      retainedAmount: _asDouble(json['retained_amount']),
     );
   }
 }
@@ -174,6 +208,12 @@ int _asInt(dynamic value) {
   if (value is int) return value;
   if (value is double) return value.toInt();
   return int.tryParse(value?.toString() ?? '') ?? 0;
+}
+
+double _asDouble(dynamic value) {
+  if (value is double) return value;
+  if (value is int) return value.toDouble();
+  return double.tryParse(value?.toString() ?? '') ?? 0;
 }
 
 /// Reads `payment_status` whichever way the endpoint that sent it spells it.

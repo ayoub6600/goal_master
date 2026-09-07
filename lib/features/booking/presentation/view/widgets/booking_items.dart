@@ -207,6 +207,15 @@ class BookingItems extends StatelessWidget {
                 ),
               ],
             ),
+            if (booking.status == 3 && booking.cancellation != null) ...[
+              HeightSpace(12.h),
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 12.w),
+                child: _CancellationOutcomeBox(
+                  cancellation: booking.cancellation!,
+                ),
+              ),
+            ],
             HeightSpace(12.h),
             // A booking inside a series never gets the plain "الغاء الحجز"
             // button: on its own that label can't say whether it means this
@@ -372,6 +381,104 @@ class BookingItems extends StatelessWidget {
         return AppColors.fontColor; // اللون الافتراضي
     }
   }
+}
+
+/// What a cancelled booking's money actually did — shown so "ملغي" never
+/// leaves the customer guessing whether anything came back.
+///
+/// Two shapes: a full refund reads as one calm, green line. A booking that
+/// cost something is called out — the retained fee gets the visual weight,
+/// since that is the number the customer actually wants explained, and a
+/// link into exactly that explanation sits right beside it.
+class _CancellationOutcomeBox extends StatelessWidget {
+  const _CancellationOutcomeBox({required this.cancellation});
+
+  final BookingCancellation cancellation;
+
+  @override
+  Widget build(BuildContext context) {
+    if (!cancellation.hasPenalty) {
+      return Container(
+        width: double.infinity,
+        padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 10.h),
+        decoration: BoxDecoration(
+          color: const Color(0xffDFF5E1),
+          borderRadius: BorderRadius.circular(10.r),
+        ),
+        child: Row(
+          children: [
+            Icon(Icons.check_circle, size: 18.sp, color: AppColors.primary),
+            WidthSpace(8.w),
+            Expanded(
+              child: Text(
+                "استرجاع كامل — ${_money(cancellation.refundAmount)} دينار إلى محفظتك",
+                style: AppTextStyles.font14Bold.copyWith(
+                  color: const Color(0xff204523),
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 10.h),
+      decoration: BoxDecoration(
+        color: Colors.red.withOpacity(0.06),
+        borderRadius: BorderRadius.circular(10.r),
+        border: Border.all(color: Colors.red.withOpacity(0.25)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.info_outline, size: 18.sp, color: Colors.red),
+              WidthSpace(8.w),
+              Text(
+                "تفاصيل الإلغاء",
+                style: AppTextStyles.font14Bold.copyWith(color: Colors.red),
+              ),
+            ],
+          ),
+          HeightSpace(8.h),
+          _outcomeRow(
+            "المبلغ المسترجع",
+            cancellation.refundAmount,
+            AppColors.primary,
+          ),
+          HeightSpace(4.h),
+          _outcomeRow(
+            "رسوم الإلغاء المحتجزة",
+            cancellation.retainedAmount,
+            Colors.red,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _outcomeRow(String label, double amount, Color color) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          label,
+          style: AppTextStyles.font14Regular.copyWith(
+            color: AppColors.fontColor,
+          ),
+        ),
+        Text(
+          "${_money(amount)} د.ل",
+          style: AppTextStyles.font14Bold.copyWith(color: color),
+        ),
+      ],
+    );
+  }
+
+  String _money(double amount) => amount.toStringAsFixed(2);
 }
 
 /// The booking's identity, as it must read identically to the Manager App.
