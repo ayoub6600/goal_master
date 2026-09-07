@@ -225,7 +225,17 @@ class BookingItems extends StatelessWidget {
                   ),
                 ),
               )
-            else if (booking.status == 0 || booking.status == 1)
+            // ServiceStatus: 0 Pending, 1 Processing, 2 Approved, 3 Cancel,
+            // 4 Done. A single wallet-paid booking is marked Done the
+            // moment it's paid — saveBooking() confirms it immediately,
+            // with no manager-approval step — so it can be far in the
+            // future and still carry that status. Gating on {0, 1} hid the
+            // button for exactly that case, and for any manager-approved
+            // pay-on-arrival booking. The backend (via
+            // CancellationPreviewSheet's own quote) is the real authority
+            // on whether cancelling is still allowed — this only needs to
+            // exclude what's already cancelled.
+            else if (booking.status != 3)
               BlocConsumer<CancelBookingCubit, CancelBookingState>(
                 listener: (context, state) {
                   print("state: $state");
