@@ -11,10 +11,13 @@ class EndPoints {
   /// while on a phone loopback is the phone itself and the connection is
   /// refused outright.
   ///
-  /// The default keeps the Simulator working untouched. A real device passes
-  /// the Mac's LAN address instead:
+  /// The default is the real production API, so a build made without
+  /// --dart-define (an IDE "Run" button with no launch config, for example)
+  /// ships pointed at the real server instead of silently failing or
+  /// resolving to loopback. Local development passes the override instead:
   ///
-  ///   flutter run --dart-define=API_BASE=http://192.168.1.x:8000/api/
+  ///   flutter run --dart-define=API_BASE=http://127.0.0.1:8000/api/
+  ///   flutter run --dart-define=API_BASE=http://192.168.1.x:8000/api/   (real device)
   ///
   /// Deliberately `String.fromEnvironment`, so this stays a compile-time
   /// constant baked into the binary — a machine-specific address cannot be
@@ -25,16 +28,15 @@ class EndPoints {
   /// (DioConsumer, AppUpdateService, ConnectionCubit) read it from here.
   static const String baserUrl = String.fromEnvironment(
     'API_BASE',
-    defaultValue: 'http://127.0.0.1:8000/api/',
+    defaultValue: 'https://goalmaster.aljidartech.com/api/',
   );
 
   /// True when the app is pointing at a developer machine rather than a
   /// server anybody else can reach.
   ///
-  /// Worth having as a value rather than a comment: the default above is a
-  /// LOCAL address, so a release build made without --dart-define ships an
-  /// API endpoint that resolves to the customer's own phone. See the assert
-  /// in DioConsumer, which turns that into a loud failure during development
+  /// Worth having as a value rather than a comment: an explicit local
+  /// --dart-define must never leak into a release build. See the assert in
+  /// DioConsumer, which turns that into a loud failure during development
   /// instead of a silent "Connection Error" after release.
   static bool get isLocalApi => ApiBaseSafety.isLocalOrLan(baserUrl);
 

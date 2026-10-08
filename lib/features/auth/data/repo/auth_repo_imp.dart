@@ -27,11 +27,9 @@ class AuthRepoImpl implements AuthRepo {
       }),
       (res) async {
         var data = res['data'];
-        var user = data['user'];
         var token = data['token'];
-        SharedPreferenceUtil.putString(PrefKey.fcmToken, "${token}");
+        SharedPreferenceUtil.putString(PrefKey.fcmToken, "$token");
         var model = UserData.fromJson(data);
-        print("----------->user: $user, token: $token");
 
         // AuthManager.saveUser(user.data?.user, user.data?.token);
         // await userInfoCubit.setUser(user, token, token);

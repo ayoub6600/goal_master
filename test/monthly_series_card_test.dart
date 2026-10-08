@@ -72,6 +72,24 @@ Map<String, dynamic> _occ({
       'is_replacement': isReplacement,
     };
 
+
+// Generate weekly test dates that stay valid as time passes.
+String _testSunday(int weeksFromNextSunday) {
+  final now = DateTime.now();
+  var daysUntilSunday = (DateTime.sunday - now.weekday + 7) % 7;
+
+  // The next occurrence must always be in the future.
+  if (daysUntilSunday == 0) daysUntilSunday = 7;
+
+  final date = DateTime(now.year, now.month, now.day).add(
+    Duration(days: daysUntilSunday + weeksFromNextSunday * 7),
+  );
+
+  return '${date.year.toString().padLeft(4, '0')}-'
+      '${date.month.toString().padLeft(2, '0')}-'
+      '${date.day.toString().padLeft(2, '0')}';
+}
+
 BookingSeries _series({
   List<Map<String, dynamic>> occurrences = const [],
   Map<String, dynamic> overrides = const {},
@@ -137,10 +155,10 @@ void main() {
     testWidgets('the next occurrence is the deterministic one, not row 0',
         (tester) async {
       final series = _series(occurrences: [
-        _occ(bookingId: 100024, sequence: 1, date: '2026-08-30'), // past
-        _occ(bookingId: 100025, sequence: 2, date: '2026-09-06'), // next
-        _occ(bookingId: 100026, sequence: 3, date: '2026-09-13'),
-        _occ(bookingId: 100027, sequence: 4, date: '2026-09-20'),
+        _occ(bookingId: 100024, sequence: 1, date: _testSunday(-1)), // past
+        _occ(bookingId: 100025, sequence: 2, date: _testSunday(0)), // next
+        _occ(bookingId: 100026, sequence: 3, date: _testSunday(1)),
+        _occ(bookingId: 100027, sequence: 4, date: _testSunday(2)),
       ]);
 
       await tester.pumpWidget(_host(MonthlySeriesCard(
@@ -158,11 +176,11 @@ void main() {
     testWidgets('a replacement next occurrence carries its badge',
         (tester) async {
       final series = _series(occurrences: [
-        _occ(bookingId: 100024, sequence: 1, date: '2026-08-30'),
+        _occ(bookingId: 100024, sequence: 1, date: _testSunday(-1)),
         _occ(
           bookingId: 100025,
           sequence: 2,
-          date: '2026-09-06',
+          date: _testSunday(0),
           isReplacement: true,
         ),
       ]);

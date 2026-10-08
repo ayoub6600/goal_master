@@ -153,11 +153,17 @@ class BookingItems extends StatelessWidget {
                           fit: BoxFit.cover,
                         ),
                         WidthSpace(10.w),
-                        Text(
-                          formatToHour(booking.startTime),
-                          textDirection: TextDirection.ltr,
-                          style: AppTextStyles.font16Bold.copyWith(
-                            color: AppColors.fontColor,
+                        Flexible(
+                          child: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            alignment: AlignmentDirectional.centerStart,
+                            child: Text(
+                              formatToHour(booking.startTime),
+                              textDirection: TextDirection.ltr,
+                              style: AppTextStyles.font16Bold.copyWith(
+                                color: AppColors.fontColor,
+                              ),
+                            ),
                           ),
                         ),
                       ],
@@ -171,12 +177,18 @@ class BookingItems extends StatelessWidget {
                           fit: BoxFit.cover,
                         ),
                         WidthSpace(10.w),
-                        Text(
-                          formatDate(booking.date),
-                          textDirection: TextDirection.ltr,
-                          //  booking.date,
-                          style: AppTextStyles.font16Bold.copyWith(
-                            color: AppColors.fontColor,
+                        Flexible(
+                          child: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            alignment: AlignmentDirectional.centerStart,
+                            child: Text(
+                              formatDate(booking.date),
+                              textDirection: TextDirection.ltr,
+                              //  booking.date,
+                              style: AppTextStyles.font16Bold.copyWith(
+                                color: AppColors.fontColor,
+                              ),
+                            ),
                           ),
                         ),
                       ],

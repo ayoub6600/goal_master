@@ -4,7 +4,6 @@ import 'package:flutter/foundation.dart';
 import 'package:goal_master/core/components/keys_values.dart';
 import 'package:goal_master/core/components/preference_utility.dart';
 import 'package:goal_master/core/databases/token_interceptor.dart';
-import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 import 'api_consumer.dart';
 import 'end_points.dart';
 
@@ -38,7 +37,7 @@ class DioConsumer extends ApiConsumer {
     assert(
       !(EndPoints.isLocalApi && const bool.fromEnvironment('dart.vm.product')),
       'Release build is pointing at a local API (${EndPoints.baserUrl}). '
-      'Pass --dart-define=API_BASE=https://your-production-host/api/',
+      'Pass --dart-define=API_BASE=https://goalmaster.aljidartech.com/api/',
     );
     dio.options.headers['Accept'] = 'application/json';
     dio.options.headers['Content-Type'] = 'application/json';
@@ -50,29 +49,19 @@ class DioConsumer extends ApiConsumer {
     String loginState = SharedPreferenceUtil.getString(PrefKey.login);
     bool isLoggedIn = loginState == "true";
 
-    // 🟦 Always add logger
-    dio.interceptors.add(
-      PrettyDioLogger(
-        requestBody: true,
-        responseBody: true,
-        enabled: true,
-        requestHeader: true,
-        request: true,
-      ),
-    );
+    // Never log HTTP headers, credentials or payloads.
 
     // 🟥 Add TokenInterceptor ONLY if user is logged in
     if (isLoggedIn) {
-      print("🔐 User logged in → TokenInterceptor added");
+      if (kDebugMode) debugPrint("🔐 User logged in → TokenInterceptor added");
       dio.interceptors.add(TokenInterceptor(dio));
     } else {
-      print("⚠️ User NOT logged in → TokenInterceptor NOT added");
+      if (kDebugMode) debugPrint("⚠️ User NOT logged in → TokenInterceptor NOT added");
     }
   }
 
   void _setAuthorizationHeader() {
     String token = SharedPreferenceUtil.getString(PrefKey.fcmToken);
-    print("Authorization token: $token");
     dio.options.headers['Authorization'] = 'Bearer $token';
   }
 
@@ -184,7 +173,7 @@ class DioConsumer extends ApiConsumer {
         e.error is SocketException;
 
     if (isConnectionError) {
-      print('📡 Connection error captured by DioConsumer');
+      if (kDebugMode) debugPrint('📡 Connection error captured by DioConsumer');
     }
   }
 }

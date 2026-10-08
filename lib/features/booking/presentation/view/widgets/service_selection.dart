@@ -5,146 +5,460 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:goal_master/core/styles/app_colors.dart';
 import 'package:goal_master/core/styles/app_text_styles.dart';
 import 'package:goal_master/core/styles/spaces.dart';
-import 'package:goal_master/features/booking/presentation/manager/page_view_cubit/page_view_cubit_cubit.dart';
 import 'package:goal_master/features/booking/presentation/manager/employee_cubit/employee_cubit.dart';
+import 'package:goal_master/features/booking/presentation/manager/page_view_cubit/page_view_cubit_cubit.dart';
 import 'package:goal_master/features/booking/presentation/manager/service_cubit/service_cubit.dart';
 import 'package:goal_master/features/booking/presentation/view/widgets/step_title.dart';
 
 class ServiceSelection extends StatelessWidget {
   final PageController controller;
 
-  const ServiceSelection({Key? key, required this.controller})
-      : super(key: key);
+  const ServiceSelection({
+    Key? key,
+    required this.controller,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<ServiceCubit, ServiceState>(
       builder: (context, state) {
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            StepTitle(
-                title: "الملعب",
-                description: "اختر الملعب المناسب للحجز الذي تريده"),
-            SizedBox(
-              height: 12.h,
+        if (state is ServiceLoading) {
+          return const Center(
+            child: CircularProgressIndicator(),
+          );
+        }
+
+        if (state is ServiceError) {
+          return Center(
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: 20.w),
+              child: Text(
+                'خطأ: ${state.message}',
+                textAlign: TextAlign.center,
+                style: AppTextStyles.font14Medium,
+              ),
             ),
-            if (state is ServiceSuccess)
-              ...state.services.map((service) => ListTile(
-                    title: Card(
-                      margin: const EdgeInsets.all(8.0),
-                      color: Colors.white,
-                      elevation: 4,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Row(
-                        children: [
-                          ClipRRect(
-                            borderRadius: BorderRadius.circular(12.r),
-                            child: CachedNetworkImage(
-                              imageUrl: service.image,
-                              height: 100.h,
-                              width: 100.w,
-                              fit: BoxFit.cover,
-                              placeholder: (context, url) => Container(
-                                height: 100.h,
-                                width: 100.w,
-                                decoration: BoxDecoration(
-                                  color: Colors.grey[200],
-                                  borderRadius: BorderRadius.circular(12.r),
-                                ),
-                                child: Center(
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                    valueColor: AlwaysStoppedAnimation<Color>(
-                                      AppColors.primary.withOpacity(0.6),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              errorWidget: (context, url, error) => Container(
-                                height: 100.h,
-                                width: 100.w,
-                                decoration: BoxDecoration(
-                                  color: Colors.grey[200],
-                                  borderRadius: BorderRadius.circular(12.r),
-                                ),
-                                child: Icon(
-                                  Icons.error_outline,
-                                  color: Colors.grey[400],
-                                  size: 30.r,
-                                ),
-                              ),
-                              fadeInDuration: const Duration(milliseconds: 300),
-                              fadeInCurve: Curves.easeInOut,
-                              memCacheHeight: (100.h *
-                                      MediaQuery.of(context).devicePixelRatio)
-                                  .round(),
-                              memCacheWidth: (100.w *
-                                      MediaQuery.of(context).devicePixelRatio)
-                                  .round(),
+          );
+        }
+
+        if (state is ServiceSuccess) {
+          if (state.services.isEmpty) {
+            return Center(
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: 20.w),
+                child: Text(
+                  'لا توجد ملاعب متاحة للحجز حالياً',
+                  style: AppTextStyles.font16Bold,
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            );
+          }
+
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              StepTitle(
+                title: "الملعب",
+                description: "اختر الملعب المناسب للحجز الذي تريده",
+              ),
+
+              SizedBox(height: 12.h),
+
+              Expanded(
+                child: ListView.separated(
+                  padding: EdgeInsets.only(
+                    left: 8.w,
+                    right: 8.w,
+                    bottom: 24.h,
+                  ),
+                  physics: const BouncingScrollPhysics(),
+                  itemCount: state.services.length,
+                  separatorBuilder: (context, index) {
+                    return SizedBox(height: 16.h);
+                  },
+                  itemBuilder: (context, index) {
+                    final service = state.services[index];
+
+                    return _ServiceCard(
+                      title: service.title,
+                      price: service.price.toString(),
+
+                      imageUrls: service.images.isNotEmpty
+                          ? service.images
+                          : [
+                              if (service.image.trim().isNotEmpty)
+                                service.image,
+                            ],
+
+                      onTap: () {
+                        final pageViewCubit =
+                            context.read<PageViewCubit>();
+
+                        final clubId =
+                            pageViewCubit.state.clubId;
+
+                        pageViewCubit.setServiceId(
+                          service.id,
+                          service.title,
+                        );
+
+                        context
+                            .read<EmployeeCubit>()
+                            .listEmployee(clubId ?? 0);
+
+                        pageViewCubit.nextPage();
+
+                        controller.nextPage(
+                          duration:
+                              const Duration(milliseconds: 300),
+                          curve: Curves.easeInOut,
+                        );
+                      },
+                    );
+                  },
+                ),
+              ),
+            ],
+          );
+        }
+
+        return const SizedBox.shrink();
+      },
+    );
+  }
+}
+
+class _ServiceCard extends StatefulWidget {
+  final String title;
+  final String price;
+  final List<String> imageUrls;
+  final VoidCallback onTap;
+
+  const _ServiceCard({
+    required this.title,
+    required this.price,
+    required this.imageUrls,
+    required this.onTap,
+  });
+
+  @override
+  State<_ServiceCard> createState() =>
+      _ServiceCardState();
+}
+
+class _ServiceCardState extends State<_ServiceCard> {
+  late final PageController _imageController;
+
+  int _currentImageIndex = 0;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _imageController = PageController();
+  }
+
+  @override
+  void dispose() {
+    _imageController.dispose();
+
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final images = widget.imageUrls
+        .where((image) => image.trim().isNotEmpty)
+        .toList();
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: widget.onTap,
+        borderRadius: BorderRadius.circular(16.r),
+        child: Card(
+          margin: EdgeInsets.zero,
+          elevation: 3,
+          color: Colors.white,
+          shadowColor: Colors.black.withOpacity(0.10),
+          clipBehavior: Clip.antiAlias,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16.r),
+          ),
+          child: Column(
+            crossAxisAlignment:
+                CrossAxisAlignment.stretch,
+            children: [
+              /// ===============================
+              /// صورة الملعب
+              /// ===============================
+              SizedBox(
+                height: 180.h,
+                child: Stack(
+                  alignment: Alignment.bottomCenter,
+                  children: [
+                    if (images.isNotEmpty)
+                      PageView.builder(
+                        controller: _imageController,
+                        itemCount: images.length,
+                        onPageChanged: (index) {
+                          if (_currentImageIndex != index) {
+                            setState(() {
+                              _currentImageIndex = index;
+                            });
+                          }
+                        },
+                        itemBuilder:
+                            (context, imageIndex) {
+                          return CachedNetworkImage(
+                            imageUrl:
+                                images[imageIndex],
+                            width: double.infinity,
+                            height: 180.h,
+                            fit: BoxFit.cover,
+
+                            placeholder:
+                                (context, url) {
+                              return const _ImagePlaceholder(
+                                showLoader: true,
+                              );
+                            },
+
+                            errorWidget:
+                                (context, url, error) {
+                              return const _ImagePlaceholder();
+                            },
+
+                            fadeInDuration:
+                                const Duration(
+                              milliseconds: 250,
                             ),
+
+                            memCacheHeight: (360 *
+                                    MediaQuery.of(context)
+                                        .devicePixelRatio)
+                                .round(),
+                          );
+                        },
+                      )
+                    else
+                      const _ImagePlaceholder(),
+
+                    /// Gradient بسيط أسفل الصورة
+                    IgnorePointer(
+                      child: Container(
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin:
+                                Alignment.topCenter,
+                            end:
+                                Alignment.bottomCenter,
+                            colors: [
+                              Colors.transparent,
+                              Colors.black
+                                  .withOpacity(0.10),
+                            ],
                           ),
-                          Expanded(
-                            child: Container(
-                              padding: EdgeInsets.all(16.w),
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(12.r),
-                              ),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    service.title,
-                                    style: AppTextStyles.font16Bold,
-                                    textDirection: TextDirection.ltr,
-                                  ),
-                                  HeightSpace(8.h),
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        "سعر الحجز : ",
-                                        style: AppTextStyles.font14Medium,
-                                      ),
-                                      WidthSpace(8.w),
-                                      Text(
-                                        "${service.price} دينار",
-                                        style:
-                                            AppTextStyles.font16Bold.copyWith(
-                                          color: AppColors.primary,
-                                        ),
-                                      ),
-                                    ],
-                                  )
-                                ],
+                        ),
+                      ),
+                    ),
+
+                    /// مؤشرات الصور
+                    if (images.length > 1)
+                      Padding(
+                        padding:
+                            EdgeInsets.only(bottom: 10.h),
+                        child: Row(
+                          mainAxisSize:
+                              MainAxisSize.min,
+                          children:
+                              List.generate(
+                            images.length,
+                            (index) {
+                              final isSelected =
+                                  index ==
+                                      _currentImageIndex;
+
+                              return AnimatedContainer(
+                                duration:
+                                    const Duration(
+                                  milliseconds: 200,
+                                ),
+                                margin:
+                                    EdgeInsets.symmetric(
+                                  horizontal: 3.w,
+                                ),
+                                width: isSelected
+                                    ? 18.w
+                                    : 7.w,
+                                height: 7.h,
+                                decoration:
+                                    BoxDecoration(
+                                  color: isSelected
+                                      ? Colors.white
+                                      : Colors.white
+                                          .withOpacity(
+                                              0.55),
+                                  borderRadius:
+                                      BorderRadius
+                                          .circular(
+                                              20.r),
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+
+              /// ===============================
+              /// بيانات الملعب
+              /// ===============================
+              Padding(
+                padding:
+                    EdgeInsets.symmetric(
+                  horizontal: 16.w,
+                  vertical: 14.h,
+                ),
+                child: Directionality(
+                  textDirection:
+                      TextDirection.rtl,
+                  child: Column(
+                    crossAxisAlignment:
+                        CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        widget.title,
+                        style:
+                            AppTextStyles.font16Bold
+                                .copyWith(
+                          fontSize: 17.sp,
+                        ),
+                        maxLines: 2,
+                        overflow:
+                            TextOverflow.ellipsis,
+                      ),
+
+                      HeightSpace(10.h),
+
+                      Row(
+                        children: [
+                          Text(
+                            "سعر الحجز:",
+                            style: AppTextStyles
+                                .font14Medium,
+                          ),
+
+                          WidthSpace(8.w),
+
+                          Flexible(
+                            child: Text(
+                              "${widget.price} دينار",
+                              style: AppTextStyles
+                                  .font16Bold
+                                  .copyWith(
+                                color:
+                                    AppColors.primary,
                               ),
                             ),
                           ),
                         ],
                       ),
-                    ),
-                    onTap: () {
-                      final clubId = context.read<PageViewCubit>().state.clubId;
-                      context
-                          .read<PageViewCubit>()
-                          .setServiceId(service.id, service.title);
-                      context.read<PageViewCubit>().nextPage();
-                      context.read<EmployeeCubit>().listEmployee(clubId ?? 0);
 
-                      controller.nextPage(
-                          duration: Duration(milliseconds: 300),
-                          curve: Curves.ease);
-                    },
-                  )),
-            if (state is ServiceLoading)
-              Center(child: CircularProgressIndicator()),
-            if (state is ServiceError) Text('خطأ: ${state.message}'),
-          ],
-        );
-      },
+                      HeightSpace(12.h),
+
+                      Row(
+                        children: [
+                          Icon(
+                            Icons
+                                .touch_app_outlined,
+                            color:
+                                AppColors.primary,
+                            size: 19.r,
+                          ),
+
+                          WidthSpace(6.w),
+
+                          Text(
+                            "اضغط لاختيار الملعب",
+                            style: AppTextStyles
+                                .font14Medium
+                                .copyWith(
+                              color:
+                                  AppColors.primary,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _ImagePlaceholder extends StatelessWidget {
+  final bool showLoader;
+
+  const _ImagePlaceholder({
+    this.showLoader = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      height: double.infinity,
+      color: Colors.grey.shade100,
+      child: Center(
+        child: showLoader
+            ? SizedBox(
+                width: 28.r,
+                height: 28.r,
+                child:
+                    CircularProgressIndicator(
+                  strokeWidth: 2,
+                  valueColor:
+                      AlwaysStoppedAnimation<Color>(
+                    AppColors.primary
+                        .withOpacity(0.7),
+                  ),
+                ),
+              )
+            : Column(
+                mainAxisSize:
+                    MainAxisSize.min,
+                children: [
+                  Icon(
+                    Icons
+                        .sports_soccer_rounded,
+                    size: 50.r,
+                    color:
+                        Colors.grey.shade400,
+                  ),
+
+                  SizedBox(height: 8.h),
+
+                  Text(
+                    'لا توجد صورة للملعب',
+                    style: AppTextStyles
+                        .font14Medium
+                        .copyWith(
+                      color:
+                          Colors.grey.shade500,
+                    ),
+                  ),
+                ],
+              ),
+      ),
     );
   }
 }

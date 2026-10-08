@@ -28,7 +28,10 @@ class BuildDetailsSection extends StatelessWidget {
             booking: booking,
           ),
           HeightSpace(8.h),
-          Row(
+          Wrap(
+            spacing: 4.w,
+            runSpacing: 6.h,
+            crossAxisAlignment: WrapCrossAlignment.center,
             children: [
               Text(
                 "رقم الحجز :",

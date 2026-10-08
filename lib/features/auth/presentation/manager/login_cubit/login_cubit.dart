@@ -38,7 +38,6 @@ class LoginCubit extends Cubit<LoginState> {
       },
       (user) {
         emit(LoginSuccess());
-        print("---->token ${SharedPreferenceUtil.getString(PrefKey.fcmToken)}");
         //save user
 
         _saveUserData(user);
@@ -47,7 +46,6 @@ class LoginCubit extends Cubit<LoginState> {
   }
 
   Future<void> _saveUserData(UserData userData) async {
-    print("---->UserData token ${userData.token}");
     await SharedPreferenceUtil.putString(
         PrefKey.refreshToken, userData.token ?? "");
 

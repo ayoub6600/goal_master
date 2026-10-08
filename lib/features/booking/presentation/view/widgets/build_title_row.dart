@@ -16,7 +16,10 @@ class BuildTitleRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
+    return Wrap(
+      spacing: 8.w,
+      runSpacing: 6.h,
+      crossAxisAlignment: WrapCrossAlignment.center,
       children: [
         Text(
           booking.branch,
@@ -24,16 +27,8 @@ class BuildTitleRow extends StatelessWidget {
             color: Color(0xff204523),
           ),
         ),
-        Spacer(),
-        //rating widget
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            StatusContainer(
-              status: booking.status,
-            )
-          ],
+        StatusContainer(
+          status: booking.status,
         ),
       ],
     );

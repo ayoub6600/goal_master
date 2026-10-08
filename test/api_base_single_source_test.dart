@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:goal_master/core/databases/api/api_base_safety.dart';
 import 'package:goal_master/core/databases/api/dio_consumer.dart';
 import 'package:goal_master/core/databases/api/end_points.dart';
 
@@ -36,18 +37,29 @@ void main() {
       expect(first.options.baseUrl, second.options.baseUrl);
     });
 
-    test('the default is the local development server', () {
+    test('the default is the production server', () {
       // No --dart-define in the test runner, so this is the default path —
-      // the one the Simulator relies on.
-      expect(EndPoints.baserUrl, 'http://127.0.0.1:8000/api/');
-      expect(EndPoints.isLocalApi, isTrue);
+      // the one an unconfigured build ships with. It must be the real API,
+      // not loopback, or a build made without --dart-define silently points
+      // at the end user's own phone.
+      expect(EndPoints.baserUrl, 'https://goalmaster.aljidartech.com/api/');
+      expect(EndPoints.isLocalApi, isFalse);
     });
 
     test('a local base is recognised as local', () {
       // Drives the release guard and the startup notice. Loopback and the
       // private ranges are all developer machines; a public host is not.
-      expect(EndPoints.isLocalApi, isTrue,
+      // ApiBaseSafety.isLocalOrLan is the pure rule under isLocalApi,
+      // exercised directly since the compiled baserUrl constant (now the
+      // production host) can't be varied at test-run time.
+      expect(ApiBaseSafety.isLocalOrLan('http://127.0.0.1:8000/api/'), isTrue,
           reason: '127.0.0.1 must be treated as local');
+      expect(ApiBaseSafety.isLocalOrLan('http://192.168.1.5:8000/api/'), isTrue,
+          reason: 'a private LAN address must be treated as local');
+      expect(
+          ApiBaseSafety.isLocalOrLan('https://goalmaster.aljidartech.com/api/'),
+          isFalse,
+          reason: 'the real production host must never be treated as local');
     });
 
     test('no source file hardcodes an API host', () {

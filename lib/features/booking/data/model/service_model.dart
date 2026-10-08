@@ -2,6 +2,7 @@ class Service {
   final int id;
   final String title;
   final String image;
+  final List<String> images;
   final int schServiceCategoryId;
   final int visibility;
   final String price;
@@ -28,6 +29,7 @@ class Service {
     required this.id,
     required this.title,
     required this.image,
+    required this.images,
     required this.schServiceCategoryId,
     required this.visibility,
     required this.price,
@@ -56,6 +58,9 @@ class Service {
       id: _asInt(json['id']),
       title: _asString(json['title']),
       image: _asString(json['image'] ?? json['image_url']),
+      images: _asImageUrls(
+        json['images'] ?? json['media'],
+      ),
       schServiceCategoryId: _asInt(json['sch_service_category_id']),
       visibility: _asInt(json['visibility']),
       price: json['price']?.toString() ?? '0',
@@ -105,6 +110,7 @@ class Service {
       'id': id,
       'title': title,
       'image': image,
+      'images': images,
       'sch_service_category_id': schServiceCategoryId,
       'visibility': visibility,
       'price': price,
@@ -146,4 +152,29 @@ String _asString(dynamic value, {String fallback = ''}) {
     return fallback;
   }
   return stringValue;
+}
+
+
+List<String> _asImageUrls(dynamic value) {
+  if (value is! List) return const [];
+
+  return value
+      .map((item) {
+        if (item is String) {
+          return item.trim();
+        }
+
+        if (item is Map) {
+          return (
+            item['url'] ??
+            item['original_url'] ??
+            item['preview_url'] ??
+            ''
+          ).toString().trim();
+        }
+
+        return '';
+      })
+      .where((url) => url.isNotEmpty)
+      .toList(growable: false);
 }

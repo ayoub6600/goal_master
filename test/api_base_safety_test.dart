@@ -6,7 +6,7 @@ import 'package:goal_master/core/databases/api/end_points.dart';
 /// so a single test run can't vary it — `ApiBaseSafety` takes the URL as a
 /// parameter instead, which is what's exercised against the various cases
 /// below. The two tests against `EndPoints` itself cover its actual,
-/// currently-baked-in value (the localhost default, since no --dart-define
+/// currently-baked-in value (the production default, since no --dart-define
 /// is passed running `flutter test`).
 void main() {
   group('ApiBaseSafety.releaseViolation', () {
@@ -52,20 +52,22 @@ void main() {
 
   group('EndPoints (actual compiled-in value)', () {
     test(
-        '1. unchanged local/debug default still works exactly as before',
+        '1. the production default is safe to ship with no --dart-define '
+        'at all',
         () {
-      expect(EndPoints.baserUrl, 'http://127.0.0.1:8000/api/');
-      expect(EndPoints.isLocalApi, isTrue);
+      expect(EndPoints.baserUrl, 'https://goalmaster.aljidartech.com/api/');
+      expect(EndPoints.isLocalApi, isFalse);
     });
 
     test(
-        '2. building with no --dart-define=API_BASE at all is flagged, not '
-        'silently accepted',
+        '2. building with no --dart-define=API_BASE at all is NOT flagged '
+        '— the default is already the real production host',
         () {
-      // This is exactly the scenario the guard exists for: nobody passed
-      // API_BASE, so the compile-time default (localhost) is what's baked
-      // in — and it must be caught, not shipped.
-      expect(EndPoints.releaseSafetyViolation, isNotNull);
+      // Nobody passed API_BASE, so the compile-time default (production) is
+      // what's baked in — and it must be accepted, not refused. The guard
+      // this pins is the opposite failure mode from before: an unconfigured
+      // build must still be safe to ship, never silently local.
+      expect(EndPoints.releaseSafetyViolation, isNull);
     });
   });
 }
