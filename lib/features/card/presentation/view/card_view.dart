@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
+import 'package:goal_master/core/components/keys_values.dart';
+import 'package:goal_master/core/components/preference_utility.dart';
+import 'package:goal_master/features/saved_cards/presentation/saved_cards_page.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:goal_master/core/bottom_sheet/base_bottom_sheet.dart';
@@ -47,6 +51,48 @@ class CardView extends StatelessWidget {
               parent: AlwaysScrollableScrollPhysics(),
             ),
             slivers: [
+              if (kDebugMode)
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+                    child: Card(
+                      child: ListTile(
+                        leading: const Icon(
+                          Icons.credit_card_outlined,
+                          color: Colors.green,
+                        ),
+                        title: const Text('بطاقاتي المحفوظة'),
+                        subtitle: const Text(
+                          'تجريبي - بطاقات اختبار فقط',
+                        ),
+                        trailing: const Icon(Icons.chevron_left),
+                        onTap: () async {
+                          final userId =
+                              SharedPreferenceUtil.getInt(PrefKey.userId);
+
+                          if (!context.mounted) return;
+
+                          if (userId <= 0) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('سجّل الدخول لعرض بطاقاتك'),
+                              ),
+                            );
+                            return;
+                          }
+
+                          await Navigator.of(context).push<void>(
+                            MaterialPageRoute<void>(
+                              builder: (_) => SavedCardsPage(
+                                ownerId: 'customer:$userId',
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ),
+                ),
               SliverPadding(
                 padding: const EdgeInsets.all(16),
                 sliver: SliverToBoxAdapter(

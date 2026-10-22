@@ -16,6 +16,9 @@ if (keystorePropertiesFile.exists()) {
 
 android {
     namespace = "com.ayoub.goalmaster"
+    buildFeatures {
+        buildConfig true
+    }
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -62,6 +65,7 @@ flutter {
     source = "../.."
 }
 dependencies {
+   implementation 'androidx.webkit:webkit:1.16.0'
    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.1.5'
 
 }

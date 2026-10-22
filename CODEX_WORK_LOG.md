@@ -6776,3 +6776,89 @@ to the shared dev DB (additive/nullable only); all backend tests run inside
 Explicitly not built (staged): Admin dispute center/notifications, venue
 customer block/unblock, Captain/chatbot. **Status:** not committed, not
 deployed.
+
+## 2026-10-10 — Android Smart Fill unsupported-status diagnostics
+
+- Compared Goal Master Android bridge registration, channel names, WebView
+  lookup, frame-scoped WebKit API, origin gate, and resolved WebKit dependency
+  with TaxiSta. Both use AndroidX WebKit 1.16.0 and the same required feature
+  gates; the app previously collapsed every native install failure into one
+  boolean, so the exact runtime branch from the installed phone could not be
+  established from old logs.
+- Native install now reports only safe status codes (missing WebView,
+  unsupported feature, installation failure, or installed). Debug Flutter
+  logs those codes only. A bounded retry handles only the transient
+  `webview_not_registered` startup state before payment HTML is loaded.
+- Retained Debug-only registration and exact Moamalat origin allowlist.
+
+Verification: focused Flutter analysis clean; owner/card-scan tests pass;
+synthetic frame-script tests pass. Customer and manager Debug APKs build and
+install/launch on an Android 16 emulator. No approved provider-origin frame
+was loaded; actual Moamalat Smart Fill remains unverified. APK artifacts are
+not proof of live form compatibility. **Status:** uncommitted, not deployed.
+
+## 2026-10-10 — Android Debug startup crash
+
+- Reproduced the Customer launcher crash on the Android 16 emulator and
+  captured the fatal stack: `ClassNotFoundException` for
+  `com.ayoub.goalmaster.MainActivity`, declared by the merged app manifest.
+  Inspection of the crashing APK confirmed the launcher class was absent from
+  DEX although the Kotlin source and manifest were present. This occurred
+  before Flutter engine setup or Smart Fill registration.
+- A forced Kotlin compile generated the class; a clean `:app:clean` followed
+  by a Debug build packaged it. The Manager APK already contained its
+  `com.rahbdev.goaladmin.MainActivity`; it was also clean-built and smoke
+  launched. No source/payment/security behavior was removed or changed.
+
+Verification: both final APKs contain the expected launcher class and were
+installed/launched on the Android 16 emulator. Customer process remained
+alive and had no crash-buffer exception; Manager process remained alive with
+no crash-buffer exception. No physical device was touched. **Status:** build
+artifacts regenerated; source work remains uncommitted.
+
+## 2026-10-10 — Android Smart Fill end-to-end diagnostics
+
+- Traced the card-panel tap through owner-scoped CardVault lookup, native
+  channel, WebView id, AndroidX WebKit install, frame-origin gate and fill
+  response. The selected card is still fetched only after an explicit tap;
+  native output remains limited to safe completion labels. No PAN/CVV/name/
+  expiry is logged or included in diagnostic UI.
+- Replaced generic panel failures with Debug-only status codes and carried
+  install/frame/card/fill states to the panel. The parent page inspects only
+  iframe `src` origins; it never reads a child document. Added a single exact
+  local fixture origin available only in Debug for the cross-origin test.
+- TaxiSta's current checkout explicitly disables its Android Smart Fill
+  path, so its native code is a reference for API usage, not evidence that
+  Android fill currently works there. No mismatch in Goal Master's method
+  channel or `exp` payload key was found.
+
+Verification: focused analysis and owner/card-scan unit tests passed; the
+synthetic DOM script checks passed. The native integration-test app built and
+installed, but Flutter's emulator driver could not attach to its test isolate,
+so cross-origin native filling was not verified. Both Debug APKs built,
+installed and remained foreground/running on Android 16 emulator without a
+fatal exception. Actual Moamalat/Samsung behavior remains unverified.
+**Status:** uncommitted, not deployed.
+
+## 2026-10-10 — Saved-card copy fallback and install diagnostics
+
+- Added Debug-only PAN, expiry, and holder copy buttons to the existing panel.
+  Each tap rechecks account scope and selected card, then reads that card from
+  CardVault. Full PAN remains masked in the UI. Clipboard cleanup is
+  conditional after 30 seconds and on background; Android 13+ marks the PAN
+  clip sensitive when the existing clipboard still matches.
+- Found that Dart mapped native `invalid_request` to `SCRIPT_INSTALL_FAILED`,
+  conflating input/origin validation with a thrown installation call. Split
+  these statuses. Native exceptions now identify the failing registration
+  operation and return only sanitized exception type/reason in Debug.
+- TaxiSta uses the same AndroidX WebKit 1.16.0 APIs and its current Dart
+  checkout disables Android Smart Fill. The old Samsung exception was
+  swallowed by native code, so its underlying operation cannot be recovered
+  from the former status alone.
+
+Verification: Customer and Manager copy/owner/diagnostic tests passed, focused
+analysis passed, both Android Debug APKs built and launched on the Android 16
+emulator without a fatal exception. Native installation on the Samsung was
+not available for reproduction; actual Moamalat fill remains unverified.
+Clipboard history clearing is best-effort and cannot be guaranteed on every
+device. **Status:** uncommitted, not deployed.
