@@ -8,8 +8,6 @@ import webview_flutter_wkwebview
 
 @main
 @objc class AppDelegate: FlutterAppDelegate, FlutterImplicitEngineDelegate {
-  private var generatedPluginsRegistered = false
-
   override func application(
     _ application: UIApplication,
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
@@ -27,11 +25,6 @@ import webview_flutter_wkwebview
       GeneratedPluginRegistrant.register(with: registry)
     }
 
-    let usesSceneLifecycle = Bundle.main.object(forInfoDictionaryKey: "UIApplicationSceneManifest") != nil
-    if !usesSceneLifecycle {
-      GeneratedPluginRegistrant.register(with: self)
-      generatedPluginsRegistered = true
-    }
     let launched = super.application(application, didFinishLaunchingWithOptions: launchOptions)
 #if DEBUG
     if let flutterController = window?.rootViewController as? FlutterViewController {
@@ -65,10 +58,7 @@ import webview_flutter_wkwebview
 
   func didInitializeImplicitFlutterEngine(_ engineBridge: FlutterImplicitEngineBridge) {
     let registry = engineBridge.pluginRegistry
-    if !generatedPluginsRegistered {
-      GeneratedPluginRegistrant.register(with: registry)
-      generatedPluginsRegistered = true
-    }
+    GeneratedPluginRegistrant.register(with: registry)
 #if DEBUG
     CardFillBridge.register(
       messenger: engineBridge.applicationRegistrar.messenger(),
