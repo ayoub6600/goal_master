@@ -1,3 +1,5 @@
+import 'package:goal_master/features/home/data/model/service_model.dart';
+
 class Service {
   final int id;
   final String title;
@@ -24,6 +26,7 @@ class Service {
   final String? updatedBy; // Nullable field
   final String createdAt;
   final String updatedAt;
+  final VenueMarketingPreview? marketingOffer;
 
   Service({
     required this.id,
@@ -51,6 +54,7 @@ class Service {
     this.updatedBy,
     required this.createdAt,
     required this.updatedAt,
+    this.marketingOffer,
   });
 
   factory Service.fromJson(Map<String, dynamic> json) {
@@ -102,6 +106,11 @@ class Service {
       updatedBy: json['updated_by']?.toString(),
       createdAt: _asString(json['created_at']),
       updatedAt: _asString(json['updated_at']),
+      marketingOffer: json['marketing_offer'] is Map
+          ? VenueMarketingPreview.fromJson(
+              Map<String, dynamic>.from(json['marketing_offer'] as Map),
+            )
+          : null,
     );
   }
 
@@ -136,6 +145,7 @@ class Service {
       'updated_by': updatedBy,
       'created_at': createdAt,
       'updated_at': updatedAt,
+      'marketing_offer': marketingOffer?.toJson(),
     };
   }
 }
@@ -154,7 +164,6 @@ String _asString(dynamic value, {String fallback = ''}) {
   return stringValue;
 }
 
-
 List<String> _asImageUrls(dynamic value) {
   if (value is! List) return const [];
 
@@ -165,12 +174,12 @@ List<String> _asImageUrls(dynamic value) {
         }
 
         if (item is Map) {
-          return (
-            item['url'] ??
-            item['original_url'] ??
-            item['preview_url'] ??
-            ''
-          ).toString().trim();
+          return (item['url'] ??
+                  item['original_url'] ??
+                  item['preview_url'] ??
+                  '')
+              .toString()
+              .trim();
         }
 
         return '';

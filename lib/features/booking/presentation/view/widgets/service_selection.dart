@@ -55,10 +55,6 @@ class ServiceSelection extends StatelessWidget {
             );
           }
 
-          final offer = context.read<PageViewCubit>().state.marketingOffer;
-          final offerHeadline = offer?['headline']?.toString();
-          final offerServiceName = offer?['service_name']?.toString();
-
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -85,10 +81,10 @@ class ServiceSelection extends StatelessWidget {
                     return _ServiceCard(
                       title: service.title,
                       price: service.price.toString(),
-                      offerHeadline: offerHeadline,
-                      showOffer: offerHeadline != null &&
-                          (offerServiceName == null ||
-                              offerServiceName == service.title),
+                      offerHeadline: service.marketingOffer?.headline,
+                      showOffer: service.marketingOffer != null,
+                      discountType: service.marketingOffer?.discountType,
+                      discountValue: service.marketingOffer?.discountValue,
                       imageUrls: service.images.isNotEmpty
                           ? service.images
                           : [
@@ -134,6 +130,8 @@ class _ServiceCard extends StatefulWidget {
   final List<String> imageUrls;
   final String? offerHeadline;
   final bool showOffer;
+  final String? discountType;
+  final double? discountValue;
   final VoidCallback onTap;
 
   const _ServiceCard({
@@ -142,6 +140,8 @@ class _ServiceCard extends StatefulWidget {
     required this.imageUrls,
     required this.offerHeadline,
     required this.showOffer,
+    required this.discountType,
+    required this.discountValue,
     required this.onTap,
   });
 
@@ -172,6 +172,14 @@ class _ServiceCardState extends State<_ServiceCard> {
   Widget build(BuildContext context) {
     final images =
         widget.imageUrls.where((image) => image.trim().isNotEmpty).toList();
+    final basePrice = double.tryParse(widget.price) ?? 0;
+    final advertisedDiscount = widget.discountValue == null
+        ? 0.0
+        : widget.discountType == 'percent'
+            ? basePrice * widget.discountValue! / 100
+            : widget.discountValue!;
+    final advertisedPrice =
+        (basePrice - advertisedDiscount).clamp(0, basePrice);
 
     return Material(
       color: Colors.transparent,
@@ -316,8 +324,18 @@ class _ServiceCardState extends State<_ServiceCard> {
                           Text("سعر الحجز الأساسي:",
                               style: AppTextStyles.font14Medium),
                           Text("${widget.price} دينار",
+                              style: AppTextStyles.font16Bold.copyWith(
+                                color: AppColors.primary,
+                                decoration: widget.showOffer
+                                    ? TextDecoration.lineThrough
+                                    : null,
+                              )),
+                          if (widget.showOffer && widget.discountValue != null)
+                            Text(
+                              ' ${advertisedPrice.toStringAsFixed(2)} دينار',
                               style: AppTextStyles.font16Bold
-                                  .copyWith(color: AppColors.primary)),
+                                  .copyWith(color: AppColors.primary),
+                            ),
                         ],
                       ),
                       if (widget.showOffer && widget.offerHeadline != null) ...[
@@ -329,7 +347,7 @@ class _ServiceCardState extends State<_ServiceCard> {
                             SizedBox(width: 4.w),
                             Expanded(
                               child: Text(
-                                '${widget.offerHeadline} · السعر النهائي بعد اختيار الموعد',
+                                widget.offerHeadline!,
                                 style: TextStyle(
                                   color: const Color(0xFF286B33),
                                   fontSize: 10.sp,

@@ -128,12 +128,16 @@ class VenueMarketingPreview {
     required this.fundedBy,
     this.serviceName,
     this.scheduleLimited = false,
+    this.discountType,
+    this.discountValue,
   });
 
   final String headline;
   final String fundedBy;
   final String? serviceName;
   final bool scheduleLimited;
+  final String? discountType;
+  final double? discountValue;
 
   factory VenueMarketingPreview.fromJson(Map<String, dynamic> json) =>
       VenueMarketingPreview(
@@ -141,6 +145,8 @@ class VenueMarketingPreview {
         fundedBy: json['funded_by']?.toString() ?? 'venue',
         serviceName: json['service_name']?.toString(),
         scheduleLimited: json['schedule_limited'] == true,
+        discountType: json['discount_type']?.toString(),
+        discountValue: (json['discount_value'] as num?)?.toDouble(),
       );
 
   Map<String, dynamic> toJson() => {
@@ -148,6 +154,8 @@ class VenueMarketingPreview {
         'funded_by': fundedBy,
         'service_name': serviceName,
         'schedule_limited': scheduleLimited,
+        'discount_type': discountType,
+        'discount_value': discountValue,
       };
 }
 
