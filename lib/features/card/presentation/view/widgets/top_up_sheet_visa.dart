@@ -9,7 +9,10 @@ import 'package:goal_master/core/styles/spaces.dart';
 import 'package:go_router/go_router.dart';
 
 class TopUpSheetVisa extends StatefulWidget {
-  const TopUpSheetVisa({super.key});
+  const TopUpSheetVisa({super.key, this.embedded = false, this.onCompleted});
+
+  final bool embedded;
+  final VoidCallback? onCompleted;
 
   @override
   State<TopUpSheetVisa> createState() => _TopUpSheetVisaState();
@@ -17,6 +20,7 @@ class TopUpSheetVisa extends StatefulWidget {
 
 class _TopUpSheetVisaState extends State<TopUpSheetVisa> {
   final TextEditingController amountController = TextEditingController();
+  bool _submitting = false;
 
   @override
   void dispose() {
@@ -49,39 +53,44 @@ class _TopUpSheetVisaState extends State<TopUpSheetVisa> {
           ),
           HeightSpace(16.h),
           ButtonApp(
-            text: "تأكيد الشحن",
+            text: _submitting ? 'جارٍ المتابعة...' : "تأكيد الشحن",
             backGround: AppColors.primary,
             textColor: Colors.white,
-            onTap: () async {
-              final amount = double.tryParse(amountController.text.trim()) ?? 0;
-              if (amount <= 0) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text("من فضلك أدخل مبلغ صحيح")),
-                );
-                return;
-              }
+            onTap: _submitting
+                ? null
+                : () async {
+                    final amount =
+                        double.tryParse(amountController.text.trim()) ?? 0;
+                    if (amount <= 0) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text("من فضلك أدخل مبلغ صحيح")),
+                      );
+                      return;
+                    }
 
-              final amountInMilli = (amount).round();
+                    final amountInMilli = (amount).round();
 
-              Navigator.pop(
-                context,
-              );
-
-              final res = await context.push(
-                RoutesKeys.kPaymentWebViewPage,
-                extra: {
-                  'amount': amountInMilli.toString(),
-                },
-              );
-              if (!context.mounted) return;
-              if (res == true) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text("تم الشحن بنجاح")),
-                );
-                if (!context.mounted) return;
-                Navigator.pop(context, true);
-              }
-            },
+                    setState(() => _submitting = true);
+                    final res = await context.push(
+                      RoutesKeys.kPaymentWebViewPage,
+                      extra: {
+                        'amount': amountInMilli.toString(),
+                      },
+                    );
+                    if (!context.mounted) return;
+                    setState(() => _submitting = false);
+                    if (res == true) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text("تم الشحن بنجاح")),
+                      );
+                      if (!context.mounted) return;
+                      if (widget.embedded) {
+                        widget.onCompleted?.call();
+                      } else {
+                        Navigator.pop(context, true);
+                      }
+                    }
+                  },
           ),
         ],
       ),

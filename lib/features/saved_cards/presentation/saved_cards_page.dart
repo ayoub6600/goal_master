@@ -10,9 +10,11 @@ class SavedCardsPage extends StatefulWidget {
   const SavedCardsPage({
     super.key,
     required this.ownerId,
+    this.embedded = false,
   });
 
   final String ownerId;
+  final bool embedded;
 
   @override
   State<SavedCardsPage> createState() => _SavedCardsPageState();
@@ -68,10 +70,11 @@ class _SavedCardsPageState extends State<SavedCardsPage> {
   }
 
   Future<void> _openForm([SavedCard? existing]) async {
-    final draft = await Navigator.of(context).push<_CardDraft>(
-      MaterialPageRoute(
-        builder: (_) => _CardFormPage(existing: existing),
-      ),
+    final draft = await showModalBottomSheet<_CardDraft>(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      builder: (_) => _CardFormPage(existing: existing, embedded: true),
     );
 
     if (!mounted || draft == null) return;
@@ -149,6 +152,32 @@ class _SavedCardsPageState extends State<SavedCardsPage> {
 
   @override
   Widget build(BuildContext context) {
+    final content = _buildCards();
+    if (widget.embedded) {
+      return Card(
+        margin: const EdgeInsets.only(top: 8),
+        clipBehavior: Clip.antiAlias,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            if (widget.ownerId.trim().isNotEmpty)
+              Align(
+                alignment: AlignmentDirectional.centerEnd,
+                child: Padding(
+                  padding: const EdgeInsetsDirectional.only(end: 12, top: 8),
+                  child: TextButton.icon(
+                    onPressed: () => _openForm(),
+                    icon: const Icon(Icons.add),
+                    label: const Text('إضافة بطاقة'),
+                  ),
+                ),
+              ),
+            content,
+          ],
+        ),
+      );
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('بطاقاتي المحفوظة'),
@@ -160,12 +189,25 @@ class _SavedCardsPageState extends State<SavedCardsPage> {
               icon: const Icon(Icons.add),
               label: const Text('إضافة بطاقة'),
             ),
-      body: _loading
-          ? const Center(child: CircularProgressIndicator())
-          : _error != null
-              ? Center(child: Text(_error!))
-              : _cards.isEmpty
-                  ? const Center(
+      body: content,
+    );
+  }
+
+  Widget _buildCards() {
+    return _loading
+        ? SizedBox(
+            height: widget.embedded ? 100 : null,
+            child: const Center(child: CircularProgressIndicator()),
+          )
+        : _error != null
+            ? SizedBox(
+                height: widget.embedded ? 80 : null,
+                child: Center(child: Text(_error!)),
+              )
+            : _cards.isEmpty
+                ? SizedBox(
+                    height: widget.embedded ? 100 : null,
+                    child: const Center(
                       child: Padding(
                         padding: EdgeInsets.all(24),
                         child: Text(
@@ -174,69 +216,78 @@ class _SavedCardsPageState extends State<SavedCardsPage> {
                           textAlign: TextAlign.center,
                         ),
                       ),
-                    )
-                  : ListView(
-                      padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
-                      children: [
-                        const Padding(
-                          padding: EdgeInsets.only(bottom: 14),
-                          child: Text(
-                            'البطاقات محفوظة على هذا الجهاز فقط. '
-                            'رمز CVV لا يتم حفظه.',
-                            textAlign: TextAlign.center,
-                          ),
+                    ),
+                  )
+                : ListView(
+                    shrinkWrap: widget.embedded,
+                    physics: widget.embedded
+                        ? const NeverScrollableScrollPhysics()
+                        : null,
+                    padding: EdgeInsets.fromLTRB(
+                      16,
+                      16,
+                      16,
+                      widget.embedded ? 4 : 100,
+                    ),
+                    children: [
+                      const Padding(
+                        padding: EdgeInsets.only(bottom: 14),
+                        child: Text(
+                          'البطاقات محفوظة على هذا الجهاز فقط. '
+                          'رمز CVV لا يتم حفظه.',
+                          textAlign: TextAlign.center,
                         ),
-                        for (final card in _cards)
-                          Card(
-                            margin: const EdgeInsets.only(bottom: 12),
-                            child: ListTile(
-                              leading: const Icon(
-                                Icons.credit_card,
-                                size: 30,
-                              ),
-                              title: Text(
-                                card.nickname?.isNotEmpty == true
-                                    ? card.nickname!
-                                    : card.masked,
-                              ),
-                              subtitle: Text(
-                                '${card.masked}\n'
-                                '${card.holderName} • '
-                                '${card.expiryText}'
-                                '${card.isDefault ? "\nالبطاقة الافتراضية" : ""}',
-                              ),
-                              isThreeLine: true,
-                              trailing: PopupMenuButton<String>(
-                                onSelected: (action) {
-                                  switch (action) {
-                                    case 'default':
-                                      _makeDefault(card);
-                                    case 'edit':
-                                      _openForm(card);
-                                    case 'delete':
-                                      _delete(card);
-                                  }
-                                },
-                                itemBuilder: (_) => const [
-                                  PopupMenuItem(
-                                    value: 'default',
-                                    child: Text('تعيين كافتراضية'),
-                                  ),
-                                  PopupMenuItem(
-                                    value: 'edit',
-                                    child: Text('تعديل'),
-                                  ),
-                                  PopupMenuItem(
-                                    value: 'delete',
-                                    child: Text('حذف'),
-                                  ),
-                                ],
-                              ),
+                      ),
+                      for (final card in _cards)
+                        Card(
+                          margin: const EdgeInsets.only(bottom: 12),
+                          child: ListTile(
+                            leading: const Icon(
+                              Icons.credit_card,
+                              size: 30,
+                            ),
+                            title: Text(
+                              card.nickname?.isNotEmpty == true
+                                  ? card.nickname!
+                                  : card.masked,
+                            ),
+                            subtitle: Text(
+                              '${card.masked}\n'
+                              '${card.holderName} • '
+                              '${card.expiryText}'
+                              '${card.isDefault ? "\nالبطاقة الافتراضية" : ""}',
+                            ),
+                            isThreeLine: true,
+                            trailing: PopupMenuButton<String>(
+                              onSelected: (action) {
+                                switch (action) {
+                                  case 'default':
+                                    _makeDefault(card);
+                                  case 'edit':
+                                    _openForm(card);
+                                  case 'delete':
+                                    _delete(card);
+                                }
+                              },
+                              itemBuilder: (_) => const [
+                                PopupMenuItem(
+                                  value: 'default',
+                                  child: Text('تعيين كافتراضية'),
+                                ),
+                                PopupMenuItem(
+                                  value: 'edit',
+                                  child: Text('تعديل'),
+                                ),
+                                PopupMenuItem(
+                                  value: 'delete',
+                                  child: Text('حذف'),
+                                ),
+                              ],
                             ),
                           ),
-                      ],
-                    ),
-    );
+                        ),
+                    ],
+                  );
   }
 }
 
@@ -257,9 +308,10 @@ class _CardDraft {
 }
 
 class _CardFormPage extends StatefulWidget {
-  const _CardFormPage({this.existing});
+  const _CardFormPage({this.existing, this.embedded = false});
 
   final SavedCard? existing;
+  final bool embedded;
 
   @override
   State<_CardFormPage> createState() => _CardFormPageState();
@@ -391,78 +443,103 @@ class _CardFormPageState extends State<_CardFormPage> {
   Widget build(BuildContext context) {
     final editing = widget.existing != null;
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(editing ? 'تعديل البطاقة' : 'إضافة بطاقة'),
-      ),
-      body: SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.all(20),
-          children: [
-            const Icon(
-              Icons.credit_card,
-              size: 65,
-              color: Colors.green,
-            ),
-            const SizedBox(height: 16),
-            OutlinedButton.icon(
-              onPressed: _scan,
-              icon: const Icon(Icons.camera_alt_outlined),
-              label: const Text('تصوير البطاقة بالكاميرا'),
-            ),
-            const SizedBox(height: 24),
-            _input(
-              'اسم صاحب البطاقة',
-              _holder,
-              keyboard: TextInputType.name,
-            ),
-            _input(
-              editing ? 'رقم جديد للبطاقة (اختياري)' : 'رقم البطاقة',
-              _number,
-              keyboard: TextInputType.number,
-              ltr: true,
-              formatters: [
-                FilteringTextInputFormatter.allow(RegExp(r'[0-9 ]')),
-                LengthLimitingTextInputFormatter(23),
-              ],
-            ),
-            _input(
-              'تاريخ الانتهاء MM/YY',
-              _expiry,
-              keyboard: TextInputType.datetime,
-              ltr: true,
-              formatters: [
-                FilteringTextInputFormatter.allow(RegExp(r'[0-9/]')),
-                LengthLimitingTextInputFormatter(5),
-              ],
-            ),
-            _input(
-              'اسم مختصر للبطاقة (اختياري)',
-              _nickname,
-            ),
-            const SizedBox(height: 4),
-            const Text(
-              'رمز CVV تكتبه في صفحة الدفع فقط. '
-              'ما نطلبوهش وما نحفظوهش هنا.',
-              textAlign: TextAlign.center,
-            ),
-            if (_error != null) ...[
-              const SizedBox(height: 14),
-              Text(
-                _error!,
-                textAlign: TextAlign.center,
-                style: const TextStyle(color: Colors.red),
-              ),
+    final form = SafeArea(
+      child: ListView(
+        shrinkWrap: widget.embedded,
+        padding: const EdgeInsets.all(20),
+        children: [
+          const Icon(
+            Icons.credit_card,
+            size: 65,
+            color: Colors.green,
+          ),
+          const SizedBox(height: 16),
+          OutlinedButton.icon(
+            onPressed: _scan,
+            icon: const Icon(Icons.camera_alt_outlined),
+            label: const Text('تصوير البطاقة بالكاميرا'),
+          ),
+          const SizedBox(height: 24),
+          _input(
+            'اسم صاحب البطاقة',
+            _holder,
+            keyboard: TextInputType.name,
+          ),
+          _input(
+            editing ? 'رقم جديد للبطاقة (اختياري)' : 'رقم البطاقة',
+            _number,
+            keyboard: TextInputType.number,
+            ltr: true,
+            formatters: [
+              FilteringTextInputFormatter.allow(RegExp(r'[0-9 ]')),
+              LengthLimitingTextInputFormatter(23),
             ],
-            const SizedBox(height: 24),
-            FilledButton.icon(
-              onPressed: _save,
-              icon: const Icon(Icons.check_circle_outline),
-              label: const Text('حفظ البطاقة'),
+          ),
+          _input(
+            'تاريخ الانتهاء MM/YY',
+            _expiry,
+            keyboard: TextInputType.datetime,
+            ltr: true,
+            formatters: [
+              FilteringTextInputFormatter.allow(RegExp(r'[0-9/]')),
+              LengthLimitingTextInputFormatter(5),
+            ],
+          ),
+          _input(
+            'اسم مختصر للبطاقة (اختياري)',
+            _nickname,
+          ),
+          const SizedBox(height: 4),
+          const Text(
+            'رمز CVV تكتبه في صفحة الدفع فقط. '
+            'ما نطلبوهش وما نحفظوهش هنا.',
+            textAlign: TextAlign.center,
+          ),
+          if (_error != null) ...[
+            const SizedBox(height: 14),
+            Text(
+              _error!,
+              textAlign: TextAlign.center,
+              style: const TextStyle(color: Colors.red),
             ),
           ],
-        ),
+          const SizedBox(height: 24),
+          FilledButton.icon(
+            onPressed: _save,
+            icon: const Icon(Icons.check_circle_outline),
+            label: const Text('حفظ البطاقة'),
+          ),
+        ],
       ),
+    );
+    if (widget.embedded) {
+      return Padding(
+        padding:
+            EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+              child: Row(
+                children: [
+                  Expanded(
+                      child: Text(editing ? 'تعديل البطاقة' : 'إضافة بطاقة',
+                          style: Theme.of(context).textTheme.titleLarge)),
+                  IconButton(
+                      onPressed: () => Navigator.pop(context),
+                      icon: const Icon(Icons.close)),
+                ],
+              ),
+            ),
+            Flexible(child: form),
+          ],
+        ),
+      );
+    }
+    return Scaffold(
+      appBar: AppBar(title: Text(editing ? 'تعديل البطاقة' : 'إضافة بطاقة')),
+      body: form,
     );
   }
 }

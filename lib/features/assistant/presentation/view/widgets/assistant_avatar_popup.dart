@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:goal_master/core/styles/app_colors.dart';
+import 'package:goal_master/features/assistant/presentation/view/widgets/assistant_avatar_image.dart';
 
 /// A brief center-screen celebration/notice for meaningful moments
 /// (booking success, an error, an empty search...) — shows the matching
@@ -81,11 +82,11 @@ class _AssistantAvatarPopupState extends State<AssistantAvatarPopup> {
                   ],
                 ),
                 child: ClipOval(
-                  child: Image.network(
-                    widget.imageUrl,
-                    fit: BoxFit.cover,
-                    alignment: Alignment.topCenter,
-                    errorBuilder: (_, __, ___) => Icon(
+                  child: AssistantAvatarImage(
+                    url: widget.imageUrl,
+                    width: 144,
+                    height: 144,
+                    fallback: Icon(
                       Icons.support_agent,
                       size: 64,
                       color: AppColors.primary,

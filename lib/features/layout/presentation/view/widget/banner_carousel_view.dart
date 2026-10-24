@@ -1,11 +1,11 @@
 import 'dart:async';
 
 import 'package:carousel_slider/carousel_slider.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:goal_master/core/components/button_app.dart';
 import 'package:goal_master/core/components/custom_failure_toast.dart';
 import 'package:goal_master/core/styles/app_text_styles.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
@@ -134,24 +134,20 @@ class _BannerCarouselScreenState extends State<BannerCarouselScreen> {
                 child: Stack(
                   fit: StackFit.expand,
                   children: [
-                    Image.network(
-                      slide.image ?? "",
+                    CachedNetworkImage(
+                      imageUrl: slide.image ?? "",
                       fit: BoxFit.contain,
-                      loadingBuilder: (context, child, loadingProgress) {
-                        if (loadingProgress == null) return child;
-                        return Container(
-                          color: Colors.grey[200],
-                          child: Center(
-                            child: CircularProgressIndicator(
-                              value: loadingProgress.expectedTotalBytes != null
-                                  ? loadingProgress.cumulativeBytesLoaded /
-                                      loadingProgress.expectedTotalBytes!
-                                  : null,
-                            ),
+                      memCacheWidth: 1200,
+                      maxWidthDiskCache: 1600,
+                      placeholder: (context, url) => Container(
+                        color: Colors.grey[200],
+                        child: Center(
+                          child: CircularProgressIndicator(
+                            color: AppColors.primary,
                           ),
-                        );
-                      },
-                      errorBuilder: (context, error, stackTrace) {
+                        ),
+                      ),
+                      errorWidget: (context, url, error) {
                         return Container(
                           color: Colors.grey[200],
                           child: const Center(

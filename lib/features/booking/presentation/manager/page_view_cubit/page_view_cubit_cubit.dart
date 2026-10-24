@@ -46,12 +46,15 @@ class PageViewCubit extends Cubit<PageViewState> {
     }
   }
 
-  void setClubId(int id, String title, {required bool allowLocalPayment}) {
+  void setClubId(int id, String title,
+      {required bool allowLocalPayment, Map<String, dynamic>? marketingOffer}) {
     emit(
       state.copyWith(
         clubId: id,
         clubTitle: title,
         allowLocalPayment: allowLocalPayment,
+        marketingOffer: marketingOffer,
+        clearMarketingOffer: marketingOffer == null,
       ),
     );
   }
@@ -71,7 +74,14 @@ class PageViewCubit extends Cubit<PageViewState> {
   }
 
   void setServiceId(int id, String title) {
-    emit(state.copyWith(serviceId: id, serviceTitle: title));
+    final offerService = state.marketingOffer?['service_name']?.toString();
+    final offerDoesNotMatchService =
+        offerService != null && offerService.trim() != title.trim();
+    emit(state.copyWith(
+      serviceId: id,
+      serviceTitle: title,
+      clearMarketingOffer: offerDoesNotMatchService,
+    ));
   }
 
   void setDate(String date) {

@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:goal_master/core/routing/app_router.dart';
+import 'package:goal_master/features/assistant/presentation/view/widgets/assistant_avatar_image.dart';
 
 /// A heads-up that slides down over whatever the customer is looking at.
 ///
@@ -192,13 +193,11 @@ class _BannerBodyState extends State<_BannerBody>
       ),
       child: ClipOval(
         child: (widget.avatarUrl != null && widget.avatarUrl!.isNotEmpty)
-            ? Image.network(
-                widget.avatarUrl!,
-                fit: BoxFit.cover,
-                // The artwork is a tall character illustration; a centred
-                // crop cuts off the face at this size.
-                alignment: Alignment.topCenter,
-                errorBuilder: (_, __, ___) => const Icon(
+            ? AssistantAvatarImage(
+                url: widget.avatarUrl!,
+                width: 56,
+                height: 56,
+                fallback: const Icon(
                   Icons.support_agent,
                   color: Colors.white,
                   size: 28,

@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:goal_master/core/styles/app_colors.dart';
 import 'package:goal_master/core/styles/app_text_styles.dart';
 import 'package:goal_master/features/assistant/presentation/manager/assistant_chat_cubit/assistant_chat_cubit.dart';
+import 'package:goal_master/features/assistant/presentation/view/widgets/assistant_avatar_image.dart';
 
 const _gold = Color(0xFFFFB300);
 const _goldDark = Color(0xFFE59400);
@@ -112,11 +113,11 @@ class _BookingSuccessContent extends StatelessWidget {
           ),
           child: ClipOval(
             child: url != null
-                ? Image.network(
-                    url,
-                    fit: BoxFit.cover,
-                    alignment: Alignment.topCenter,
-                    errorBuilder: (_, __, ___) => _fallbackIcon(),
+                ? AssistantAvatarImage(
+                    url: url,
+                    width: 96,
+                    height: 96,
+                    fallback: _fallbackIcon(),
                   )
                 : _fallbackIcon(),
           ),
@@ -164,8 +165,7 @@ class _BookingSuccessContent extends StatelessWidget {
               Expanded(
                 child: Text(
                   'كوينز المكافأة تنضاف لرصيدك بعد ما يكتمل الحجز',
-                  style: AppTextStyles.font14Medium
-                      .copyWith(color: _goldDark),
+                  style: AppTextStyles.font14Medium.copyWith(color: _goldDark),
                 ),
               ),
             ],

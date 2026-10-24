@@ -2,184 +2,243 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:goal_master/core/services/service_locator.dart';
-import 'package:goal_master/core/styles/app_text_styles.dart';
-import 'package:goal_master/features/booking/data/model/cancellation_quote.dart';
+import 'package:goal_master/features/balance/presentation/balance_cubit/balance_cubit.dart';
 import 'package:goal_master/features/booking/data/repo/booking_repo_imp.dart';
-import 'package:goal_master/core/styles/spaces.dart';
 import 'package:goal_master/features/booking/presentation/manager/add_booking_cubit/add_booking_cubit.dart';
 import 'package:goal_master/features/booking/presentation/manager/page_view_cubit/page_view_cubit_cubit.dart';
-import 'package:goal_master/features/booking/presentation/view/widgets/step_title.dart';
+import 'package:goal_master/features/coins/presentation/manager/coins_cubit/coins_cubit.dart';
+import 'package:goal_master/features/promotional_credit/presentation/promotional_credit_cubit.dart';
 
 class ChoosePayment extends StatefulWidget {
-  final PageController controller;
+  const ChoosePayment({super.key, this.controller});
 
-  const ChoosePayment({Key? key, required this.controller}) : super(key: key);
+  final PageController? controller;
 
   @override
   State<ChoosePayment> createState() => _ChoosePaymentState();
 }
 
 class _ChoosePaymentState extends State<ChoosePayment> {
-  /// Mirrors the cubit's default so the page opens with wallet already
-  /// chosen, rather than showing nothing selected and refusing on submit.
-  int? selectedPaymentType = 4;
-
-  /// Why pay-on-arrival is unavailable to THIS customer, if it is.
-  ///
-  /// Separate from the branch's own setting: a venue that does not offer it
-  /// at all and a customer who has lost access to it are different facts, and
-  /// telling someone "not available here" when the real reason is their own
-  /// record would be misleading.
-  PayOnArrivalRestriction? _restriction;
+  int? _selectedPaymentType = 4;
+  bool _allowLocalPayment = false;
+  bool _loaded = false;
 
   @override
   void initState() {
     super.initState();
-
-    // Keep the cubit and the highlighted card in step from the first frame:
-    // the customer must never see a method selected that the request would
-    // then say was not chosen.
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      context.read<AddBookingCubit>().setPaymentType(selectedPaymentType ?? 4);
+      context.read<AddBookingCubit>().setPaymentType(_selectedPaymentType!);
+      _loadOptions();
     });
-
-    _loadRestriction();
   }
 
-  Future<void> _loadRestriction() async {
-    // The branch is held by the flow's page state, which is what the rest
-    // of this screen already reads for the venue's own payment settings.
-    final branchId = context.read<PageViewCubit>().state.clubId;
-
-    final result =
-        await getIt<BookingRepoImp>().payOnArrivalRestriction(branchId);
-
+  Future<void> _loadOptions() async {
+    final page = context.read<PageViewCubit>().state;
+    final result = await getIt<BookingRepoImp>().payOnArrivalRestriction(
+      page.clubId ?? 0,
+    );
     if (!mounted) return;
-
     result.fold(
-      // A failure here must not block checkout — the backend refuses a
-      // restricted booking anyway, so the worst case is the customer sees
-      // the option and gets a clear refusal instead of a clear warning.
-      (_) {},
-      (restriction) => setState(
-          () => _restriction = restriction.restricted ? restriction : null),
+      (_) => setState(() {
+        _allowLocalPayment = false;
+        _loaded = true;
+      }),
+      (restriction) => setState(() {
+        _allowLocalPayment = page.allowLocalPayment && !restriction.restricted;
+        _loaded = true;
+      }),
     );
   }
 
-  void selectPayment(int type) {
-    setState(() {
-      selectedPaymentType = type;
-    });
-    context.read<AddBookingCubit>().setPaymentType(type);
-    print("تم اختيار وسيلة الدفع: $type");
-  }
-
-  /// Says what happened and what still works, without accusation.
-  Widget _restrictionNotice(PayOnArrivalRestriction restriction) {
-    return Container(
-      margin: EdgeInsets.only(top: 8.h),
-      padding: EdgeInsets.all(12.w),
-      decoration: BoxDecoration(
-        color: const Color(0xFFFFF4E5),
-        borderRadius: BorderRadius.circular(10.r),
-        border: Border.all(color: const Color(0xFFFFD8A8)),
+  Future<void> _chooseMethod() async {
+    final methods = <(int, String, String, IconData)>[
+      (
+        4,
+        'من المحفظة',
+        'الدفع من رصيد المحفظة الحالي',
+        Icons.account_balance_wallet_outlined,
       ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(Icons.info_outline, size: 18.sp, color: const Color(0xFFB26A00)),
-          WidthSpace(8.w),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  restriction.isBranchOnly
-                      ? "الدفع عند الوصول غير متاح في هذا الملعب حالياً"
-                      : "الدفع عند الوصول غير متاح لحسابك حالياً",
-                  style: AppTextStyles.font14Bold
-                      .copyWith(color: const Color(0xFFB26A00)),
+      if (_allowLocalPayment)
+        (
+          1,
+          'عند الوصول',
+          'الدفع نقدًا عند الوصول إلى الملعب',
+          Icons.location_on_outlined,
+        ),
+    ];
+    final selected = await showModalBottomSheet<int>(
+      context: context,
+      showDragHandle: true,
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
+      ),
+      builder: (sheetContext) => SafeArea(
+        child: Padding(
+          padding: EdgeInsets.fromLTRB(20.w, 4.h, 20.w, 20.h),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text('طريقة الدفع',
+                  textAlign: TextAlign.center,
+                  style:
+                      TextStyle(fontSize: 19.sp, fontWeight: FontWeight.w800)),
+              SizedBox(height: 8.h),
+              Text('اختر طريقة الدفع المناسبة لك',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: Colors.grey.shade600)),
+              SizedBox(height: 16.h),
+              for (final method in methods)
+                _MethodOption(
+                  type: method.$1,
+                  title: method.$2,
+                  subtitle: method.$3,
+                  icon: method.$4,
+                  selected: _selectedPaymentType == method.$1,
+                  onTap: () => Navigator.pop(sheetContext, method.$1),
                 ),
-                HeightSpace(4.h),
-                Text(
-                  restriction.message,
-                  style: AppTextStyles.font12Regular
-                      .copyWith(color: const Color(0xFF8A5200), height: 1.5),
+              SizedBox(height: 12.h),
+              FilledButton(
+                style: FilledButton.styleFrom(
+                  backgroundColor: const Color(0xff168b36),
+                  minimumSize: Size.fromHeight(48.h),
                 ),
-              ],
-            ),
+                onPressed: () =>
+                    Navigator.pop(sheetContext, _selectedPaymentType),
+                child: const Text('تأكيد'),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
+    if (selected == null || !mounted) return;
+    setState(() => _selectedPaymentType = selected);
+    context.read<AddBookingCubit>().setPaymentType(selected);
+    if (selected != 4) {
+      context.read<PromotionalCreditCubit>().setUseAtCheckout(false);
+      context.read<CoinsCubit>().setUseCoinsAtCheckout(false);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    final canUseLocalPayment =
-        context.watch<PageViewCubit>().state.allowLocalPayment;
+    final method = _selectedPaymentType == 1 ? 'عند الوصول' : 'من المحفظة';
+    final balance = context.select<BalanceCubit, num?>((cubit) =>
+        cubit.state is BalanceLoaded
+            ? (cubit.state as BalanceLoaded).balance
+            : null);
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        StepTitle(
-          title: "اختر طريقة الدفع",
-          description: "قم باختيار الطريقة التي ترغب بالدفع من خلالها",
-        ),
-        HeightSpace(16.h),
-        _buildPaymentOption(
-          title: "رصيد المستخدم",
-          icon: Icons.wallet,
-          type: 4,
-        ),
-        // Three different situations, three different explanations. Hiding
-        // the option silently leaves the customer guessing what they did
-        // wrong; naming the reason lets them act on it.
-        if (_restriction != null)
-          _restrictionNotice(_restriction!)
-        else if (canUseLocalPayment)
-          _buildPaymentOption(
-            title: "الدفع عند الوصول",
-            icon: Icons.attach_money,
-            type: 1,
-          )
-        else
-          Padding(
-            padding: EdgeInsets.only(top: 8.h),
-            child: Text(
-              "الدفع عند الوصول غير متاح لهذا الملعب حالياً",
-              style: AppTextStyles.font14Regular.copyWith(
-                color: Colors.redAccent,
-              ),
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 6.h),
+      child: Material(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14.r),
+        child: InkWell(
+          onTap: _chooseMethod,
+          borderRadius: BorderRadius.circular(14.r),
+          child: Container(
+            padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(14.r),
+              border: Border.all(color: const Color(0xffe5e9e6)),
+            ),
+            child: Row(
+              children: [
+                Icon(Icons.account_balance_wallet_outlined,
+                    color: const Color(0xff17843a), size: 22.sp),
+                SizedBox(width: 12.w),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('طريقة الدفع',
+                          style: TextStyle(
+                              fontSize: 12.sp, color: Colors.grey.shade600)),
+                      SizedBox(height: 2.h),
+                      Text(method,
+                          style: TextStyle(
+                              fontSize: 15.sp, fontWeight: FontWeight.w700)),
+                      if (_selectedPaymentType == 4 && balance != null)
+                        Text('الرصيد المتاح: ${balance.toStringAsFixed(2)} د.ل',
+                            style: TextStyle(
+                                fontSize: 11.sp, color: Colors.grey.shade600)),
+                      if (_selectedPaymentType == 4 && !_loaded)
+                        Text('جارٍ التحقق من طرق الدفع…',
+                            style: TextStyle(
+                                fontSize: 11.sp, color: Colors.grey.shade600)),
+                    ],
+                  ),
+                ),
+                Icon(Icons.chevron_left, color: Colors.grey.shade600),
+              ],
             ),
           ),
-      ],
-    );
-  }
-
-  Widget _buildPaymentOption({
-    required String title,
-    required IconData icon,
-    required int type,
-  }) {
-    final isSelected = selectedPaymentType == type;
-
-    return ListTile(
-      tileColor: isSelected ? Colors.green.withOpacity(0.1) : null,
-      leading: Icon(
-        icon,
-        color: isSelected ? Colors.green : null,
-      ),
-      trailing:
-          isSelected ? Icon(Icons.check_circle, color: Colors.green) : null,
-      title: Text(
-        title,
-        style: AppTextStyles.font16Bold.copyWith(
-          color: isSelected ? Colors.green : null,
         ),
       ),
-      onTap: () => selectPayment(type),
     );
   }
+}
+
+class _MethodOption extends StatelessWidget {
+  const _MethodOption({
+    required this.type,
+    required this.title,
+    required this.subtitle,
+    required this.icon,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final int type;
+  final String title;
+  final String subtitle;
+  final IconData icon;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) => Padding(
+        padding: EdgeInsets.only(bottom: 10.h),
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(14.r),
+          child: Container(
+            padding: EdgeInsets.all(14.w),
+            decoration: BoxDecoration(
+              color: selected ? const Color(0xfff0f8f0) : Colors.white,
+              border: Border.all(
+                color: selected
+                    ? const Color(0xff168b36)
+                    : const Color(0xffe5e9e6),
+              ),
+              borderRadius: BorderRadius.circular(14.r),
+            ),
+            child: Row(children: [
+              Icon(icon, color: const Color(0xff168b36)),
+              SizedBox(width: 12.w),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(title,
+                        style: const TextStyle(fontWeight: FontWeight.w700)),
+                    Text(subtitle,
+                        style: TextStyle(
+                            color: Colors.grey.shade600, fontSize: 12.sp)),
+                  ],
+                ),
+              ),
+              Icon(
+                  selected
+                      ? Icons.radio_button_checked
+                      : Icons.radio_button_unchecked,
+                  color: selected ? const Color(0xff168b36) : Colors.grey),
+            ]),
+          ),
+        ),
+      );
 }

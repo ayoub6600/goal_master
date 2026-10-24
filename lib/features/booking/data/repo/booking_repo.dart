@@ -77,6 +77,8 @@ abstract class BookingRepo {
     required String phone,
     required String state,
     int coinsToRedeem,
+    double promoCreditToUse,
+    int venueMarketingCampaignId,
     String? checkoutReference,
   });
 
@@ -121,6 +123,7 @@ abstract class BookingRepo {
     required String fullName,
     required String phone,
     String? checkoutReference,
+
     /// The customer's explicit approval of a plan that skips a taken week.
     /// Without the matching signature the backend refuses to skip anything.
     String? approvedPlanSignature,

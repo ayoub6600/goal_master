@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:goal_master/features/assistant/presentation/view/widgets/assistant_avatar_image.dart';
 
 /// The assistant composing a reply.
 ///
@@ -118,13 +119,11 @@ class _AssistantTypingIndicatorState extends State<AssistantTypingIndicator>
       ),
       child: ClipOval(
         child: (widget.avatarUrl != null && widget.avatarUrl!.isNotEmpty)
-            ? Image.network(
-                widget.avatarUrl!,
-                fit: BoxFit.cover,
-                // Tall character artwork — a centred crop cuts off the face
-                // at this size.
-                alignment: Alignment.topCenter,
-                errorBuilder: (_, __, ___) => const Icon(
+            ? AssistantAvatarImage(
+                url: widget.avatarUrl!,
+                width: 28,
+                height: 28,
+                fallback: const Icon(
                   Icons.support_agent,
                   color: Colors.white,
                   size: 16,

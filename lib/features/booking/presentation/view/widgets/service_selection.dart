@@ -55,6 +55,10 @@ class ServiceSelection extends StatelessWidget {
             );
           }
 
+          final offer = context.read<PageViewCubit>().state.marketingOffer;
+          final offerHeadline = offer?['headline']?.toString();
+          final offerServiceName = offer?['service_name']?.toString();
+
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -62,9 +66,7 @@ class ServiceSelection extends StatelessWidget {
                 title: "الملعب",
                 description: "اختر الملعب المناسب للحجز الذي تريده",
               ),
-
               SizedBox(height: 12.h),
-
               Expanded(
                 child: ListView.separated(
                   padding: EdgeInsets.only(
@@ -83,35 +85,32 @@ class ServiceSelection extends StatelessWidget {
                     return _ServiceCard(
                       title: service.title,
                       price: service.price.toString(),
-
+                      offerHeadline: offerHeadline,
+                      showOffer: offerHeadline != null &&
+                          (offerServiceName == null ||
+                              offerServiceName == service.title),
                       imageUrls: service.images.isNotEmpty
                           ? service.images
                           : [
                               if (service.image.trim().isNotEmpty)
                                 service.image,
                             ],
-
                       onTap: () {
-                        final pageViewCubit =
-                            context.read<PageViewCubit>();
+                        final pageViewCubit = context.read<PageViewCubit>();
 
-                        final clubId =
-                            pageViewCubit.state.clubId;
+                        final clubId = pageViewCubit.state.clubId;
 
                         pageViewCubit.setServiceId(
                           service.id,
                           service.title,
                         );
 
-                        context
-                            .read<EmployeeCubit>()
-                            .listEmployee(clubId ?? 0);
+                        context.read<EmployeeCubit>().listEmployee(clubId ?? 0);
 
                         pageViewCubit.nextPage();
 
                         controller.nextPage(
-                          duration:
-                              const Duration(milliseconds: 300),
+                          duration: const Duration(milliseconds: 300),
                           curve: Curves.easeInOut,
                         );
                       },
@@ -133,18 +132,21 @@ class _ServiceCard extends StatefulWidget {
   final String title;
   final String price;
   final List<String> imageUrls;
+  final String? offerHeadline;
+  final bool showOffer;
   final VoidCallback onTap;
 
   const _ServiceCard({
     required this.title,
     required this.price,
     required this.imageUrls,
+    required this.offerHeadline,
+    required this.showOffer,
     required this.onTap,
   });
 
   @override
-  State<_ServiceCard> createState() =>
-      _ServiceCardState();
+  State<_ServiceCard> createState() => _ServiceCardState();
 }
 
 class _ServiceCardState extends State<_ServiceCard> {
@@ -168,9 +170,8 @@ class _ServiceCardState extends State<_ServiceCard> {
 
   @override
   Widget build(BuildContext context) {
-    final images = widget.imageUrls
-        .where((image) => image.trim().isNotEmpty)
-        .toList();
+    final images =
+        widget.imageUrls.where((image) => image.trim().isNotEmpty).toList();
 
     return Material(
       color: Colors.transparent,
@@ -187,8 +188,7 @@ class _ServiceCardState extends State<_ServiceCard> {
             borderRadius: BorderRadius.circular(16.r),
           ),
           child: Column(
-            crossAxisAlignment:
-                CrossAxisAlignment.stretch,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               /// ===============================
               /// صورة الملعب
@@ -209,36 +209,26 @@ class _ServiceCardState extends State<_ServiceCard> {
                             });
                           }
                         },
-                        itemBuilder:
-                            (context, imageIndex) {
+                        itemBuilder: (context, imageIndex) {
                           return CachedNetworkImage(
-                            imageUrl:
-                                images[imageIndex],
+                            imageUrl: images[imageIndex],
                             width: double.infinity,
                             height: 180.h,
                             fit: BoxFit.cover,
-
-                            placeholder:
-                                (context, url) {
+                            placeholder: (context, url) {
                               return const _ImagePlaceholder(
                                 showLoader: true,
                               );
                             },
-
-                            errorWidget:
-                                (context, url, error) {
+                            errorWidget: (context, url, error) {
                               return const _ImagePlaceholder();
                             },
-
-                            fadeInDuration:
-                                const Duration(
+                            fadeInDuration: const Duration(
                               milliseconds: 250,
                             ),
-
-                            memCacheHeight: (360 *
-                                    MediaQuery.of(context)
-                                        .devicePixelRatio)
-                                .round(),
+                            memCacheHeight:
+                                (360 * MediaQuery.of(context).devicePixelRatio)
+                                    .round(),
                           );
                         },
                       )
@@ -250,14 +240,11 @@ class _ServiceCardState extends State<_ServiceCard> {
                       child: Container(
                         decoration: BoxDecoration(
                           gradient: LinearGradient(
-                            begin:
-                                Alignment.topCenter,
-                            end:
-                                Alignment.bottomCenter,
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
                             colors: [
                               Colors.transparent,
-                              Colors.black
-                                  .withOpacity(0.10),
+                              Colors.black.withOpacity(0.10),
                             ],
                           ),
                         ),
@@ -267,43 +254,28 @@ class _ServiceCardState extends State<_ServiceCard> {
                     /// مؤشرات الصور
                     if (images.length > 1)
                       Padding(
-                        padding:
-                            EdgeInsets.only(bottom: 10.h),
+                        padding: EdgeInsets.only(bottom: 10.h),
                         child: Row(
-                          mainAxisSize:
-                              MainAxisSize.min,
-                          children:
-                              List.generate(
+                          mainAxisSize: MainAxisSize.min,
+                          children: List.generate(
                             images.length,
                             (index) {
-                              final isSelected =
-                                  index ==
-                                      _currentImageIndex;
+                              final isSelected = index == _currentImageIndex;
 
                               return AnimatedContainer(
-                                duration:
-                                    const Duration(
+                                duration: const Duration(
                                   milliseconds: 200,
                                 ),
-                                margin:
-                                    EdgeInsets.symmetric(
+                                margin: EdgeInsets.symmetric(
                                   horizontal: 3.w,
                                 ),
-                                width: isSelected
-                                    ? 18.w
-                                    : 7.w,
+                                width: isSelected ? 18.w : 7.w,
                                 height: 7.h,
-                                decoration:
-                                    BoxDecoration(
+                                decoration: BoxDecoration(
                                   color: isSelected
                                       ? Colors.white
-                                      : Colors.white
-                                          .withOpacity(
-                                              0.55),
-                                  borderRadius:
-                                      BorderRadius
-                                          .circular(
-                                              20.r),
+                                      : Colors.white.withOpacity(0.55),
+                                  borderRadius: BorderRadius.circular(20.r),
                                 ),
                               );
                             },
@@ -318,77 +290,71 @@ class _ServiceCardState extends State<_ServiceCard> {
               /// بيانات الملعب
               /// ===============================
               Padding(
-                padding:
-                    EdgeInsets.symmetric(
+                padding: EdgeInsets.symmetric(
                   horizontal: 16.w,
                   vertical: 14.h,
                 ),
                 child: Directionality(
-                  textDirection:
-                      TextDirection.rtl,
+                  textDirection: TextDirection.rtl,
                   child: Column(
-                    crossAxisAlignment:
-                        CrossAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
                         widget.title,
-                        style:
-                            AppTextStyles.font16Bold
-                                .copyWith(
+                        style: AppTextStyles.font16Bold.copyWith(
                           fontSize: 17.sp,
                         ),
                         maxLines: 2,
-                        overflow:
-                            TextOverflow.ellipsis,
+                        overflow: TextOverflow.ellipsis,
                       ),
-
                       HeightSpace(10.h),
-
-                      Row(
+                      Wrap(
+                        crossAxisAlignment: WrapCrossAlignment.center,
+                        spacing: 8.w,
+                        runSpacing: 3.h,
                         children: [
-                          Text(
-                            "سعر الحجز:",
-                            style: AppTextStyles
-                                .font14Medium,
-                          ),
-
-                          WidthSpace(8.w),
-
-                          Flexible(
-                            child: Text(
-                              "${widget.price} دينار",
-                              style: AppTextStyles
-                                  .font16Bold
-                                  .copyWith(
-                                color:
-                                    AppColors.primary,
-                              ),
-                            ),
-                          ),
+                          Text("سعر الحجز الأساسي:",
+                              style: AppTextStyles.font14Medium),
+                          Text("${widget.price} دينار",
+                              style: AppTextStyles.font16Bold
+                                  .copyWith(color: AppColors.primary)),
                         ],
                       ),
-
+                      if (widget.showOffer && widget.offerHeadline != null) ...[
+                        SizedBox(height: 5.h),
+                        Row(
+                          children: [
+                            Icon(Icons.local_offer_outlined,
+                                size: 15.r, color: const Color(0xFF2F7B3B)),
+                            SizedBox(width: 4.w),
+                            Expanded(
+                              child: Text(
+                                '${widget.offerHeadline} · السعر النهائي بعد اختيار الموعد',
+                                style: TextStyle(
+                                  color: const Color(0xFF286B33),
+                                  fontSize: 10.sp,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
                       HeightSpace(12.h),
-
                       Row(
                         children: [
                           Icon(
-                            Icons
-                                .touch_app_outlined,
-                            color:
-                                AppColors.primary,
+                            Icons.touch_app_outlined,
+                            color: AppColors.primary,
                             size: 19.r,
                           ),
-
                           WidthSpace(6.w),
-
                           Text(
                             "اضغط لاختيار الملعب",
-                            style: AppTextStyles
-                                .font14Medium
-                                .copyWith(
-                              color:
-                                  AppColors.primary,
+                            style: AppTextStyles.font14Medium.copyWith(
+                              color: AppColors.primary,
                             ),
                           ),
                         ],
@@ -423,37 +389,26 @@ class _ImagePlaceholder extends StatelessWidget {
             ? SizedBox(
                 width: 28.r,
                 height: 28.r,
-                child:
-                    CircularProgressIndicator(
+                child: CircularProgressIndicator(
                   strokeWidth: 2,
-                  valueColor:
-                      AlwaysStoppedAnimation<Color>(
-                    AppColors.primary
-                        .withOpacity(0.7),
+                  valueColor: AlwaysStoppedAnimation<Color>(
+                    AppColors.primary.withOpacity(0.7),
                   ),
                 ),
               )
             : Column(
-                mainAxisSize:
-                    MainAxisSize.min,
+                mainAxisSize: MainAxisSize.min,
                 children: [
                   Icon(
-                    Icons
-                        .sports_soccer_rounded,
+                    Icons.sports_soccer_rounded,
                     size: 50.r,
-                    color:
-                        Colors.grey.shade400,
+                    color: Colors.grey.shade400,
                   ),
-
                   SizedBox(height: 8.h),
-
                   Text(
                     'لا توجد صورة للملعب',
-                    style: AppTextStyles
-                        .font14Medium
-                        .copyWith(
-                      color:
-                          Colors.grey.shade500,
+                    style: AppTextStyles.font14Medium.copyWith(
+                      color: Colors.grey.shade500,
                     ),
                   ),
                 ],

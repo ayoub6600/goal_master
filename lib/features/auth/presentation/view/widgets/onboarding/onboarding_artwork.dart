@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 /// The admin-uploaded picture for a signup screen, drawn in the lower half.
 ///
@@ -33,16 +34,15 @@ class OnboardingArtwork extends StatelessWidget {
 
     return Padding(
       padding: EdgeInsets.symmetric(vertical: 8.h),
-      child: Image.network(
-        url,
+      child: CachedNetworkImage(
+        imageUrl: url,
         fit: BoxFit.contain,
-        errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+        memCacheWidth: 1200,
+        maxWidthDiskCache: 1600,
+        errorWidget: (_, __, ___) => const SizedBox.shrink(),
         // No spinner: this is decoration arriving late, and a spinner in the
         // middle of a signup step looks like the step itself is stuck.
-        frameBuilder: (_, child, frame, wasSynchronous) {
-          if (wasSynchronous || frame != null) return child;
-          return const SizedBox.shrink();
-        },
+        placeholder: (_, __) => const SizedBox.shrink(),
       ),
     );
   }

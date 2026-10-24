@@ -22,6 +22,7 @@ class ServiceModel {
   final String branchName;
   final int branchZoneId;
   final bool branchAllowLocalPayment;
+  final VenueMarketingPreview? marketingOffer;
 
   ServiceModel({
     required this.id,
@@ -47,6 +48,7 @@ class ServiceModel {
     required this.branchName,
     required this.branchZoneId,
     required this.branchAllowLocalPayment,
+    this.marketingOffer,
   });
 
   factory ServiceModel.fromJson(Map<String, dynamic> json) {
@@ -78,6 +80,10 @@ class ServiceModel {
       branchName: json['branch_name']?.toString() ?? '',
       branchZoneId: _asInt(json['branch_zone_id']),
       branchAllowLocalPayment: json['branch_allow_local_payment'] == true,
+      marketingOffer: json['marketing_offer'] is Map
+          ? VenueMarketingPreview.fromJson(
+              Map<String, dynamic>.from(json['marketing_offer'] as Map))
+          : null,
     );
   }
 
@@ -114,6 +120,35 @@ class ServiceModel {
     if (value is num) return value.toInt();
     return int.tryParse(value?.toString() ?? '') ?? 0;
   }
+}
+
+class VenueMarketingPreview {
+  const VenueMarketingPreview({
+    required this.headline,
+    required this.fundedBy,
+    this.serviceName,
+    this.scheduleLimited = false,
+  });
+
+  final String headline;
+  final String fundedBy;
+  final String? serviceName;
+  final bool scheduleLimited;
+
+  factory VenueMarketingPreview.fromJson(Map<String, dynamic> json) =>
+      VenueMarketingPreview(
+        headline: json['headline']?.toString() ?? 'عروض وخصومات',
+        fundedBy: json['funded_by']?.toString() ?? 'venue',
+        serviceName: json['service_name']?.toString(),
+        scheduleLimited: json['schedule_limited'] == true,
+      );
+
+  Map<String, dynamic> toJson() => {
+        'headline': headline,
+        'funded_by': fundedBy,
+        'service_name': serviceName,
+        'schedule_limited': scheduleLimited,
+      };
 }
 
 class ZoneModel {

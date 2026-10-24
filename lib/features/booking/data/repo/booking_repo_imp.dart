@@ -69,7 +69,8 @@ class BookingRepoImp extends BookingRepo {
   }
 
   @override
-  Future<Either<Failure, CancellationQuote>> cancellationPreview(int bookingId) {
+  Future<Either<Failure, CancellationQuote>> cancellationPreview(
+      int bookingId) {
     return apiConsumer.handleRequest(
       () => apiConsumer.post(
         EndPoints.cancellationPreview,
@@ -107,7 +108,8 @@ class BookingRepoImp extends BookingRepo {
         data: {
           'booking_id': bookingId,
           'reason_code': reasonCode,
-          if (reasonText != null && reasonText.isNotEmpty) 'reason_text': reasonText,
+          if (reasonText != null && reasonText.isNotEmpty)
+            'reason_text': reasonText,
         },
       ),
       (data) => data['message']?.toString() ?? 'تم إرسال طلبك.',
@@ -115,7 +117,8 @@ class BookingRepoImp extends BookingRepo {
   }
 
   @override
-  Future<Either<Failure, String>> escalateToPlatform(int bookingId, String? reason) {
+  Future<Either<Failure, String>> escalateToPlatform(
+      int bookingId, String? reason) {
     return apiConsumer.handleRequest(
       () => apiConsumer.post(
         EndPoints.cancellationEscalate,
@@ -145,7 +148,8 @@ class BookingRepoImp extends BookingRepo {
   }
 
   @override
-  Future<Either<Failure, PayOnArrivalRestriction>> payOnArrivalRestriction(int? branchId) {
+  Future<Either<Failure, PayOnArrivalRestriction>> payOnArrivalRestriction(
+      int? branchId) {
     return apiConsumer.handleRequest(
       () => apiConsumer.get(
         EndPoints.myPaymentRestrictions,
@@ -329,6 +333,8 @@ class BookingRepoImp extends BookingRepo {
       required String phone,
       required String state,
       int coinsToRedeem = 0,
+      double promoCreditToUse = 0,
+      int venueMarketingCampaignId = 0,
       String? checkoutReference}) {
     return apiConsumer.handleRequest(
       () => apiConsumer.post(
@@ -348,9 +354,15 @@ class BookingRepoImp extends BookingRepo {
           'state': "1",
           'paid_amount': "0",
           if (coinsToRedeem > 0) 'coins_to_redeem': coinsToRedeem,
+          if (promoCreditToUse > 0) 'promo_credit_to_use': promoCreditToUse,
+          if (venueMarketingCampaignId > 0)
+            'venue_marketing_campaign_id': venueMarketingCampaignId,
           // Sent whenever coins are involved so a retried submit can't spend
           // them twice — the backend rejects a repeat of the same reference.
-          if (coinsToRedeem > 0 && checkoutReference != null)
+          if ((coinsToRedeem > 0 ||
+                  promoCreditToUse > 0 ||
+                  venueMarketingCampaignId > 0) &&
+              checkoutReference != null)
             'checkout_reference': checkoutReference,
         },
       ),
@@ -463,10 +475,12 @@ class BookingRepoImp extends BookingRepo {
           'is_monthly': 1,
           // Lets a retried submit return the series that was already created
           // instead of building a second one.
-          if (checkoutReference != null) 'checkout_reference': checkoutReference,
+          if (checkoutReference != null)
+            'checkout_reference': checkoutReference,
           // Only sent once the customer has actually approved the plan. The
           // signature pins it to the exact dates they saw.
-          if (approvedPlanSignature != null && approvedPlanSignature.isNotEmpty) ...{
+          if (approvedPlanSignature != null &&
+              approvedPlanSignature.isNotEmpty) ...{
             'allow_skip': 1,
             'approved_plan_signature': approvedPlanSignature,
           },
@@ -584,7 +598,8 @@ class BookingRepoImp extends BookingRepo {
           ));
         }
 
-        if (data['reason'] == 'series_conflict' || data['reason'] == 'plan_changed') {
+        if (data['reason'] == 'series_conflict' ||
+            data['reason'] == 'plan_changed') {
           final parsed = SeriesConflict.fromJson(data);
           return left(SeriesConflictFailure(
             errMessage: parsed.message,
@@ -629,7 +644,8 @@ class BookingRepoImp extends BookingRepo {
       () => apiConsumer.get(EndPoints.seriesList),
       (data) {
         final page = data['data'];
-        final rows = (page is Map<String, dynamic> ? page['data'] : page) as List?;
+        final rows =
+            (page is Map<String, dynamic> ? page['data'] : page) as List?;
         return (rows ?? const [])
             .map((e) => BookingSeries.fromJson(e as Map<String, dynamic>))
             .toList();

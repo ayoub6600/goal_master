@@ -11,7 +11,10 @@ import 'package:goal_master/core/styles/spaces.dart';
 import 'package:goal_master/features/card/presentation/manager/card_cubit/card_cubit.dart';
 
 class TopUpSheet extends StatefulWidget {
-  const TopUpSheet({super.key});
+  const TopUpSheet({super.key, this.embedded = false, this.onCompleted});
+
+  final bool embedded;
+  final VoidCallback? onCompleted;
 
   @override
   State<TopUpSheet> createState() => _TopUpSheetState();
@@ -29,8 +32,11 @@ class _TopUpSheetState extends State<TopUpSheet> {
         if (state is CardSuccess) {
           showCustomSuccessToast("تم شحن الرصيد بنجاح");
           cubit.codeController.clear();
-
-          Navigator.of(context).pop(true);
+          if (widget.embedded) {
+            widget.onCompleted?.call();
+          } else {
+            Navigator.of(context).pop(true);
+          }
         } else if (state is CardFailure) {
           showCustomFailureToast(state.message);
         }

@@ -34,6 +34,9 @@ import 'package:goal_master/features/balance/data/repo/balance_repo_imp.dart';
 import 'package:goal_master/features/balance/presentation/balance_cubit/balance_cubit.dart';
 import 'package:goal_master/features/coins/data/repo/coins_repo_imp.dart';
 import 'package:goal_master/features/coins/presentation/manager/coins_cubit/coins_cubit.dart';
+import 'package:goal_master/features/promotional_credit/data/promotional_credit_repo.dart';
+import 'package:goal_master/features/promotional_credit/presentation/promotional_credit_cubit.dart';
+import 'package:goal_master/features/promotional_credit/presentation/venue_campaign_cubit.dart';
 import 'package:goal_master/features/home/data/repo/analysis_repo_imp.dart';
 import 'package:goal_master/features/home/presentation/manager/analysis_cubit/analysis_cubit.dart';
 import 'package:goal_master/features/layout/presentation/manager/layout_cubit.dart';
@@ -226,6 +229,14 @@ class GoalMaster extends StatelessWidget {
               BlocProvider(
                   create: (_) => AssistantChatCubit(getIt<AssistantRepoImp>())),
               BlocProvider(create: (_) => CoinsCubit(getIt<CoinsRepoImp>())),
+              BlocProvider(
+                create: (_) =>
+                    PromotionalCreditCubit(getIt<PromotionalCreditRepo>()),
+              ),
+              BlocProvider(
+                create: (_) =>
+                    VenueCampaignCubit(getIt<PromotionalCreditRepo>()),
+              ),
             ],
             child: ScreenUtilInit(
               designSize: const Size(390, 844),
@@ -272,12 +283,13 @@ class GoalMaster extends StatelessWidget {
                         return MandatoryActionGate(
                           child: RequiredLocationGate(
                             child: Stack(
-                            children: [
-                              if (child != null) child,
-                              if (!state)
-                                const Positioned.fill(child: NoInternetView()),
-                              if (state) const CaptainAyoubBubble(),
-                            ],
+                              children: [
+                                if (child != null) child,
+                                if (!state)
+                                  const Positioned.fill(
+                                      child: NoInternetView()),
+                                if (state) const CaptainAyoubBubble(),
+                              ],
                             ),
                           ),
                         );

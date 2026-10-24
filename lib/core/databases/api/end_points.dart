@@ -170,9 +170,18 @@ class EndPoints {
   static String assistantUnread = 'user/assistant/unread';
 
   static String coinsBalance = 'user/coins/balance';
-  static String coinsHistory(int page) => 'user/coins/history?per_page=20&page=$page';
+  static String coinsHistory(int page) =>
+      'user/coins/history?per_page=20&page=$page';
   static String coinsRedeem = 'user/coins/redeem';
   static String coinsQuote = 'user/coins/quote';
+
+  static String promotionalWallet = 'user/promotional-wallet';
+  static String promotionalWalletQuote = 'user/promotional-wallet/quote';
+  static String venueMarketingOffers = 'user/venue-marketing/offers';
+  static String footballChallenge = 'user/football-challenge';
+  static String footballChallengeStart = 'user/football-challenge/start';
+  static String footballChallengeShoot(String id) =>
+      'user/football-challenge/$id/shoot';
 
   /// Where the customer is shopping from. Account-scoped, server-resolved.
   static String locationBootstrap = 'user/location/bootstrap';

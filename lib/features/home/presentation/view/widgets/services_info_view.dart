@@ -10,6 +10,7 @@ import 'package:goal_master/core/styles/app_text_styles.dart';
 import 'package:goal_master/core/styles/spaces.dart';
 import 'package:goal_master/features/home/data/model/service_model.dart';
 import 'package:goal_master/features/home/presentation/manager/get_services_info_cubit/get_services_info_cubit.dart';
+import 'package:goal_master/features/promotional_credit/presentation/marketing_offer_badge.dart';
 
 class ServicesInfoView extends StatelessWidget {
   const ServicesInfoView({super.key});
@@ -74,6 +75,7 @@ class ServicesInfoView extends StatelessWidget {
                         'zoneId': branch.branchZoneId,
                         'zoneName': state.zoneName ?? '',
                         'allowLocalPayment': branch.branchAllowLocalPayment,
+                        'marketingOffer': branch.marketingOffer?.toJson(),
                       });
                     },
                     child: Padding(
@@ -87,18 +89,18 @@ class ServicesInfoView extends StatelessWidget {
                               imageUrl: branch.imageUrl ??
                                   'https://via.placeholder.com/120',
                               width: double.infinity,
-                              height: 90,
+                              height: 68.h,
                               fit: BoxFit.cover,
                               placeholder: (context, url) => Container(
                                 width: double.infinity,
-                                height: 90,
+                                height: 68.h,
                                 color: Colors.grey[200],
-                                child:
-                                    const Center(child: CircularProgressIndicator()),
+                                child: const Center(
+                                    child: CircularProgressIndicator()),
                               ),
                               errorWidget: (context, url, error) => Container(
                                 width: double.infinity,
-                                height: 90,
+                                height: 68.h,
                                 color: Colors.grey[300],
                                 child: const Icon(Icons.broken_image,
                                     size: 32, color: Colors.grey),
@@ -112,6 +114,10 @@ class ServicesInfoView extends StatelessWidget {
                             overflow: TextOverflow.ellipsis,
                             style: AppTextStyles.font16Bold,
                           ),
+                          if (branch.marketingOffer case final offer?) ...[
+                            SizedBox(height: 3.h),
+                            MarketingOfferBadge(offer: offer),
+                          ],
                           if (branch.branchAllowLocalPayment) ...[
                             SizedBox(height: 1.h),
                             Text(

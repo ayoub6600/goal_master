@@ -1,90 +1,91 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:goal_master/core/bottom_sheet/base_bottom_sheet.dart';
 import 'package:goal_master/core/components/button_app_two.dart';
 import 'package:goal_master/core/components/page_wrapper.dart';
 
 import 'package:goal_master/core/styles/assets.dart';
 import 'package:goal_master/core/styles/spaces.dart';
-import 'package:goal_master/features/balance/presentation/balance_cubit/balance_cubit.dart';
-import 'package:goal_master/features/balance/presentation/transaction_cubit/transaction_cubit.dart';
-import 'package:goal_master/features/card/presentation/manager/card_cubit/card_cubit.dart';
 import 'package:goal_master/features/card/presentation/view/widgets/top_up_sheet.dart';
 import 'package:goal_master/features/card/presentation/view/widgets/top_up_sheet_visa.dart';
 
-class ListPaymentView extends StatelessWidget {
-  const ListPaymentView({super.key});
-  Future<void> _handleTopUpResult(
-      BuildContext context, bool? shouldReload) async {
-    if (shouldReload == true) {
-      final txCubit = context.read<TransactionCubit>();
-      final balanceCubit = context.read<BalanceCubit>();
+class ListPaymentView extends StatefulWidget {
+  const ListPaymentView({super.key, this.embedded = false, this.onUpdated});
 
-      txCubit.refresh();
-      balanceCubit.getBalance();
+  final bool embedded;
+  final VoidCallback? onUpdated;
 
-      if (Navigator.of(context).canPop()) {
-        Navigator.of(context).pop(true); // هيرجع للقائمة السابقة ومعاه true
-      }
+  @override
+  State<ListPaymentView> createState() => _ListPaymentViewState();
+}
+
+class _ListPaymentViewState extends State<ListPaymentView> {
+  int? _selectedMethod;
+
+  void _completed() {
+    widget.onUpdated?.call();
+    if (!widget.embedded && Navigator.of(context).canPop()) {
+      Navigator.of(context).pop(true);
+    } else {
+      setState(() => _selectedMethod = null);
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final content = Padding(
+      padding: EdgeInsets.all(widget.embedded ? 12 : 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (_selectedMethod == null) ...[
+            HeightSpace(8.h),
+            ButtonAppTwo(
+              assetIcon: Assets.creditCards,
+              text: 'البطاقة المصرفية (اونلاين)',
+              onTap: () => setState(() => _selectedMethod = 1),
+            ),
+            HeightSpace(12.h),
+            ButtonAppTwo(
+              text: 'شحن بالكرت',
+              assetIcon: Assets.scratch,
+              onTap: () => setState(() => _selectedMethod = 2),
+            ),
+          ] else ...[
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    _selectedMethod == 1
+                        ? 'شحن بالبطاقة المصرفية'
+                        : 'شحن بالكرت',
+                    style: Theme.of(context).textTheme.titleMedium,
+                    textAlign: TextAlign.right,
+                  ),
+                ),
+                IconButton(
+                  tooltip: 'رجوع',
+                  onPressed: () => setState(() => _selectedMethod = null),
+                  icon: const Icon(Icons.arrow_back),
+                ),
+              ],
+            ),
+            if (_selectedMethod == 1)
+              TopUpSheetVisa(embedded: true, onCompleted: _completed)
+            else
+              TopUpSheet(embedded: true, onCompleted: _completed),
+          ],
+        ],
+      ),
+    );
+
+    if (widget.embedded) {
+      return Card(child: content);
+    }
     return PageWrapper(
-        allowBack: true,
-        title: 'خدمات المحفظة',
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            children: [
-              HeightSpace(16.w),
-              ButtonAppTwo(
-                assetIcon: Assets.creditCards,
-                text: 'البطاقة المصرفية (اونلاين)',
-                onTap: () async {
-                  final cardCubit = context.read<CardCubit>();
-
-                  final shouldReload = await baseBottomSheet(
-                    context: context,
-                    title: "شحن الرصيد",
-                    hideNavBar: false,
-                    showDragHandle: false,
-                    child: BlocProvider.value(
-                      value: cardCubit,
-                      child: const TopUpSheetVisa(),
-                    ),
-                  );
-
-                  await _handleTopUpResult(context, shouldReload);
-                },
-              ),
-              HeightSpace(16.h),
-              ButtonAppTwo(
-                text: "شحن بالكرت",
-                assetIcon: Assets.scratch,
-                onTap: () async {
-                  final cardCubit = context.read<CardCubit>();
-
-                  final shouldReload = await baseBottomSheet(
-                    context: context,
-                    title: "شحن الرصيد",
-                    hideNavBar: false,
-                    showDragHandle: false,
-                    child: BlocProvider.value(
-                      value: cardCubit,
-                      child: const TopUpSheet(),
-                    ),
-                  );
-
-                  if (shouldReload == true) {
-                    await _handleTopUpResult(context, shouldReload);
-                  }
-                },
-              ),
-            ],
-          ),
-        ));
+      allowBack: true,
+      title: 'خدمات المحفظة',
+      child: content,
+    );
   }
 }

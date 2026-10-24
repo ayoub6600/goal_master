@@ -8,6 +8,7 @@ import 'package:goal_master/features/booking/presentation/manager/category_cubit
 import 'package:goal_master/features/booking/presentation/manager/club_cubit/club_cubit.dart';
 import 'package:goal_master/features/booking/presentation/manager/page_view_cubit/page_view_cubit_cubit.dart';
 import 'package:goal_master/features/booking/presentation/view/widgets/step_title.dart';
+import 'package:goal_master/features/promotional_credit/presentation/marketing_offer_badge.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class ClubSelection extends StatelessWidget {
@@ -66,6 +67,8 @@ class ClubSelection extends StatelessWidget {
                                         club.name,
                                         allowLocalPayment:
                                             club.allowLocalPayment,
+                                        marketingOffer:
+                                            club.marketingOffer?.toJson(),
                                       );
                                   context
                                       .read<CategoryCubit>()
@@ -118,6 +121,11 @@ class ClubSelection extends StatelessWidget {
                                                 fontSize: 20,
                                                 fontWeight: FontWeight.bold),
                                           ),
+                                          if (club.marketingOffer
+                                              case final offer?) ...[
+                                            SizedBox(height: 6.h),
+                                            MarketingOfferBadge(offer: offer),
+                                          ],
                                           SizedBox(height: 6),
                                           Row(
                                             children: [

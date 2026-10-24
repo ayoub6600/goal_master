@@ -1,3 +1,5 @@
+import 'package:goal_master/features/home/data/model/service_model.dart';
+
 class ClubResponce {
   final int id;
   final String name;
@@ -15,6 +17,7 @@ class ClubResponce {
   final String? imageUrl;
   final int zoneId;
   final bool allowLocalPayment;
+  final VenueMarketingPreview? marketingOffer;
 
   ClubResponce({
     required this.id,
@@ -33,6 +36,7 @@ class ClubResponce {
     this.long,
     required this.zoneId,
     required this.allowLocalPayment,
+    this.marketingOffer,
   });
 
   factory ClubResponce.fromJson(Map<String, dynamic> json) {
@@ -53,6 +57,10 @@ class ClubResponce {
       long: _asNullableString(json['long']),
       zoneId: _asInt(json['zone_id']),
       allowLocalPayment: _asBool(json['allow_local_payment']),
+      marketingOffer: json['marketing_offer'] is Map
+          ? VenueMarketingPreview.fromJson(
+              Map<String, dynamic>.from(json['marketing_offer'] as Map))
+          : null,
     );
   }
 

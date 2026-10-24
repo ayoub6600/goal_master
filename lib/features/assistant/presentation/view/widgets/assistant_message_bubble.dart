@@ -1,7 +1,9 @@
 import 'package:audioplayers/audioplayers.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:goal_master/core/styles/app_colors.dart';
 import 'package:goal_master/features/assistant/data/model/assistant_message.dart';
+import 'package:goal_master/features/assistant/presentation/view/widgets/assistant_avatar_image.dart';
 
 class AssistantMessageBubble extends StatelessWidget {
   const AssistantMessageBubble({
@@ -40,16 +42,12 @@ class AssistantMessageBubble extends StatelessWidget {
                 // top-aligned Image keeps the face in frame instead.
                 child: avatarUrl != null
                     ? ClipOval(
-                        child: Image.network(
-                          avatarUrl!,
+                        child: AssistantAvatarImage(
+                          url: avatarUrl!,
                           width: 28,
                           height: 28,
-                          fit: BoxFit.cover,
-                          alignment: Alignment.topCenter,
-                          errorBuilder: (_, __, ___) => const Icon(
-                              Icons.support_agent,
-                              color: Colors.white,
-                              size: 16),
+                          fallback: const Icon(Icons.support_agent,
+                              color: Colors.white, size: 16),
                         ),
                       )
                     : const Icon(Icons.support_agent,
@@ -303,10 +301,12 @@ class _QuickReplyCardScroller extends StatelessWidget {
                   children: [
                     Expanded(
                       child: reply.imageUrl != null
-                          ? Image.network(
-                              reply.imageUrl!,
+                          ? CachedNetworkImage(
+                              imageUrl: reply.imageUrl!,
                               fit: BoxFit.cover,
-                              errorBuilder: (_, __, ___) => Container(
+                              memCacheWidth: 390,
+                              maxWidthDiskCache: 768,
+                              errorWidget: (_, __, ___) => Container(
                                 color: Colors.grey.shade200,
                                 child: const Icon(Icons.sports_soccer,
                                     color: Colors.grey, size: 32),

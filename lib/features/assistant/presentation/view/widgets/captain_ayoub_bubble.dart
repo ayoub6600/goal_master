@@ -6,8 +6,8 @@ import 'package:goal_master/core/routing/app_router.dart';
 import 'package:goal_master/core/routing/routes_keys.dart';
 import 'package:goal_master/core/styles/app_colors.dart';
 import 'package:goal_master/features/assistant/presentation/manager/assistant_chat_cubit/assistant_chat_cubit.dart';
+import 'package:goal_master/features/assistant/presentation/view/widgets/assistant_avatar_image.dart';
 import 'package:goal_master/features/location/presentation/manager/active_location_cubit.dart';
-import 'package:goal_master/features/layout/presentation/manager/layout_state.dart';
 
 const double _kBubbleSize = 68;
 const String _kPosXKey = 'captain_ayoub_pos_x';
@@ -267,15 +267,11 @@ class _CaptainAyoubBubbleState extends State<CaptainAyoubBubble>
                     ),
                     child: ClipOval(
                       child: avatarUrl != null
-                          ? Image.network(
-                              avatarUrl,
-                              fit: BoxFit.cover,
-                              // The uploaded artwork is a tall character
-                              // illustration — a centered crop cuts off the
-                              // face. Anchoring to the top keeps the face in
-                              // frame at this small size.
-                              alignment: Alignment.topCenter,
-                              errorBuilder: (_, __, ___) => const Icon(
+                          ? AssistantAvatarImage(
+                              url: avatarUrl,
+                              width: _kBubbleSize,
+                              height: _kBubbleSize,
+                              fallback: const Icon(
                                 Icons.support_agent,
                                 color: Colors.white,
                                 size: 36,

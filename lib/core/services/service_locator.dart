@@ -13,6 +13,7 @@ import 'package:goal_master/features/notification/data/repo/notifaction_repo_imp
 import 'package:goal_master/features/profile/data/repo/profile_repo_imp.dart';
 import 'package:goal_master/features/assistant/data/repo/assistant_repo_imp.dart';
 import 'package:goal_master/features/coins/data/repo/coins_repo_imp.dart';
+import 'package:goal_master/features/promotional_credit/data/promotional_credit_repo.dart';
 import '../../features/booking/data/repo/booking_repo_imp.dart';
 import '../databases/api/dio_consumer.dart';
 
@@ -57,6 +58,9 @@ void setupServiceLocator() {
   );
   getIt.registerSingleton<CoinsRepoImp>(
     CoinsRepoImp(getIt.get<DioConsumer>()),
+  );
+  getIt.registerSingleton<PromotionalCreditRepo>(
+    PromotionalCreditRepo(getIt.get<DioConsumer>()),
   );
   // Where the customer is shopping from. A singleton because every
   // marketplace surface asks the same question and must get the same answer.
