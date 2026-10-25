@@ -61,7 +61,7 @@ class VenueCampaignCheckoutCard extends StatelessWidget {
                     label: 'السعر الأساسي',
                     value: state.baseAmount,
                     muted: true,
-                    struckThrough: true,
+                    struckThrough: offer != null,
                   ),
                   if (offer != null) ...[
                     const SizedBox(height: 6),
