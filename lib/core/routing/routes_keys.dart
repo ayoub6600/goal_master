@@ -29,4 +29,5 @@ class RoutesKeys {
   static const kListPaymentView = "/kListPaymentView";
   static const kAssistantChat = "/kAssistantChat";
   static const kCoins = "/kCoins";
+  static const kGamesRewards = "/kGamesRewards";
 }

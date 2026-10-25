@@ -9,6 +9,7 @@ import 'package:goal_master/core/services/service_locator.dart';
 import 'package:goal_master/core/view/no_internet_view.dart';
 import 'package:goal_master/features/assistant/presentation/view/assistant_chat_view.dart';
 import 'package:goal_master/features/coins/presentation/view/coins_view.dart';
+import 'package:goal_master/features/games/presentation/moving_target_game.dart';
 import 'package:goal_master/features/auth/data/repo/auth_repo_imp.dart';
 import 'package:goal_master/features/auth/presentation/manager/change_password_cubit/change_password_cubit.dart';
 import 'package:goal_master/features/auth/presentation/manager/login_cubit/login_cubit.dart';
@@ -44,7 +45,6 @@ import 'package:goal_master/features/booking/presentation/view/booking_items_det
 import 'package:goal_master/features/booking/presentation/view/booking_view.dart';
 import 'package:goal_master/features/card/data/repo/card_repo_imp.dart';
 import 'package:goal_master/features/card/presentation/manager/add_transaction_cubit/add_transaction_cubit.dart';
-import 'package:goal_master/features/card/presentation/manager/checkout_cubit/payment_cubit/payment_cubit.dart';
 import 'package:goal_master/features/card/presentation/manager/card_cubit/card_cubit.dart';
 import 'package:goal_master/features/card/presentation/view/card_view.dart';
 import 'package:goal_master/features/card/presentation/view/widgets/list_payment_view.dart';
@@ -461,6 +461,15 @@ List<RouteBase> appRoutes = [
       context: context,
       state: state,
       child: const CoinsView(),
+    ),
+  ),
+  GoRoute(
+    parentNavigatorKey: parentKey,
+    path: RoutesKeys.kGamesRewards,
+    pageBuilder: (context, state) => buildPageWithDefaultTransition<void>(
+      context: context,
+      state: state,
+      child: const GamesRewardsView(),
     ),
   ),
   //NotificationView

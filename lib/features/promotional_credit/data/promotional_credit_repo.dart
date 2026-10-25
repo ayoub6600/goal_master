@@ -18,6 +18,19 @@ class PromotionalCreditQuote {
   bool get canRedeem => maxRedeemable > 0;
 }
 
+class PromotionalCreditHistoryEntry {
+  const PromotionalCreditHistoryEntry({
+    required this.amount,
+    required this.entryType,
+    required this.description,
+    required this.createdAt,
+  });
+  final double amount;
+  final String entryType;
+  final String description;
+  final String createdAt;
+}
+
 class VenueMarketingOffer {
   const VenueMarketingOffer({
     required this.id,
@@ -172,6 +185,22 @@ class PromotionalCreditRepo {
         final data = Map<String, dynamic>.from(response['data'] ?? {});
         return (data['promotional_balance'] as num?)?.toDouble() ?? 0;
       },
+    );
+  }
+
+  Future<Either<Failure, List<PromotionalCreditHistoryEntry>>> getHistory() {
+    return api.handleRequest(
+      () => api.get(EndPoints.promotionalWallet),
+      (response) => ((response['data']?['transactions'] as List?) ?? const [])
+          .map((item) {
+        final data = Map<String, dynamic>.from(item as Map);
+        return PromotionalCreditHistoryEntry(
+          amount: (data['amount'] as num?)?.toDouble() ?? 0,
+          entryType: data['entry_type']?.toString() ?? '',
+          description: data['description']?.toString() ?? '',
+          createdAt: data['created_at']?.toString() ?? '',
+        );
+      }).toList(),
     );
   }
 

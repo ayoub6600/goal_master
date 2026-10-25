@@ -22,7 +22,7 @@ import 'package:goal_master/features/layout/presentation/manager/layout_cubit.da
 import 'package:goal_master/features/location/presentation/manager/active_location_cubit.dart';
 import 'package:goal_master/features/layout/presentation/manager/layout_state.dart';
 import 'package:goal_master/features/layout/presentation/view/widget/banner_carousel_view.dart';
-import 'package:goal_master/features/promotional_credit/presentation/football_challenge_card.dart';
+import 'package:goal_master/features/games/presentation/moving_target_game.dart';
 
 class HomeView extends StatefulWidget {
   const HomeView({super.key});
@@ -173,7 +173,7 @@ class _HomeViewState extends State<HomeView> {
                     const SizedBox(height: 10),
                     BannerCarouselScreen(),
                     const SizedBox(height: 12),
-                    const FootballChallengeCard(),
+                    const MovingTargetGameCard(),
                     HeightSpace(20.h),
                     TweenAnimationBuilder<double>(
                       tween: Tween(begin: 1.0, end: 1.1),
