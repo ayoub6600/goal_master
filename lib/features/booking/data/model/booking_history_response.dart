@@ -61,7 +61,9 @@ class Booking {
   final String startTime;
   final String endTime;
   final String service;
+  final String serviceImage;
   final String serviceAmount;
+  final double campaignDiscount;
   final String paidAmount;
   final String paymentStatus;
   final String paymentType;
@@ -88,7 +90,9 @@ class Booking {
     required this.startTime,
     required this.endTime,
     required this.service,
+    this.serviceImage = '',
     required this.serviceAmount,
+    this.campaignDiscount = 0,
     required this.paidAmount,
     required this.paymentStatus,
     required this.paymentType,
@@ -102,6 +106,12 @@ class Booking {
 
   bool get isPartOfSeries => series != null;
 
+  double get basePrice => _asDouble(serviceAmount);
+  double get finalPrice =>
+      (basePrice - campaignDiscount).clamp(0, double.infinity).toDouble();
+  bool get hasCampaignDiscount =>
+      campaignDiscount > 0 && finalPrice < basePrice;
+
   factory Booking.fromJson(Map<String, dynamic> json) {
     return Booking(
       id: _asInt(json['id']),
@@ -113,7 +123,9 @@ class Booking {
       startTime: _asString(json['start_time']),
       endTime: _asString(json['end_time']),
       service: _asString(json['service']),
+      serviceImage: _asString(json['service_image']),
       serviceAmount: _asString(json['service_amount']),
+      campaignDiscount: _asDouble(json['venue_campaign_discount']),
       paidAmount: _asString(json['paid_amount']),
       paymentStatus: _paymentStatus(json['payment_status']),
       paymentType: _asString(json['payment_type']),

@@ -46,41 +46,44 @@ class BuildFacilityRow extends StatelessWidget {
         //
 
         HeightSpace(20.h),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  "السعر ",
-                  style: AppTextStyles.font16Bold.copyWith(
-                    color: AppColors.fontColor,
-                  ),
-                ),
-                HeightSpace(8.h),
-                Row(
-                  children: [
-                    Text(
-                      "دينار${booking.serviceAmount}",
-                      style: AppTextStyles.font16Bold.copyWith(
-                        color: AppColors.primary,
-                      ),
-                    ),
-                    WidthSpace(8.w),
-                    Text(
-                      "( ${_getPaymentStatusText(booking.paymentStatus)} )",
-                      style: AppTextStyles.font16Bold.copyWith(
-                        color: _getPaymentStatusColor(booking.paymentStatus),
-                      ),
-                    ),
-                  ],
-                ),
+        Container(
+          width: double.infinity,
+          padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
+          decoration: BoxDecoration(
+            color: const Color(0xffF2F7F1),
+            borderRadius: BorderRadius.circular(12.r),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text('السعر',
+                  style: AppTextStyles.font16Bold
+                      .copyWith(color: AppColors.fontColor)),
+              HeightSpace(8.h),
+              if (booking.hasCampaignDiscount) ...[
+                _priceRow('السعر الأساسي',
+                    '${booking.basePrice.toStringAsFixed(2)} د.ل',
+                    crossedOut: true),
+                HeightSpace(5.h),
+                _priceRow('خصم الحملة',
+                    '- ${booking.campaignDiscount.toStringAsFixed(2)} د.ل',
+                    color: Colors.green.shade700),
+                const Divider(height: 16),
               ],
-            ),
-          ],
+              _priceRow(
+                booking.hasCampaignDiscount ? 'الإجمالي بعد الخصم' : 'الإجمالي',
+                '${booking.finalPrice.toStringAsFixed(2)} د.ل',
+                color: AppColors.primary,
+                bold: true,
+              ),
+              HeightSpace(5.h),
+              Text('( ${_getPaymentStatusText(booking.paymentStatus)} )',
+                  textAlign: TextAlign.end,
+                  style: AppTextStyles.font14Medium.copyWith(
+                    color: _getPaymentStatusColor(booking.paymentStatus),
+                  )),
+            ],
+          ),
         ),
         HeightSpace(6.h),
       ],
@@ -122,6 +125,21 @@ class BuildFacilityRow extends StatelessWidget {
             ],
           ),
         ),
+      ],
+    );
+  }
+
+  Widget _priceRow(String label, String amount,
+      {Color? color, bool crossedOut = false, bool bold = false}) {
+    final style = (bold ? AppTextStyles.font18Bold : AppTextStyles.font16Bold)
+        .copyWith(
+            color: color ?? AppColors.fontColor,
+            decoration: crossedOut ? TextDecoration.lineThrough : null);
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Expanded(child: Text(label, style: style)),
+        Text(amount, textDirection: TextDirection.ltr, style: style),
       ],
     );
   }

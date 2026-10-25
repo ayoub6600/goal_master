@@ -154,10 +154,10 @@ class VenueMarketingPreview {
     DateTime date, {
     int? categoryId,
   }) {
-    final starts = DateTime.tryParse(schedule['starts_at']?.toString() ?? '')
-        ?.toLocal();
-    final ends = DateTime.tryParse(schedule['ends_at']?.toString() ?? '')
-        ?.toLocal();
+    final starts =
+        DateTime.tryParse(schedule['starts_at']?.toString() ?? '')?.toLocal();
+    final ends =
+        DateTime.tryParse(schedule['ends_at']?.toString() ?? '')?.toLocal();
     final localDate = DateTime(date.year, date.month, date.day);
     if (starts != null &&
         localDate.isBefore(DateTime(starts.year, starts.month, starts.day))) {
@@ -196,7 +196,21 @@ class VenueMarketingPreview {
       final start = schedule['daily_start_time']?.toString();
       final end = schedule['daily_end_time']?.toString();
       final slotTime = time.length >= 5 ? time.substring(0, 5) : time;
-      if ((start != null && slotTime.compareTo(start) < 0) ||
+      final ranges = (schedule['daily_time_ranges'] as List? ?? const [])
+          .whereType<Map>()
+          .map((range) => Map<String, dynamic>.from(range))
+          .toList();
+      if (ranges.isNotEmpty) {
+        final inRange = ranges.any((range) {
+          final rangeStart = range['start']?.toString();
+          final rangeEnd = range['end']?.toString();
+          return rangeStart != null &&
+              rangeEnd != null &&
+              slotTime.compareTo(rangeStart) >= 0 &&
+              slotTime.compareTo(rangeEnd) < 0;
+        });
+        if (!inRange) return false;
+      } else if ((start != null && slotTime.compareTo(start) < 0) ||
           (end != null && slotTime.compareTo(end) >= 0)) {
         return false;
       }

@@ -21,7 +21,7 @@ class BookingItemsDetails extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
-              BuildHeaderImage(),
+              BuildHeaderImage(booking: booking),
               BuildDetailsSection(
                 booking: booking,
               ),

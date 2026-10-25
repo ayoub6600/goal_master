@@ -33,6 +33,26 @@ void main() {
     expect(preview.appliesAt('2026-10-25', '21:00', categoryId: 8), isFalse);
   });
 
+  test('marketing preview honors selected separate hourly ranges', () {
+    final preview = VenueMarketingPreview.fromJson({
+      'schedules': [
+        {
+          'starts_at': '2026-10-25T00:00:00+02:00',
+          'ends_at': '2026-10-26T23:59:59+02:00',
+          'daily_time_ranges': [
+            {'start': '17:00', 'end': '19:00'},
+            {'start': '21:00', 'end': '24:00'},
+          ],
+        },
+      ],
+    });
+
+    expect(preview.appliesAt('2026-10-25', '17:00'), isTrue);
+    expect(preview.appliesAt('2026-10-25', '22:00'), isTrue);
+    expect(preview.appliesAt('2026-10-25', '19:00'), isFalse);
+    expect(preview.appliesAt('2026-10-25', '20:00'), isFalse);
+  });
+
   test('switching back to wallet reapplies the best eligible offer', () async {
     final cubit = VenueCampaignCubit(_StubPromotionalCreditRepo());
     addTearDown(cubit.close);

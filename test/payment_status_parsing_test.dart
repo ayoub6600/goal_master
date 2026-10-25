@@ -24,7 +24,9 @@ void main() {
         'start_time': '20:00:00',
         'end_time': '21:00:00',
         'service': 'سداسي 1',
+        'service_image': 'https://example.test/field.jpg',
         'service_amount': '66',
+        'venue_campaign_discount': 0,
         'paid_amount': '0',
         'payment_status': paymentStatus,
         'payment_type': 'محفظة',
@@ -68,7 +70,8 @@ void main() {
       );
     });
 
-    test('the same codes as numeric strings, in case JSON sends them that '
+    test(
+        'the same codes as numeric strings, in case JSON sends them that '
         'way', () {
       expect(
         Booking.fromJson(bookingJson(paymentStatus: '1')).paymentStatus,
@@ -93,5 +96,21 @@ void main() {
       Booking.fromJson(bookingJson(paymentStatus: 'refunded')).paymentStatus,
       'refunded',
     );
+  });
+
+  test('campaign discount produces a final price without inventing one', () {
+    final discounted = Booking.fromJson({
+      ...bookingJson(paymentStatus: 'paid'),
+      'service_amount': '140.00',
+      'venue_campaign_discount': '40.00',
+    });
+    expect(discounted.serviceImage, 'https://example.test/field.jpg');
+    expect(discounted.hasCampaignDiscount, isTrue);
+    expect(discounted.basePrice, 140);
+    expect(discounted.finalPrice, 100);
+
+    final regular = Booking.fromJson(bookingJson(paymentStatus: 'pending'));
+    expect(regular.hasCampaignDiscount, isFalse);
+    expect(regular.finalPrice, 66);
   });
 }

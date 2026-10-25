@@ -6862,3 +6862,12 @@ emulator without a fatal exception. Native installation on the Samsung was
 not available for reproduction; actual Moamalat fill remains unverified.
 Clipboard history clearing is best-effort and cannot be guaranteed on every
 device. **Status:** uncommitted, not deployed.
+# 2026-10-25 - Campaign schedule and booking presentation
+
+- Added support for separate campaign time ranges and wallet-based platform
+  offer recalculation when the customer switches payment methods.
+- Improved booking history cards with venue/court imagery, campaign pricing,
+  payment state, and detail presentation.
+
+Verification: focused marketing preview and payment parsing tests pass (9
+tests). **Status:** pending production merge.

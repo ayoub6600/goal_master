@@ -63,40 +63,68 @@ class BookingItems extends StatelessWidget {
             ],
             HeightSpace(10.h),
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Container(
-                  margin: EdgeInsets.symmetric(horizontal: 7.w),
-                  padding:
-                      EdgeInsets.symmetric(vertical: 6.h, horizontal: 16.w),
-                  decoration: BoxDecoration(
+                Expanded(
+                  child: Container(
+                    margin: EdgeInsets.symmetric(horizontal: 7.w),
+                    padding:
+                        EdgeInsets.symmetric(vertical: 7.h, horizontal: 10.w),
+                    decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(12.r),
                       border: Border.all(
-                        width: 1.5,
-                        color: Color(0xffDFF5E1),
-                      )),
-                  child: Row(
-                    children: [
-                      CircleAvatar(
-                          radius: 20.w,
-                          backgroundColor: AppColors.primary,
-                          child: Image.asset(
-                            Assets.imagesPngImageProfailIcon,
-                          )),
-                      WidthSpace(10.w),
-                      Text(
-                        booking.service,
-                        style: AppTextStyles.font16Bold.copyWith(
-                          color: Color(0xff204523),
+                          width: 1.5, color: const Color(0xffDFF5E1)),
+                    ),
+                    child: Row(
+                      children: [
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(9.r),
+                          child: SizedBox(
+                            width: 48.w,
+                            height: 48.w,
+                            child: booking.serviceImage.isEmpty
+                                ? Container(
+                                    color: const Color(0xffEAF4E8),
+                                    child: Icon(Icons.sports_soccer,
+                                        color: AppColors.primary, size: 26.w),
+                                  )
+                                : Image.network(
+                                    booking.serviceImage,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (_, __, ___) => Container(
+                                      color: const Color(0xffEAF4E8),
+                                      child: Icon(Icons.sports_soccer,
+                                          color: AppColors.primary, size: 26.w),
+                                    ),
+                                  ),
+                          ),
                         ),
-                      ),
-                    ],
+                        WidthSpace(10.w),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(booking.service,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: AppTextStyles.font16Bold.copyWith(
+                                      color: const Color(0xff204523))),
+                              HeightSpace(3.h),
+                              Text(booking.branch,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: AppTextStyles.font14Medium
+                                      .copyWith(color: AppColors.fontColor)),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
                 Container(
                   padding: EdgeInsets.symmetric(
-                    vertical: 18.h,
-                    horizontal: 30.w,
+                    vertical: 16.h,
+                    horizontal: 14.w,
                   ),
                   decoration: BoxDecoration(
                       color: Color(0xffDFF5E1),
@@ -210,11 +238,29 @@ class BookingItems extends StatelessWidget {
                 WidthSpace(12.w),
                 Expanded(
                   child: Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Text("السعر  : ${booking.serviceAmount} دينار",
-                        style: AppTextStyles.font18Bold.copyWith(
-                          color: AppColors.primary,
-                        )),
+                    padding: EdgeInsetsDirectional.only(end: 8.w),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        if (booking.hasCampaignDiscount)
+                          Text('${booking.basePrice.toStringAsFixed(2)} د.ل',
+                              style: AppTextStyles.font14Medium.copyWith(
+                                color: AppColors.fontColor,
+                                decoration: TextDecoration.lineThrough,
+                              )),
+                        Text(
+                          'السعر: ${booking.finalPrice.toStringAsFixed(2)} دينار',
+                          textAlign: TextAlign.end,
+                          style: AppTextStyles.font16Bold
+                              .copyWith(color: AppColors.primary),
+                        ),
+                        if (booking.hasCampaignDiscount)
+                          Text(
+                              'خصم ${booking.campaignDiscount.toStringAsFixed(2)} د.ل',
+                              style: AppTextStyles.font14Medium
+                                  .copyWith(color: Colors.green.shade700)),
+                      ],
+                    ),
                   ),
                 ),
               ],
