@@ -14,7 +14,7 @@ void main() {
         'الجدار الرياضي',
         allowLocalPayment: true,
         marketingOffer: const {
-          'headline': 'خصومات حتى 30%',
+          'headline': 'خصم 30%',
           'service_name': 'ملعب رقم 1',
           'funded_by': 'platform',
         },
@@ -32,7 +32,7 @@ void main() {
         'الجدار الرياضي',
         allowLocalPayment: true,
         marketingOffer: const {
-          'headline': 'خصومات حتى 30%',
+          'headline': 'خصم 30%',
           'service_name': 'ملعب رقم 1',
           'funded_by': 'platform',
         },
@@ -40,7 +40,7 @@ void main() {
 
       cubit.setServiceId(3, 'ملعب رقم 1');
 
-      expect(cubit.state.marketingOffer?['headline'], 'خصومات حتى 30%');
+      expect(cubit.state.marketingOffer?['headline'], 'خصم 30%');
     });
 
     test('changing to a club without a discovery offer clears the old one', () {

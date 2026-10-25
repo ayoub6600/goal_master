@@ -9,6 +9,7 @@ import 'package:goal_master/features/booking/presentation/manager/calendar_cubit
 import 'package:goal_master/features/booking/presentation/manager/calendar_cubit/calendar_state.dart';
 import 'package:goal_master/features/booking/presentation/manager/page_view_cubit/page_view_cubit_cubit.dart';
 import 'package:goal_master/features/booking/presentation/view/widgets/step_title.dart';
+import 'package:goal_master/features/home/data/model/service_model.dart';
 
 class TimeSlotSection extends StatelessWidget {
   final PageController controller;
@@ -64,7 +65,6 @@ class TimeSlotSection extends StatelessWidget {
                   title: 'وقت الحجز',
                   description: 'قم باختيار الوقت المناسب للحجز الذي تريده',
                 ),
-
                 HeightSpace(16.h),
 
                 /*
@@ -134,8 +134,7 @@ class TimeSlotSection extends StatelessWidget {
        * 12 AM - 1 AM
        * 1 AM - 2 AM
        */
-      final bool isFirstAfterMidnight =
-          slot.afterMidnight == true &&
+      final bool isFirstAfterMidnight = slot.afterMidnight == true &&
           (index == 0 || times[index - 1].afterMidnight != true);
 
       if (isFirstAfterMidnight) {
@@ -152,6 +151,7 @@ class TimeSlotSection extends StatelessWidget {
       widgets.add(
         _TimeSlotButton(
           slot: slot,
+          hasOffer: _slotHasOffer(context, slot),
           isSelected: _isSlotSelected(
             state: state,
             slot: slot,
@@ -167,6 +167,18 @@ class TimeSlotSection extends StatelessWidget {
     }
 
     return widgets;
+  }
+
+  bool _slotHasOffer(BuildContext context, dynamic slot) {
+    final data = context.read<PageViewCubit>().state.marketingOffer;
+    if (data == null) return false;
+    final preview = VenueMarketingPreview.fromJson(data);
+    final categoryId = context.read<PageViewCubit>().state.categoryId;
+    return preview.appliesAt(
+      slot.date?.toString() ?? '',
+      slot.startTime?.toString() ?? '',
+      categoryId: categoryId,
+    );
   }
 
   bool _isSlotSelected({
@@ -187,13 +199,10 @@ class TimeSlotSection extends StatelessWidget {
 
     try {
       if (selected is DateTime) {
-        final selectedHour =
-            '${selected.hour.toString().padLeft(2, '0')}:'
+        final selectedHour = '${selected.hour.toString().padLeft(2, '0')}:'
             '${selected.minute.toString().padLeft(2, '0')}';
 
-        final slotHour = slot.startTime
-            .toString()
-            .substring(0, 5);
+        final slotHour = slot.startTime.toString().substring(0, 5);
 
         return selectedHour == slotHour;
       }
@@ -267,8 +276,7 @@ class TimeSlotSection extends StatelessWidget {
      * New server contract:
      * startAt/endAt are authoritative.
      */
-    if (primary != null &&
-        primary.toString().trim().isNotEmpty) {
+    if (primary != null && primary.toString().trim().isNotEmpty) {
       final parsed = DateTime.tryParse(
         primary.toString(),
       );
@@ -284,8 +292,7 @@ class TimeSlotSection extends StatelessWidget {
      * المفروض مع الـbackend الجديد ألا نصل لهذا المسار
      * في الـunified availability.
      */
-    final fallback =
-        '${date.toString()} ${time.toString()}';
+    final fallback = '${date.toString()} ${time.toString()}';
 
     final parsed = DateTime.tryParse(fallback);
 
@@ -308,11 +315,13 @@ class TimeSlotSection extends StatelessWidget {
 class _TimeSlotButton extends StatelessWidget {
   final dynamic slot;
   final bool isSelected;
+  final bool hasOffer;
   final VoidCallback onTap;
 
   const _TimeSlotButton({
     required this.slot,
     required this.isSelected,
+    required this.hasOffer,
     required this.onTap,
   });
 
@@ -386,8 +395,7 @@ class _TimeSlotButton extends StatelessWidget {
                       color: foreground,
                       // A booked hour is struck through rather than merely
                       // faded: greyed-out text alone reads as "loading".
-                      decoration:
-                          available ? null : TextDecoration.lineThrough,
+                      decoration: available ? null : TextDecoration.lineThrough,
                       decorationColor: AppColors.grey,
                     ),
                   ),
@@ -405,6 +413,19 @@ class _TimeSlotButton extends StatelessWidget {
                       style: AppTextStyles.font12Medium
                           .copyWith(color: AppColors.grey),
                     ),
+                  )
+                else if (hasOffer)
+                  Container(
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
+                    decoration: BoxDecoration(
+                      color: const Color(0xffeaf5e9),
+                      borderRadius: BorderRadius.circular(99.r),
+                    ),
+                    child: Text('عرض',
+                        style: AppTextStyles.font12Medium.copyWith(
+                          color: const Color(0xff28743a),
+                        )),
                   )
                 else
                   SizedBox(width: 20.w),
@@ -451,7 +472,6 @@ class _AfterMidnightDivider extends StatelessWidget {
               ),
             ),
           ),
-
           Padding(
             padding: EdgeInsets.symmetric(horizontal: 10.w),
             child: Container(
@@ -482,7 +502,6 @@ class _AfterMidnightDivider extends StatelessWidget {
               ),
             ),
           ),
-
           Expanded(
             child: Divider(
               height: 1.h,

@@ -130,6 +130,7 @@ class VenueMarketingPreview {
     this.scheduleLimited = false,
     this.discountType,
     this.discountValue,
+    this.schedules = const [],
   });
 
   final String headline;
@@ -138,6 +139,78 @@ class VenueMarketingPreview {
   final bool scheduleLimited;
   final String? discountType;
   final double? discountValue;
+  final List<Map<String, dynamic>> schedules;
+
+  bool appliesOnDate(DateTime date, {int? categoryId}) {
+    return schedules.any((schedule) => _scheduleAppliesOnDate(
+          schedule,
+          date,
+          categoryId: categoryId,
+        ));
+  }
+
+  bool _scheduleAppliesOnDate(
+    Map<String, dynamic> schedule,
+    DateTime date, {
+    int? categoryId,
+  }) {
+    final starts = DateTime.tryParse(schedule['starts_at']?.toString() ?? '')
+        ?.toLocal();
+    final ends = DateTime.tryParse(schedule['ends_at']?.toString() ?? '')
+        ?.toLocal();
+    final localDate = DateTime(date.year, date.month, date.day);
+    if (starts != null &&
+        localDate.isBefore(DateTime(starts.year, starts.month, starts.day))) {
+      return false;
+    }
+    if (ends != null &&
+        localDate.isAfter(DateTime(ends.year, ends.month, ends.day))) {
+      return false;
+    }
+    final days = (schedule['weekdays'] as List? ?? const [])
+        .map((value) => int.tryParse('$value') ?? -1)
+        .toList();
+    if (days.isNotEmpty && !days.contains(date.weekday % 7)) {
+      return false;
+    }
+    if (categoryId != null &&
+        schedule['category_id'] != null &&
+        int.tryParse('${schedule['category_id']}') != categoryId) {
+      return false;
+    }
+    if (categoryId != null &&
+        schedule['category_id'] == null &&
+        schedule['service_id'] != null) {
+      return false;
+    }
+    return true;
+  }
+
+  bool appliesAt(String date, String time, {int? categoryId}) {
+    final day = DateTime.tryParse(date);
+    if (day == null) return false;
+    return schedules.any((schedule) {
+      if (!_scheduleAppliesOnDate(schedule, day, categoryId: categoryId)) {
+        return false;
+      }
+      final start = schedule['daily_start_time']?.toString();
+      final end = schedule['daily_end_time']?.toString();
+      final slotTime = time.length >= 5 ? time.substring(0, 5) : time;
+      if ((start != null && slotTime.compareTo(start) < 0) ||
+          (end != null && slotTime.compareTo(end) >= 0)) {
+        return false;
+      }
+      final occurrence = DateTime.tryParse(
+          '${day.toIso8601String().substring(0, 10)}T$slotTime:00');
+      final startsAt =
+          DateTime.tryParse(schedule['starts_at']?.toString() ?? '')?.toLocal();
+      final endsAt =
+          DateTime.tryParse(schedule['ends_at']?.toString() ?? '')?.toLocal();
+      return occurrence != null &&
+          (startsAt == null || !occurrence.isBefore(startsAt)) &&
+          (endsAt == null || !occurrence.isAfter(endsAt));
+    });
+  }
 
   factory VenueMarketingPreview.fromJson(Map<String, dynamic> json) =>
       VenueMarketingPreview(
@@ -147,6 +220,10 @@ class VenueMarketingPreview {
         scheduleLimited: json['schedule_limited'] == true,
         discountType: json['discount_type']?.toString(),
         discountValue: (json['discount_value'] as num?)?.toDouble(),
+        schedules: (json['schedules'] as List? ?? const [])
+            .whereType<Map>()
+            .map((item) => Map<String, dynamic>.from(item))
+            .toList(),
       );
 
   Map<String, dynamic> toJson() => {
@@ -156,6 +233,7 @@ class VenueMarketingPreview {
         'schedule_limited': scheduleLimited,
         'discount_type': discountType,
         'discount_value': discountValue,
+        'schedules': schedules,
       };
 }
 

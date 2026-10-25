@@ -99,6 +99,7 @@ class ServiceSelection extends StatelessWidget {
                         pageViewCubit.setServiceId(
                           service.id,
                           service.title,
+                          marketingOffer: service.marketingOffer?.toJson(),
                         );
 
                         context.read<EmployeeCubit>().listEmployee(clubId ?? 0);

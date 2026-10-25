@@ -15,6 +15,7 @@ class MarketingOfferBadge extends StatelessWidget {
     final detail = [
       if (offer.serviceName != null) offer.serviceName!,
       funder,
+      if (offer.fundedBy == 'platform') 'الدفع بالمحفظة',
       if (offer.scheduleLimited) 'حسب الموعد',
     ].join(' · ');
 
@@ -33,7 +34,9 @@ class MarketingOfferBadge extends StatelessWidget {
           SizedBox(width: 5.w),
           Flexible(
             child: Text(
-              offer.headline,
+              offer.fundedBy == 'platform'
+                  ? '${offer.headline} · للمحفظة'
+                  : offer.headline,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: AppTextStyles.font12Bold

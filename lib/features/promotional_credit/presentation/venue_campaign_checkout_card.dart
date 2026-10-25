@@ -51,11 +51,26 @@ class VenueCampaignCheckoutCard extends StatelessWidget {
                             style:
                                 const TextStyle(fontWeight: FontWeight.w700)),
                       ),
-                      Text('$percent% خصم',
+                      Text(
+                          offer.discountType == 'fixed'
+                              ? 'خصم ${offer.discount.toStringAsFixed(0)} د.ل'
+                              : '$percent% خصم',
                           style: const TextStyle(
                               color: Color(0xff168b36),
                               fontWeight: FontWeight.w800)),
                     ]),
+                  if (!state.walletSelected &&
+                      state.offers
+                          .any((item) => item.fundedBy == 'platform')) ...[
+                    Row(children: [
+                      Icon(Icons.info_outline,
+                          size: 16, color: Colors.orange.shade800),
+                      const SizedBox(width: 6),
+                      const Expanded(
+                          child: Text(
+                              'خصم جول ماستر متاح عند الدفع من المحفظة فقط.')),
+                    ]),
+                  ],
                   const Divider(height: 18),
                   _PriceLine(
                     label: 'السعر الأساسي',
@@ -72,10 +87,7 @@ class VenueCampaignCheckoutCard extends StatelessWidget {
                     ),
                   ],
                   const Divider(height: 18),
-                  _PriceLine(
-                      label: 'الإجمالي قبل المكافآت',
-                      value: total,
-                      emphasis: true),
+                  _PriceLine(label: 'الإجمالي', value: total, emphasis: true),
                   if (coinsDiscount > 0) ...[
                     const SizedBox(height: 6),
                     _PriceLine(

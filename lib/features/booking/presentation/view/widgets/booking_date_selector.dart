@@ -11,6 +11,8 @@ import 'package:goal_master/core/utils/arabic_dates.dart';
 import 'package:goal_master/features/booking/presentation/manager/calendar_cubit/calendar_cubit.dart';
 import 'package:goal_master/features/booking/presentation/manager/calendar_cubit/calendar_state.dart';
 import 'package:goal_master/features/booking/presentation/view/widgets/full_calendar_sheet.dart';
+import 'package:goal_master/features/booking/presentation/manager/page_view_cubit/page_view_cubit_cubit.dart';
+import 'package:goal_master/features/home/data/model/service_model.dart';
 
 /// Picking the booking date.
 ///
@@ -98,8 +100,9 @@ class _BookingDateSelectorState extends State<BookingDateSelector> {
 
     return BlocBuilder<CalendarCubit, CalendarState>(
       builder: (context, state) {
-        final selected =
-            state.selectedDay != null ? DateUtils.dateOnly(state.selectedDay!) : null;
+        final selected = state.selectedDay != null
+            ? DateUtils.dateOnly(state.selectedDay!)
+            : null;
 
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -108,11 +111,10 @@ class _BookingDateSelectorState extends State<BookingDateSelector> {
             HeightSpace(4.h),
             Text(
               "اختر اليوم الذي تريد اللعب فيه",
-              style:
-                  AppTextStyles.font12Regular.copyWith(color: AppColors.mainGrey),
+              style: AppTextStyles.font12Regular
+                  .copyWith(color: AppColors.mainGrey),
             ),
             HeightSpace(14.h),
-
             SizedBox(
               height: 92.h,
               child: ListView.separated(
@@ -140,17 +142,15 @@ class _BookingDateSelectorState extends State<BookingDateSelector> {
                   return _dayCard(
                     context,
                     date: date,
-                    isSelected: selected != null &&
-                        DateUtils.isSameDay(selected, date),
+                    isSelected:
+                        selected != null && DateUtils.isSameDay(selected, date),
                     label: _relativeLabel(i, date),
                   );
                 },
               ),
             ),
-
             HeightSpace(12.h),
             _calendarButton(context, selected),
-
             if (selected != null) ...[
               HeightSpace(12.h),
               _selectedBanner(selected),
@@ -210,13 +210,17 @@ class _BookingDateSelectorState extends State<BookingDateSelector> {
             Icon(
               Icons.nightlight_round,
               size: 9.sp,
-              color: isSelected ? const Color.fromARGB(255, 0, 0, 0) : const Color.fromARGB(255, 255, 255, 255),
+              color: isSelected
+                  ? const Color.fromARGB(255, 0, 0, 0)
+                  : const Color.fromARGB(255, 255, 255, 255),
             ),
             HeightSpace(1.h),
             Text(
               'الليلة',
               style: AppTextStyles.font12Medium.copyWith(
-                color: isSelected ? const Color.fromARGB(255, 0, 0, 0) : const Color.fromARGB(255, 0, 0, 0),
+                color: isSelected
+                    ? const Color.fromARGB(255, 0, 0, 0)
+                    : const Color.fromARGB(255, 0, 0, 0),
               ),
             ),
             HeightSpace(1.h),
@@ -224,7 +228,9 @@ class _BookingDateSelectorState extends State<BookingDateSelector> {
               '${date.day}',
               style: AppTextStyles.font18Bold.copyWith(
                 fontSize: 13.sp,
-                color: isSelected ? Colors.white : const Color.fromARGB(255, 0, 0, 0),
+                color: isSelected
+                    ? Colors.white
+                    : const Color.fromARGB(255, 0, 0, 0),
               ),
             ),
             Text(
@@ -247,6 +253,13 @@ class _BookingDateSelectorState extends State<BookingDateSelector> {
     required bool isSelected,
     required String label,
   }) {
+    final previewData = context.read<PageViewCubit>().state.marketingOffer;
+    final preview = previewData == null
+        ? null
+        : VenueMarketingPreview.fromJson(previewData);
+    final categoryId = context.read<PageViewCubit>().state.categoryId;
+    final hasOffer =
+        preview?.appliesOnDate(date, categoryId: categoryId) ?? false;
     return InkWell(
       borderRadius: BorderRadius.circular(14.r),
       onTap: () {
@@ -258,7 +271,9 @@ class _BookingDateSelectorState extends State<BookingDateSelector> {
         width: 76.w,
         padding: EdgeInsets.symmetric(vertical: 10.h, horizontal: 6.w),
         decoration: BoxDecoration(
-          color: isSelected ? const Color.fromARGB(255, 100, 189, 70) : Colors.white,
+          color: isSelected
+              ? const Color.fromARGB(255, 100, 189, 70)
+              : Colors.white,
           borderRadius: BorderRadius.circular(14.r),
           border: Border.all(
             color: isSelected
@@ -269,7 +284,8 @@ class _BookingDateSelectorState extends State<BookingDateSelector> {
           boxShadow: isSelected
               ? [
                   BoxShadow(
-                    color: const Color.fromARGB(255, 75, 170, 79).withOpacity(0.25),
+                    color: const Color.fromARGB(255, 75, 170, 79)
+                        .withOpacity(0.25),
                     blurRadius: 10,
                     offset: const Offset(0, 4),
                   ),
@@ -304,6 +320,10 @@ class _BookingDateSelectorState extends State<BookingDateSelector> {
                     : AppColors.lightGrey,
               ),
             ),
+            if (hasOffer)
+              Icon(Icons.local_offer,
+                  size: 10.sp,
+                  color: isSelected ? Colors.white : AppColors.primary),
           ],
         ),
       ),
@@ -351,7 +371,8 @@ class _BookingDateSelectorState extends State<BookingDateSelector> {
       decoration: BoxDecoration(
         color: const Color.fromARGB(255, 0, 118, 173).withOpacity(0.07),
         borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(color: const Color.fromARGB(255, 0, 95, 173).withOpacity(0.3)),
+        border: Border.all(
+            color: const Color.fromARGB(255, 0, 95, 173).withOpacity(0.3)),
       ),
       child: Row(
         children: [

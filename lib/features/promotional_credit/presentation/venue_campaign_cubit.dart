@@ -7,20 +7,33 @@ class VenueCampaignState extends Equatable {
     this.offers = const [],
     this.selectedOfferId,
     this.baseAmount = 0,
+    this.walletSelected = true,
   });
   final List<VenueMarketingOffer> offers;
   final int? selectedOfferId;
   final double baseAmount;
+  final bool walletSelected;
 
   VenueMarketingOffer? get selectedOffer {
     for (final offer in offers) {
-      if (offer.id == selectedOfferId) return offer;
+      if (offer.id == selectedOfferId &&
+          (walletSelected || offer.fundedBy != 'platform')) {
+        return offer;
+      }
+    }
+    if (!walletSelected) {
+      for (final offer in offers) {
+        if (offer.fundedBy != 'platform') {
+          return offer;
+        }
+      }
     }
     return null;
   }
 
   @override
-  List<Object?> get props => [offers, selectedOfferId, baseAmount];
+  List<Object?> get props =>
+      [offers, selectedOfferId, baseAmount, walletSelected];
 }
 
 class VenueCampaignCubit extends Cubit<VenueCampaignState> {
@@ -62,13 +75,17 @@ class VenueCampaignCubit extends Cubit<VenueCampaignState> {
   }
 
   void select(int? offerId) => emit(state.copyWith(selectedOfferId: offerId));
+  void setWalletSelected(bool selected) =>
+      emit(state.copyWith(walletSelected: selected));
   void clear() => emit(const VenueCampaignState());
 }
 
 extension on VenueCampaignState {
-  VenueCampaignState copyWith({int? selectedOfferId}) => VenueCampaignState(
+  VenueCampaignState copyWith({int? selectedOfferId, bool? walletSelected}) =>
+      VenueCampaignState(
         offers: offers,
         selectedOfferId: selectedOfferId,
         baseAmount: baseAmount,
+        walletSelected: walletSelected ?? this.walletSelected,
       );
 }

@@ -83,6 +83,16 @@ class ClubSelection extends StatelessWidget {
                                   padding: const EdgeInsets.all(16.0),
                                   child: Column(
                                     children: [
+                                      if (club.marketingOffer case final offer?)
+                                        Align(
+                                          alignment: Alignment.centerRight,
+                                          child: Padding(
+                                            padding:
+                                                EdgeInsets.only(bottom: 8.h),
+                                            child: MarketingOfferBadge(
+                                                offer: offer),
+                                          ),
+                                        ),
                                       ClipRRect(
                                         borderRadius: BorderRadius.circular(12),
                                         child: CachedNetworkImage(
@@ -121,11 +131,6 @@ class ClubSelection extends StatelessWidget {
                                                 fontSize: 20,
                                                 fontWeight: FontWeight.bold),
                                           ),
-                                          if (club.marketingOffer
-                                              case final offer?) ...[
-                                            SizedBox(height: 6.h),
-                                            MarketingOfferBadge(offer: offer),
-                                          ],
                                           SizedBox(height: 6),
                                           Row(
                                             children: [

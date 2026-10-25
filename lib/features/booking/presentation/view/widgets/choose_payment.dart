@@ -8,6 +8,7 @@ import 'package:goal_master/features/booking/presentation/manager/add_booking_cu
 import 'package:goal_master/features/booking/presentation/manager/page_view_cubit/page_view_cubit_cubit.dart';
 import 'package:goal_master/features/coins/presentation/manager/coins_cubit/coins_cubit.dart';
 import 'package:goal_master/features/promotional_credit/presentation/promotional_credit_cubit.dart';
+import 'package:goal_master/features/promotional_credit/presentation/venue_campaign_cubit.dart';
 
 class ChoosePayment extends StatefulWidget {
   const ChoosePayment({super.key, this.controller});
@@ -29,6 +30,9 @@ class _ChoosePaymentState extends State<ChoosePayment> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       context.read<AddBookingCubit>().setPaymentType(_selectedPaymentType!);
+      context
+          .read<VenueCampaignCubit>()
+          .setWalletSelected(_selectedPaymentType == 4);
       _loadOptions();
     });
   }
@@ -118,9 +122,19 @@ class _ChoosePaymentState extends State<ChoosePayment> {
     if (selected == null || !mounted) return;
     setState(() => _selectedPaymentType = selected);
     context.read<AddBookingCubit>().setPaymentType(selected);
+    context.read<VenueCampaignCubit>().setWalletSelected(selected == 4);
     if (selected != 4) {
       context.read<PromotionalCreditCubit>().setUseAtCheckout(false);
       context.read<CoinsCubit>().setUseCoinsAtCheckout(false);
+      final offers = context.read<VenueCampaignCubit>().state.offers;
+      final hasPlatformOffer =
+          offers.any((item) => item.fundedBy == 'platform');
+      if (hasPlatformOffer && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+              content: Text('ستفقد خصم جول ماستر عند الدفع عند الوصول.')),
+        );
+      }
     }
   }
 

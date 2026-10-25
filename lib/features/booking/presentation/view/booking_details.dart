@@ -475,7 +475,8 @@ class _BookingDetailsState extends State<BookingDetails> {
                                                                 .read<
                                                                     VenueCampaignCubit>()
                                                                 .state
-                                                                .selectedOfferId ??
+                                                                .selectedOffer
+                                                                ?.id ??
                                                             0,
                                                       );
                                                 },

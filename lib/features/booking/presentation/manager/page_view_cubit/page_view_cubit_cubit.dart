@@ -73,14 +73,17 @@ class PageViewCubit extends Cubit<PageViewState> {
     emit(state.copyWith(employeeId: id));
   }
 
-  void setServiceId(int id, String title) {
-    final offerService = state.marketingOffer?['service_name']?.toString();
+  void setServiceId(int id, String title,
+      {Map<String, dynamic>? marketingOffer}) {
+    final nextOffer = marketingOffer ?? state.marketingOffer;
+    final offerService = nextOffer?['service_name']?.toString();
     final offerDoesNotMatchService =
         offerService != null && offerService.trim() != title.trim();
     emit(state.copyWith(
       serviceId: id,
       serviceTitle: title,
-      clearMarketingOffer: offerDoesNotMatchService,
+      marketingOffer: nextOffer,
+      clearMarketingOffer: nextOffer == null || offerDoesNotMatchService,
     ));
   }
 

@@ -24,11 +24,15 @@ class VenueMarketingOffer {
     required this.name,
     required this.discount,
     required this.fundedBy,
+    this.discountType,
+    this.discountValue,
   });
   final int id;
   final String name;
   final double discount;
   final String fundedBy;
+  final String? discountType;
+  final double? discountValue;
 }
 
 class FootballChallengeStatus {
@@ -154,6 +158,8 @@ class PromotionalCreditRepo {
           name: data['name']?.toString() ?? '',
           discount: (data['discount'] as num?)?.toDouble() ?? 0,
           fundedBy: data['funded_by']?.toString() ?? 'venue',
+          discountType: data['discount_type']?.toString(),
+          discountValue: (data['discount_value'] as num?)?.toDouble(),
         );
       }).toList(),
     );
