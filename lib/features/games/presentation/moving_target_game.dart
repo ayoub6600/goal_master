@@ -5,7 +5,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:goal_master/core/services/service_locator.dart';
 import 'package:goal_master/features/coins/presentation/manager/coins_cubit/coins_cubit.dart';
-import 'package:goal_master/features/promotional_credit/data/promotional_credit_repo.dart';
 import 'package:goal_master/features/games/data/moving_target_game_repo.dart';
 
 const _green = Color(0xff3f8d4b);
@@ -163,24 +162,34 @@ class _GamesRewardsViewState extends State<GamesRewardsView> {
                       status: status,
                       cooldown: _formatCooldown(_cooldownSeconds ?? 0)),
                   const SizedBox(height: 14),
-                  _LockedGameCard(
-                      title: 'تحدي الدقة',
-                      subtitle: 'يفتح بعد 5 حجوزات مكتملة • قريبًا',
-                      progress: status?.progression['precision']),
-                  _LockedGameCard(
-                      title: 'تحدي المحترفين',
-                      subtitle: 'يفتح بعد 20 حجزًا مكتملًا',
-                      progress: status?.progression['pros']),
-                  _LockedGameCard(
-                      title: 'تحدي الأساطير',
-                      subtitle: 'يفتح بعد 50 حجزًا مكتملًا',
-                      progress: status?.progression['legendary']),
+                  if (status != null)
+                    ...status.availableGames.skip(1).map((game) =>
+                        _LockedGameCard(
+                            title: game.title,
+                            subtitle: game.unlocked
+                                ? '${game.questionCount} سؤال • ${game.durationSeconds} ثانية • ${game.difficulty == 'hard' ? 'صعب' : 'متوسط'}'
+                                : 'يفتح بعد ${game.unlockBookings} حجز مكتمل',
+                            progress: {
+                              'completed': status.completedBookings
+                                  .clamp(0, game.unlockBookings),
+                              'required': game.unlockBookings,
+                              'progress': game.progress,
+                            },
+                            unlocked: game.unlocked,
+                            onTap: game.unlocked
+                                ? () => Navigator.of(context).push(
+                                    MaterialPageRoute(
+                                        builder: (_) => MovingTargetGamePage(
+                                            gameKey: game.key,
+                                            title: game.title)))
+                                : null)),
                   _LockedGameCard(
                       title: 'إنجاز العميل الأسطوري',
-                      subtitle: status != null &&
-                              status.legendaryVoucherAmount > 0
-                          ? '100 حجز مكتمل • قسيمة ${status.legendaryVoucherAmount.toStringAsFixed(2)} د.ل'
-                          : '100 حجز مكتمل • قسيمة يحددها Goal Master',
+                      subtitle: status?.legendaryVoucherCode != null
+                          ? 'تهانينا! قسيمة الحجز المجاني: ${status!.legendaryVoucherCode}'
+                          : status != null && status.legendaryVoucherAmount > 0
+                              ? '100 حجز مكتمل • قسيمة ${status.legendaryVoucherAmount.toStringAsFixed(2)} د.ل'
+                              : '100 حجز مكتمل • قسيمة يحددها Goal Master',
                       progress: status?.progression['legendary_customer']),
                 ]);
               }),
@@ -203,13 +212,13 @@ class RewardHistoryPage extends StatelessWidget {
             backgroundColor: _green,
             foregroundColor: Colors.white),
         body: FutureBuilder<dynamic>(
-          future: getIt<PromotionalCreditRepo>().getHistory(),
+          future: getIt<MovingTargetGameRepo>().rewardHistory(),
           builder: (context, snapshot) {
             if (!snapshot.hasData) {
               return const Center(child: CircularProgressIndicator());
             }
             final entries = snapshot.data!.fold((_) => null, (items) => items)
-                as List<PromotionalCreditHistoryEntry>?;
+                as List<Map<String, dynamic>>?;
             if (entries == null) {
               return const Center(child: Text('تعذر تحميل سجل المكافآت.'));
             }
@@ -223,21 +232,27 @@ class RewardHistoryPage extends StatelessWidget {
               separatorBuilder: (_, __) => const SizedBox(height: 8),
               itemBuilder: (context, index) {
                 final item = entries[index];
+                final details = item['details'] is Map
+                    ? Map<String, dynamic>.from(item['details'])
+                    : <String, dynamic>{};
+                final amount = (item['amount'] as num?)?.toDouble() ?? 0;
+                final type = item['reward_type']?.toString() ?? '';
                 return ListTile(
                   tileColor: Colors.white,
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(14)),
                   leading: Icon(
-                      item.entryType == 'credit'
-                          ? Icons.card_giftcard
-                          : Icons.shopping_bag_outlined,
+                      type.contains('coupon')
+                          ? Icons.confirmation_number_outlined
+                          : Icons.card_giftcard,
                       color: _green),
-                  title: Text(item.description.isEmpty
-                      ? 'رصيد ترويجي'
-                      : item.description),
-                  subtitle: Text(item.createdAt),
+                  title: Text(details['title']?.toString() ?? 'مكافأة اللعبة'),
+                  subtitle: Text(
+                      '${details['description'] ?? ''}${item['reference'] == null ? '' : '\n${item['reference']}'}\n${item['created_at'] ?? ''}'),
                   trailing: Text(
-                      '${item.entryType == 'credit' ? '+' : '-'}${item.amount.toStringAsFixed(2)} د.ل',
+                      amount == 0
+                          ? type
+                          : '+${amount.toStringAsFixed(type == 'coins' ? 0 : 2)}${type == 'coins' ? ' كوينز' : ' د.ل'}',
                       style: const TextStyle(
                           fontWeight: FontWeight.bold, color: _green)),
                 );
@@ -329,7 +344,7 @@ class _FeaturedGameCard extends StatelessWidget {
                     : '30 ثانية')),
             const SizedBox(width: 6),
             if (status?.rewardEligible == true)
-              Text('جائزة ${status!.rewardAmount.toStringAsFixed(2)} د.ل',
+              Text('مكافأة من السحب اليومي',
                   style: const TextStyle(
                       color: _green, fontWeight: FontWeight.bold))
             else if (status != null &&
@@ -347,10 +362,17 @@ class _FeaturedGameCard extends StatelessWidget {
                   style: FilledButton.styleFrom(
                       backgroundColor: _green,
                       padding: const EdgeInsets.symmetric(vertical: 13)),
-                  onPressed: status?.enabled == false
+                  onPressed: status?.enabled == false ||
+                          (status != null &&
+                              status!.availableGames.isNotEmpty &&
+                              !status!.availableGames.first.isActive)
                       ? null
                       : () => Navigator.of(context).push(MaterialPageRoute(
-                          builder: (_) => const MovingTargetGamePage())),
+                          builder: (_) => MovingTargetGamePage(
+                              gameKey: status?.availableGames.first.key ??
+                                  'moving_target',
+                              title: status?.availableGames.first.title ??
+                                  'تحدي كابتن أيوب'))),
                   icon: const Icon(Icons.play_arrow_rounded),
                   label: const Text('ابدأ التحدي'))),
         ]),
@@ -359,39 +381,58 @@ class _FeaturedGameCard extends StatelessWidget {
 
 class _LockedGameCard extends StatelessWidget {
   const _LockedGameCard(
-      {required this.title, required this.subtitle, required this.progress});
+      {required this.title,
+      required this.subtitle,
+      required this.progress,
+      this.unlocked = false,
+      this.onTap});
   final String title, subtitle;
   final Map<String, dynamic>? progress;
+  final bool unlocked;
+  final VoidCallback? onTap;
   @override
-  Widget build(BuildContext context) => Container(
-      margin: const EdgeInsets.only(bottom: 9),
-      padding: const EdgeInsets.all(15),
-      decoration: BoxDecoration(
-          color: Colors.white, borderRadius: BorderRadius.circular(16)),
-      child: Row(children: [
-        const Icon(Icons.lock_outline, color: Colors.grey),
-        const SizedBox(width: 12),
-        Expanded(
-            child:
-                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
-          Text(subtitle,
-              style: const TextStyle(color: Colors.black54, fontSize: 12)),
-          const SizedBox(height: 6),
-          LinearProgressIndicator(
-              value: (progress?['progress'] as num?)?.toDouble() ?? 0,
-              color: _green,
-              backgroundColor: const Color(0xffe7ece7))
-        ])),
-        const SizedBox(width: 8),
-        Text(
-            '${(progress?['completed'] as num?)?.toInt() ?? 0}/${(progress?['required'] as num?)?.toInt() ?? 0}',
-            style: const TextStyle(color: Colors.grey, fontSize: 11))
-      ]));
+  Widget build(BuildContext context) => InkWell(
+      borderRadius: BorderRadius.circular(16),
+      onTap: onTap,
+      child: Container(
+          margin: const EdgeInsets.only(bottom: 9),
+          padding: const EdgeInsets.all(15),
+          decoration: BoxDecoration(
+              color: Colors.white, borderRadius: BorderRadius.circular(16)),
+          child: Row(children: [
+            Icon(unlocked ? Icons.play_circle_outline : Icons.lock_outline,
+                color: unlocked ? _green : Colors.grey),
+            const SizedBox(width: 12),
+            Expanded(
+                child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                  Text(title,
+                      style: const TextStyle(fontWeight: FontWeight.bold)),
+                  Text(subtitle,
+                      style:
+                          const TextStyle(color: Colors.black54, fontSize: 12)),
+                  const SizedBox(height: 6),
+                  LinearProgressIndicator(
+                      value: (progress?['progress'] as num?)?.toDouble() ?? 0,
+                      color: _green,
+                      backgroundColor: const Color(0xffe7ece7))
+                ])),
+            const SizedBox(width: 8),
+            Text(
+                unlocked
+                    ? 'العب'
+                    : '${(progress?['completed'] as num?)?.toInt() ?? 0}/${(progress?['required'] as num?)?.toInt() ?? 0}',
+                style: const TextStyle(color: Colors.grey, fontSize: 11))
+          ])));
 }
 
 class MovingTargetGamePage extends StatefulWidget {
-  const MovingTargetGamePage({super.key});
+  const MovingTargetGamePage(
+      {super.key,
+      this.gameKey = 'moving_target',
+      this.title = 'تحدي كابتن أيوب'});
+  final String gameKey, title;
   @override
   State<MovingTargetGamePage> createState() => _MovingTargetGamePageState();
 }
@@ -422,7 +463,7 @@ class _MovingTargetGamePageState extends State<MovingTargetGamePage>
   }
 
   Future<void> _start() async {
-    final res = await _repo.start();
+    final res = await _repo.start(gameKey: widget.gameKey);
     if (!mounted) return;
     final value = res.fold((_) => null, (v) => v);
     if (value == null || value.id.isEmpty) {
@@ -533,7 +574,10 @@ class _MovingTargetGamePageState extends State<MovingTargetGamePage>
         child: AnimatedBuilder(
           animation: _clock,
           builder: (context, _) {
-            final seconds = (30 - (_clock.value * 30).floor()).clamp(0, 30);
+            final durationSeconds = (_attempt?.durationMs ?? 30000) ~/ 1000;
+            final seconds =
+                (durationSeconds - (_clock.value * durationSeconds).floor())
+                    .clamp(0, durationSeconds);
             final hasQuestion = _answeredCount < _questions.length;
             final question = hasQuestion ? _questions[_answeredCount] : null;
             final options = (question?['options'] as List?) ?? const [];
@@ -766,7 +810,7 @@ class _MovingTargetGamePageState extends State<MovingTargetGamePage>
       appBar: AppBar(
           backgroundColor: const Color(0xff10251b),
           foregroundColor: Colors.white,
-          title: const Text('اختبار معلومات كرة القدم'),
+          title: Text(widget.title),
           actions: [
             IconButton(
                 onPressed: () => setState(() => _sound = !_sound),
@@ -804,16 +848,29 @@ class _MovingTargetGamePageState extends State<MovingTargetGamePage>
                     style:
                         const TextStyle(color: Colors.white70, fontSize: 18)),
                 const SizedBox(height: 15),
-                if (_result!.rewardAmount > 0)
+                if (_result!.rewardType != null &&
+                    _result!.rewardType != 'no_prize')
                   Text(
-                      'مبروك! رصيد ترويجي ${_result!.rewardAmount.toStringAsFixed(2)} د.ل',
+                      'مبروك! ${_result!.rewardTitle ?? _result!.rewardDetails?['description'] ?? 'حصلت على مكافأة'}${_result!.rewardReference == null ? '' : '\nالرمز: ${_result!.rewardReference}'}',
                       textAlign: TextAlign.center,
                       style: const TextStyle(
                           color: Color(0xffffd66b),
                           fontSize: 16,
                           fontWeight: FontWeight.bold))
+                else if (_result!.won && _result!.rewardEligible)
+                  const Text(
+                      'اجتزت شرط الفوز، لكن نتيجة السحب اليومي لم تتضمن جائزة هذه المرة.',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(color: Colors.white70))
+                else if (_result!.won)
+                  const Text(
+                      'اجتزت التحدي. فرصة المكافأة التالية متاحة بعد انتهاء فترة الانتظار.',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(color: Colors.white70))
                 else
-                  const Text('أحسنت، حاول مجددًا لتحسين نتيجتك.',
+                  const Text(
+                      'لم تصل إلى نقاط الفوز بعد. راجع إجاباتك وحاول في التحدي التالي.',
+                      textAlign: TextAlign.center,
                       style: TextStyle(color: Colors.white70)),
                 const SizedBox(height: 24),
                 FilledButton(

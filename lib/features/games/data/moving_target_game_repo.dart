@@ -11,7 +11,9 @@ class MovingGameStatus {
       required this.cooldownSeconds,
       required this.completedBookings,
       required this.progression,
-      required this.legendaryVoucherAmount});
+      required this.legendaryVoucherAmount,
+      required this.legendaryVoucherCode,
+      required this.availableGames});
   final bool enabled;
   final bool rewardEligible;
   final double rewardAmount;
@@ -19,6 +21,26 @@ class MovingGameStatus {
   final int completedBookings;
   final Map<String, Map<String, dynamic>> progression;
   final double legendaryVoucherAmount;
+  final String? legendaryVoucherCode;
+  final List<GameChallengeStatus> availableGames;
+}
+
+class GameChallengeStatus {
+  const GameChallengeStatus(
+      {required this.key,
+      required this.title,
+      required this.description,
+      required this.difficulty,
+      required this.questionCount,
+      required this.durationSeconds,
+      required this.unlockBookings,
+      required this.isActive,
+      required this.unlocked,
+      required this.progress});
+  final String key, title, description, difficulty;
+  final int questionCount, durationSeconds, unlockBookings;
+  final bool isActive, unlocked;
+  final double progress;
 }
 
 class MovingGameAttempt {
@@ -30,7 +52,8 @@ class MovingGameAttempt {
       required this.phases,
       required this.questions,
       required this.rewardEligible,
-      required this.rewardAmount});
+      required this.rewardAmount,
+      required this.title});
   final String id;
   final String gameKey;
   final int durationMs;
@@ -39,6 +62,7 @@ class MovingGameAttempt {
   final List<Map<String, dynamic>> questions;
   final bool rewardEligible;
   final double rewardAmount;
+  final String title;
 }
 
 class MovingGameShot {
@@ -65,10 +89,21 @@ class MovingGameShot {
 
 class MovingGameResult {
   const MovingGameResult(
-      {required this.score, required this.hits, required this.rewardAmount});
+      {required this.score,
+      required this.hits,
+      required this.rewardAmount,
+      required this.won,
+      required this.rewardEligible,
+      this.rewardType,
+      this.rewardTitle,
+      this.rewardReference,
+      this.rewardDetails});
   final int score;
   final int hits;
   final double rewardAmount;
+  final bool won, rewardEligible;
+  final String? rewardType, rewardTitle, rewardReference;
+  final Map<String, dynamic>? rewardDetails;
 }
 
 class MovingTargetGameRepo {
@@ -97,6 +132,27 @@ class MovingTargetGameRepo {
             ),
             legendaryVoucherAmount:
                 (data['legendary_voucher_amount'] as num?)?.toDouble() ?? 0,
+            legendaryVoucherCode: (data['legendary_customer_achievement']
+                    as Map?)?['voucher_code']
+                ?.toString(),
+            availableGames: ((data['available_games'] as List?) ?? const [])
+                .whereType<Map>()
+                .map((item) {
+              final game = Map<String, dynamic>.from(item);
+              return GameChallengeStatus(
+                key: game['game_key']?.toString() ?? '',
+                title: game['title']?.toString() ?? '',
+                description: game['description']?.toString() ?? '',
+                difficulty: game['difficulty']?.toString() ?? 'easy',
+                questionCount: (game['question_count'] as num?)?.toInt() ?? 5,
+                durationSeconds:
+                    (game['duration_seconds'] as num?)?.toInt() ?? 30,
+                unlockBookings: (game['unlock_bookings'] as num?)?.toInt() ?? 0,
+                isActive: game['is_active'] == true,
+                unlocked: game['unlocked'] == true,
+                progress: (game['progress'] as num?)?.toDouble() ?? 0,
+              );
+            }).toList(),
           );
         },
       );
@@ -125,6 +181,7 @@ class MovingTargetGameRepo {
                 .toList(),
             rewardEligible: data['reward_eligible'] == true,
             rewardAmount: (data['reward_amount'] as num?)?.toDouble() ?? 0,
+            title: data['title']?.toString() ?? 'تحدي كابتن أيوب',
           );
         },
       );
@@ -171,7 +228,28 @@ class MovingTargetGameRepo {
             score: (data['score'] as num?)?.toInt() ?? 0,
             hits: (data['hits'] as num?)?.toInt() ?? 0,
             rewardAmount: (data['reward_amount'] as num?)?.toDouble() ?? 0,
+            won: data['won'] == true,
+            rewardEligible: data['reward_eligible'] == true,
+            rewardType: data['reward_type']?.toString(),
+            rewardTitle: data['reward_title']?.toString(),
+            rewardReference: data['reward_reference']?.toString(),
+            rewardDetails: data['reward_details'] is Map
+                ? Map<String, dynamic>.from(data['reward_details'])
+                : null,
           );
+        },
+      );
+
+  Future<Either<Failure, List<Map<String, dynamic>>>> rewardHistory() =>
+      api.handleRequest(
+        () => api.get('$_root/rewards/history'),
+        (response) {
+          final payload = Map<String, dynamic>.from(response['data'] ?? {});
+          final rows = (payload['data'] as List?) ?? const [];
+          return rows
+              .whereType<Map>()
+              .map((row) => Map<String, dynamic>.from(row))
+              .toList();
         },
       );
 }
