@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:goal_master/core/components/custom_button_wrapper.dart';
+import 'package:goal_master/core/routing/routes_keys.dart';
 import 'package:goal_master/core/styles/assets.dart';
 
 class AppBarBackButton extends StatelessWidget {
@@ -25,33 +26,32 @@ class AppBarBackButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final router = GoRouter.of(context);
+    final visible = allowBack && (alwaysVisible || router.canPop());
+
     return Opacity(
-      opacity: !allowBack
-          ? 0
-          : alwaysVisible
-              ? 1
-              : GoRouter.of(context).canPop()
-                  ? 1
-                  : 0,
-      child: CustomButtonWrapper(
-        padding: EdgeInsets.all(12.r),
-        onTap: onTap ??
-            () {
-              GoRouter.of(context).pop();
-            },
-        width: 44.w,
-        height: 44.w,
-        decoration: BoxDecoration(
-          // borderRadius: BorderRadius.circular(16.r),
-          // border: Border.all(
-          //   width: 1,
-          //   color: borderColor ?? AppColors.inactive2,
-          // ),
-          color: bgColor,
-        ),
-        child: Image.asset(
-          iconPath ?? Assets.imagesPngImageArrowSquareRight,
-          color: iconColor,
+      opacity: visible ? 1 : 0,
+      child: IgnorePointer(
+        ignoring: !visible,
+        child: CustomButtonWrapper(
+          padding: EdgeInsets.all(12.r),
+          onTap: onTap ??
+              () {
+                if (router.canPop()) {
+                  router.pop();
+                } else {
+                  router.go(RoutesKeys.kHome);
+                }
+              },
+          width: 44.w,
+          height: 44.w,
+          decoration: BoxDecoration(
+            color: bgColor,
+          ),
+          child: Image.asset(
+            iconPath ?? Assets.imagesPngImageArrowSquareRight,
+            color: iconColor,
+          ),
         ),
       ),
     );
