@@ -1,4 +1,7 @@
+import 'package:dartz/dartz.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:goal_master/core/databases/api/api_consumer.dart';
+import 'package:goal_master/core/errors/failure.dart';
 import 'package:goal_master/features/home/data/model/service_model.dart';
 import 'package:goal_master/features/promotional_credit/data/promotional_credit_repo.dart';
 import 'package:goal_master/features/promotional_credit/presentation/venue_campaign_cubit.dart';
@@ -30,29 +33,37 @@ void main() {
     expect(preview.appliesAt('2026-10-25', '21:00', categoryId: 8), isFalse);
   });
 
-  test('platform offer disappears for arrival payment and returns for wallet',
-      () {
-    const state = VenueCampaignState(
-      offers: [
-        VenueMarketingOffer(
-          id: 12,
-          name: 'خصم جول ماستر',
-          discount: 40,
-          fundedBy: 'platform',
-        ),
-        VenueMarketingOffer(
-          id: 13,
-          name: 'خصم الملعب',
-          discount: 10,
-          fundedBy: 'venue',
-        ),
-      ],
-      selectedOfferId: 12,
-    );
+  test('switching back to wallet reapplies the best eligible offer', () async {
+    final cubit = VenueCampaignCubit(_StubPromotionalCreditRepo());
+    addTearDown(cubit.close);
 
-    expect(state.selectedOffer?.id, 12);
-    const arrivalState = VenueCampaignState(
-      offers: [
+    await cubit.load(
+      branchId: 1,
+      serviceId: 2,
+      amount: 140,
+      bookingAt: '2026-10-25T18:00:00',
+    );
+    expect(cubit.state.selectedOffer?.id, 12);
+
+    cubit.setWalletSelected(false);
+    expect(cubit.state.selectedOffer?.id, 13);
+
+    cubit.setWalletSelected(true);
+    expect(cubit.state.selectedOffer?.id, 12);
+  });
+}
+
+class _StubPromotionalCreditRepo extends PromotionalCreditRepo {
+  _StubPromotionalCreditRepo() : super(_NoopApiConsumer());
+
+  @override
+  Future<Either<Failure, List<VenueMarketingOffer>>> getVenueOffers({
+    required int branchId,
+    required int serviceId,
+    required double amount,
+    required String bookingAt,
+  }) async =>
+      const Right([
         VenueMarketingOffer(
           id: 12,
           name: 'خصم جول ماستر',
@@ -65,10 +76,10 @@ void main() {
           discount: 10,
           fundedBy: 'venue',
         ),
-      ],
-      selectedOfferId: 12,
-      walletSelected: false,
-    );
-    expect(arrivalState.selectedOffer?.id, 13);
-  });
+      ]);
+}
+
+class _NoopApiConsumer implements ApiConsumer {
+  @override
+  noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }

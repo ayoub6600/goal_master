@@ -75,8 +75,21 @@ class VenueCampaignCubit extends Cubit<VenueCampaignState> {
   }
 
   void select(int? offerId) => emit(state.copyWith(selectedOfferId: offerId));
-  void setWalletSelected(bool selected) =>
-      emit(state.copyWith(walletSelected: selected));
+  void setWalletSelected(bool selected) {
+    final eligibleOffers = state.offers.where(
+      (offer) => selected || offer.fundedBy != 'platform',
+    );
+    final bestOffer = eligibleOffers.fold<VenueMarketingOffer?>(
+      null,
+      (best, offer) =>
+          best == null || offer.discount > best.discount ? offer : best,
+    );
+    emit(state.copyWith(
+      walletSelected: selected,
+      selectedOfferId: bestOffer?.id,
+    ));
+  }
+
   void clear() => emit(const VenueCampaignState());
 }
 

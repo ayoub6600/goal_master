@@ -269,7 +269,9 @@ class _BookingDateSelectorState extends State<BookingDateSelector> {
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 160),
         width: 76.w,
-        padding: EdgeInsets.symmetric(vertical: 10.h, horizontal: 6.w),
+        // The offer marker adds one line to the fixed-height date card.
+        // Keep enough vertical room for it without increasing the strip height.
+        padding: EdgeInsets.symmetric(vertical: 6.h, horizontal: 6.w),
         decoration: BoxDecoration(
           color: isSelected
               ? const Color.fromARGB(255, 100, 189, 70)
