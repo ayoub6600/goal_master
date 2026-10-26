@@ -13,6 +13,10 @@ class MovingGameStatus {
       required this.progression,
       required this.legendaryVoucherAmount,
       required this.legendaryVoucherCode,
+      required this.verified,
+      required this.rewardSystemEnabled,
+      required this.rewardBudgetAvailable,
+      required this.rewardOptions,
       required this.availableGames});
   final bool enabled;
   final bool rewardEligible;
@@ -22,23 +26,43 @@ class MovingGameStatus {
   final Map<String, Map<String, dynamic>> progression;
   final double legendaryVoucherAmount;
   final String? legendaryVoucherCode;
+  final bool verified, rewardSystemEnabled, rewardBudgetAvailable;
+  final List<GameRewardOption> rewardOptions;
   final List<GameChallengeStatus> availableGames;
+}
+
+class GameRewardOption {
+  const GameRewardOption({
+    required this.type,
+    required this.title,
+    required this.probability,
+    required this.amount,
+    required this.maxDiscountAmount,
+    required this.minOrderValue,
+    required this.validityDays,
+  });
+
+  final String type, title;
+  final int probability, validityDays;
+  final double? amount, maxDiscountAmount, minOrderValue;
 }
 
 class GameChallengeStatus {
   const GameChallengeStatus(
       {required this.key,
+      required this.gameType,
       required this.title,
       required this.description,
       required this.difficulty,
       required this.questionCount,
       required this.durationSeconds,
       required this.unlockBookings,
+      required this.winningScore,
       required this.isActive,
       required this.unlocked,
       required this.progress});
-  final String key, title, description, difficulty;
-  final int questionCount, durationSeconds, unlockBookings;
+  final String key, gameType, title, description, difficulty;
+  final int questionCount, durationSeconds, unlockBookings, winningScore;
   final bool isActive, unlocked;
   final double progress;
 }
@@ -47,19 +71,28 @@ class MovingGameAttempt {
   const MovingGameAttempt(
       {required this.id,
       required this.gameKey,
+      required this.gameType,
       required this.durationMs,
       required this.remainingMs,
+      required this.winningScore,
       required this.phases,
+      this.cupStartIndex = 0,
+      this.cupSwaps = const [],
       required this.questions,
+      this.wheelOptions = const [],
       required this.rewardEligible,
       required this.rewardAmount,
       required this.title});
   final String id;
-  final String gameKey;
+  final String gameKey, gameType;
   final int durationMs;
   final int remainingMs;
+  final int winningScore;
   final List<double> phases;
+  final int cupStartIndex;
+  final List<List<int>> cupSwaps;
   final List<Map<String, dynamic>> questions;
+  final List<GameRewardOption> wheelOptions;
   final bool rewardEligible;
   final double rewardAmount;
   final String title;
@@ -72,6 +105,7 @@ class MovingGameShot {
       required this.hits,
       required this.points,
       this.answerIndex,
+      this.wheelIndex,
       this.explanation,
       this.currentLane = 1,
       this.dodges = 0,
@@ -81,6 +115,7 @@ class MovingGameShot {
   final int hits;
   final int points;
   final int? answerIndex;
+  final int? wheelIndex;
   final String? explanation;
   final int currentLane;
   final int dodges;
@@ -135,12 +170,31 @@ class MovingTargetGameRepo {
             legendaryVoucherCode: (data['legendary_customer_achievement']
                     as Map?)?['voucher_code']
                 ?.toString(),
+            verified: data['verified'] == true,
+            rewardSystemEnabled: data['rewards_enabled'] != false,
+            rewardBudgetAvailable: data['reward_budget_available'] == true,
+            rewardOptions: ((data['reward_options'] as List?) ?? const [])
+                .whereType<Map>()
+                .map((item) {
+              final reward = Map<String, dynamic>.from(item);
+              return GameRewardOption(
+                type: reward['type']?.toString() ?? '',
+                title: reward['title']?.toString() ?? '',
+                probability: (reward['probability'] as num?)?.toInt() ?? 0,
+                amount: (reward['amount'] as num?)?.toDouble(),
+                maxDiscountAmount:
+                    (reward['max_discount_amount'] as num?)?.toDouble(),
+                minOrderValue: (reward['min_order_value'] as num?)?.toDouble(),
+                validityDays: (reward['validity_days'] as num?)?.toInt() ?? 0,
+              );
+            }).toList(),
             availableGames: ((data['available_games'] as List?) ?? const [])
                 .whereType<Map>()
                 .map((item) {
               final game = Map<String, dynamic>.from(item);
               return GameChallengeStatus(
                 key: game['game_key']?.toString() ?? '',
+                gameType: game['game_type']?.toString() ?? 'coming_soon',
                 title: game['title']?.toString() ?? '',
                 description: game['description']?.toString() ?? '',
                 difficulty: game['difficulty']?.toString() ?? 'easy',
@@ -148,6 +202,7 @@ class MovingTargetGameRepo {
                 durationSeconds:
                     (game['duration_seconds'] as num?)?.toInt() ?? 30,
                 unlockBookings: (game['unlock_bookings'] as num?)?.toInt() ?? 0,
+                winningScore: (game['winning_score'] as num?)?.toInt() ?? 300,
                 isActive: game['is_active'] == true,
                 unlocked: game['unlocked'] == true,
                 progress: (game['progress'] as num?)?.toDouble() ?? 0,
@@ -167,10 +222,22 @@ class MovingTargetGameRepo {
           return MovingGameAttempt(
             id: data['attempt_id']?.toString() ?? '',
             gameKey: data['game_key']?.toString() ?? gameKey,
+            gameType: data['game_type']?.toString() ?? 'quiz',
             durationMs: (data['duration_ms'] as num?)?.toInt() ?? 30000,
             remainingMs: (data['remaining_ms'] as num?)?.toInt() ??
                 (data['duration_ms'] as num?)?.toInt() ??
                 30000,
+            winningScore: (data['winning_score'] as num?)?.toInt() ?? 300,
+            cupStartIndex:
+                ((data['cup_shuffle'] as Map?)?['start_index'] as num?)
+                        ?.toInt() ??
+                    0,
+            cupSwaps:
+                ((data['cup_shuffle'] as Map?)?['swaps'] as List? ?? const [])
+                    .whereType<List>()
+                    .map((swap) =>
+                        swap.whereType<num>().map((n) => n.toInt()).toList())
+                    .toList(),
             phases: ((data['target_phases'] as List?) ?? const [])
                 .whereType<num>()
                 .map((e) => e.toDouble())
@@ -179,6 +246,21 @@ class MovingTargetGameRepo {
                 .whereType<Map>()
                 .map((e) => Map<String, dynamic>.from(e))
                 .toList(),
+            wheelOptions: ((data['wheel_options'] as List?) ?? const [])
+                .whereType<Map>()
+                .map((item) {
+              final reward = Map<String, dynamic>.from(item);
+              return GameRewardOption(
+                type: reward['type']?.toString() ?? '',
+                title: reward['title']?.toString() ?? '',
+                probability: (reward['probability'] as num?)?.toInt() ?? 0,
+                amount: (reward['amount'] as num?)?.toDouble(),
+                maxDiscountAmount:
+                    (reward['max_discount_amount'] as num?)?.toDouble(),
+                minOrderValue: (reward['min_order_value'] as num?)?.toDouble(),
+                validityDays: (reward['validity_days'] as num?)?.toInt() ?? 0,
+              );
+            }).toList(),
             rewardEligible: data['reward_eligible'] == true,
             rewardAmount: (data['reward_amount'] as num?)?.toDouble() ?? 0,
             title: data['title']?.toString() ?? 'تحدي كابتن أيوب',
@@ -189,6 +271,7 @@ class MovingTargetGameRepo {
   Future<Either<Failure, MovingGameShot>> shot(
           {required String attemptId,
           required String eventId,
+          bool wheelComplete = false,
           int? scenarioIndex,
           int? answerIndex,
           int? lane,
@@ -197,6 +280,7 @@ class MovingTargetGameRepo {
       api.handleRequest(
         () => api.post('$_root/$attemptId/shot', isFormData: false, data: {
           'event_uuid': eventId,
+          if (wheelComplete) 'wheel_complete': true,
           if (scenarioIndex != null) 'scenario_index': scenarioIndex,
           if (answerIndex != null) 'answer_index': answerIndex,
           if (lane != null) 'lane': lane,
@@ -211,6 +295,7 @@ class MovingTargetGameRepo {
             hits: (data['hits'] as num?)?.toInt() ?? 0,
             points: (data['points'] as num?)?.toInt() ?? 0,
             answerIndex: (data['answer_index'] as num?)?.toInt(),
+            wheelIndex: (data['wheel_index'] as num?)?.toInt(),
             explanation: data['explanation']?.toString(),
             currentLane: (data['current_lane'] as num?)?.toInt() ?? 1,
             dodges: (data['dodges'] as num?)?.toInt() ?? 0,

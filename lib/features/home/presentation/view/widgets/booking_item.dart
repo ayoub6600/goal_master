@@ -11,6 +11,7 @@ import 'package:goal_master/core/styles/app_text_styles.dart';
 import 'package:goal_master/core/styles/assets.dart';
 import 'package:goal_master/core/styles/spaces.dart';
 import 'package:goal_master/features/booking/presentation/manager/add_booking_cubit/add_booking_cubit.dart';
+import 'package:goal_master/features/balance/presentation/balance_cubit/balance_cubit.dart';
 import 'package:goal_master/features/booking/presentation/manager/employee_cubit/employee_cubit.dart';
 import 'package:goal_master/features/booking/presentation/view/widgets/choose_payment.dart';
 import 'package:goal_master/features/coins/presentation/manager/coins_cubit/coins_cubit.dart';
@@ -18,7 +19,6 @@ import 'package:goal_master/features/coins/presentation/view/widgets/booking_suc
 import 'package:goal_master/features/coins/presentation/view/widgets/coins_checkout_card.dart';
 import 'package:goal_master/features/home/data/model/booking_slots_response.dart';
 import 'package:goal_master/features/home/presentation/manager/page_view_new_booking_cubit/page_view_new_booking_cubit.dart';
-import 'package:goal_master/features/home/presentation/view/widgets/employee_selection_new.dart';
 import 'package:goal_master/features/home/presentation/view/widgets/event_card.dart';
 import 'package:goal_master/features/home/presentation/view/widgets/format_time.dart';
 import 'package:goal_master/features/booking/presentation/manager/monthly_booking_cubit/monthly_booking_cubit.dart';
@@ -86,7 +86,7 @@ class BookingItem extends StatelessWidget {
                                 ),
                                 WidthSpace(2.w),
                                 Text(
-                                  "${formatTime(booking.endTime)}",
+                                  formatTime(booking.endTime),
                                   textDirection: TextDirection.ltr,
                                   style: AppTextStyles.font14Bold.copyWith(
                                     color: AppColors.fontColor,
@@ -105,7 +105,7 @@ class BookingItem extends StatelessWidget {
                           ),
                           WidthSpace(8.w),
                           Text(
-                            "${booking.date}",
+                            booking.date,
                             style: AppTextStyles.font14Bold.copyWith(
                               color: AppColors.fontColor,
                             ),
@@ -332,8 +332,7 @@ class _AddNewBookingState extends State<AddNewBooking> {
                           ),
                           // Coins do not apply to a recurring booking, so the
                           // control is hidden rather than shown and ignored.
-                          BlocBuilder<MonthlyBookingCubit,
-                              MonthlyBookingState>(
+                          BlocBuilder<MonthlyBookingCubit, MonthlyBookingState>(
                             builder: (context, monthly) => monthly.isMonthly
                                 ? const SizedBox.shrink()
                                 : const CoinsCheckoutCard(),
@@ -374,6 +373,7 @@ class _AddNewBookingState extends State<AddNewBooking> {
                               await showMonthlySuccessSheet(context,
                                   series: monthlyState.series);
                               if (context.mounted) {
+                                context.read<BalanceCubit>().getBalance();
                                 pushReplacement(RoutesKeys.kHome, context);
                               }
                             } else if (monthlyState
@@ -410,89 +410,101 @@ class _AddNewBookingState extends State<AddNewBooking> {
                             }
                           },
                           child: BlocConsumer<AddBookingCubit, AddBookingState>(
-                          listener: (context, state) async {
-                            if (state is AddBookingSuccess) {
-                              final coinsCubit = context.read<CoinsCubit>();
-                              await showBookingSuccessSheet(
-                                context,
-                                coinsRedeemed: state.coinsRedeemed,
-                              );
-                              // Spending coins changed the balance, and the
-                              // selection must not survive into the next
-                              // checkout.
-                              coinsCubit.clearCheckout();
-                              coinsCubit.getBalance();
-                              if (context.mounted) {
-                                pushReplacement(RoutesKeys.kHome, context);
+                            listener: (context, state) async {
+                              if (state is AddBookingSuccess) {
+                                final coinsCubit = context.read<CoinsCubit>();
+                                final balanceCubit =
+                                    context.read<BalanceCubit>();
+                                await showBookingSuccessSheet(
+                                  context,
+                                  coinsRedeemed: state.coinsRedeemed,
+                                );
+                                // Spending coins changed the balance, and the
+                                // selection must not survive into the next
+                                // checkout.
+                                coinsCubit.clearCheckout();
+                                coinsCubit.getBalance();
+                                balanceCubit.getBalance();
+                                if (context.mounted) {
+                                  pushReplacement(RoutesKeys.kHome, context);
+                                }
+                              } else if (state is AddBookingFailure) {
+                                showCustomFailureToast(state.massage);
                               }
-                            } else if (state is AddBookingFailure) {
-                              showCustomFailureToast(state.massage);
-                            }
-                          },
-                          builder: (context, state) {
-                            final monthly =
-                                context.watch<MonthlyBookingCubit>().state;
-                            // A monthly confirm waits for the plan and the
-                            // total: committing before the preview lands
-                            // would book dates and a price the customer has
-                            // never been shown.
-                            final monthlyBlocked = monthly.isMonthly &&
-                                (monthly.isLoadingPreview ||
-                                    monthly.preview == null ||
-                                    monthly.preview!.isBlocked);
+                            },
+                            builder: (context, state) {
+                              final monthly =
+                                  context.watch<MonthlyBookingCubit>().state;
+                              // A monthly confirm waits for the plan and the
+                              // total: committing before the preview lands
+                              // would book dates and a price the customer has
+                              // never been shown.
+                              final monthlyBlocked = monthly.isMonthly &&
+                                  (monthly.isLoadingPreview ||
+                                      monthly.preview == null ||
+                                      monthly.preview!.isBlocked);
 
-                            return Expanded(
-                              child: ButtonApp(
-                                enabled: !monthlyBlocked,
-                                text: monthly.isMonthly
-                                    ? "تأكيد الحجز الشهري"
-                                    : "تأكيد الحجز",
-                                onTap: monthlyBlocked ? null : () {
-                                  // The type the customer chose decides which
-                                  // engine runs. Nothing else about the
-                                  // checkout differs.
-                                  if (monthly.isMonthly) {
-                                    context
-                                        .read<CreateMonthlyBookingCubit>()
-                                        .submit(
-                                          branchId: widget.booking.clubId,
-                                          employeeId:
-                                              widget.booking.employees.first,
-                                          serviceId: widget.booking.serviceId,
-                                          paymentType: context
+                              return Expanded(
+                                child: ButtonApp(
+                                  enabled: !monthlyBlocked,
+                                  text: monthly.isMonthly
+                                      ? "تأكيد الحجز الشهري"
+                                      : "تأكيد الحجز",
+                                  onTap: monthlyBlocked
+                                      ? null
+                                      : () {
+                                          // The type the customer chose decides which
+                                          // engine runs. Nothing else about the
+                                          // checkout differs.
+                                          if (monthly.isMonthly) {
+                                            context
+                                                .read<
+                                                    CreateMonthlyBookingCubit>()
+                                                .submit(
+                                                  branchId:
+                                                      widget.booking.clubId,
+                                                  employeeId: widget
+                                                      .booking.employees.first,
+                                                  serviceId:
+                                                      widget.booking.serviceId,
+                                                  paymentType: context
+                                                      .read<AddBookingCubit>()
+                                                      .selectedPaymentType,
+                                                  date: widget.booking.date,
+                                                  startTime: _slotStart,
+                                                  endTime: _slotEnd,
+                                                  fullName: SharedPreferenceUtil
+                                                      .getString(
+                                                          PrefKey.fullName),
+                                                  phone: SharedPreferenceUtil
+                                                      .getString(PrefKey.phone),
+                                                );
+                                            return;
+                                          }
+
+                                          context
                                               .read<AddBookingCubit>()
-                                              .selectedPaymentType,
-                                          date: widget.booking.date,
-                                          startTime: _slotStart,
-                                          endTime: _slotEnd,
-                                          fullName:
-                                              SharedPreferenceUtil.getString(
-                                                  PrefKey.fullName),
-                                          phone: SharedPreferenceUtil.getString(
-                                              PrefKey.phone),
-                                        );
-                                    return;
-                                  }
-
-                                  context.read<AddBookingCubit>().addBooking(
-                                        employeeId:
-                                            widget.booking.employees.first,
-                                        serviceId: widget.booking.serviceId,
-                                        zoneId:
-                                            pageViewCubit.state.zoneId ?? 12,
-                                        clubId: widget.booking.clubId,
-                                        date: widget.booking.date,
-                                        startTime: _slotStart,
-                                        endTime: _slotEnd,
-                                        coinsToRedeem: context
-                                            .read<CoinsCubit>()
-                                            .state
-                                            .coinsToRedeem,
-                                      );
-                                },
-                              ),
-                            );
-                          },
+                                              .addBooking(
+                                                employeeId: widget
+                                                    .booking.employees.first,
+                                                serviceId:
+                                                    widget.booking.serviceId,
+                                                zoneId: pageViewCubit
+                                                        .state.zoneId ??
+                                                    12,
+                                                clubId: widget.booking.clubId,
+                                                date: widget.booking.date,
+                                                startTime: _slotStart,
+                                                endTime: _slotEnd,
+                                                coinsToRedeem: context
+                                                    .read<CoinsCubit>()
+                                                    .state
+                                                    .coinsToRedeem,
+                                              );
+                                        },
+                                ),
+                              );
+                            },
                           ),
                         ),
                       ],
@@ -507,7 +519,7 @@ class _AddNewBookingState extends State<AddNewBooking> {
           builder: (context, state) {
             if (state is AddBookingLoading) {
               return Container(
-                color: Colors.black.withOpacity(0.5),
+                color: Colors.black.withValues(alpha: 0.5),
                 child: Center(
                   child: CircularProgressIndicator(),
                 ),

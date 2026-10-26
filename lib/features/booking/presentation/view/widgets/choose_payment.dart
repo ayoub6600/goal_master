@@ -33,6 +33,9 @@ class _ChoosePaymentState extends State<ChoosePayment> {
       context
           .read<VenueCampaignCubit>()
           .setWalletSelected(_selectedPaymentType == 4);
+      // The app-level balance can be stale after a previous booking or wallet
+      // top-up. Refresh from the server whenever a checkout opens.
+      context.read<BalanceCubit>().getBalance();
       _loadOptions();
     });
   }

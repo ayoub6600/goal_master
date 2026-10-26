@@ -5,6 +5,7 @@ import 'package:goal_master/core/components/button_app.dart';
 import 'package:goal_master/core/components/custom_failure_toast.dart';
 import 'package:goal_master/core/errors/failure.dart';
 import 'package:goal_master/features/coins/presentation/manager/coins_cubit/coins_cubit.dart';
+import 'package:goal_master/features/balance/presentation/balance_cubit/balance_cubit.dart';
 import 'package:goal_master/features/coins/presentation/view/widgets/booking_success_sheet.dart';
 import 'package:goal_master/features/coins/presentation/view/widgets/coins_checkout_card.dart';
 import 'package:goal_master/features/promotional_credit/presentation/promotional_credit_checkout_card.dart';
@@ -394,6 +395,7 @@ class _BookingDetailsState extends State<BookingDetails> {
                                         .read<VenueCampaignCubit?>()
                                         ?.clear();
                                     coinsCubit.getBalance();
+                                    context.read<BalanceCubit>().getBalance();
                                     pushReplacement(RoutesKeys.kHome, context);
                                   } else if (state is AddBookingFailure) {
                                     showCustomFailureToast(state.massage);
@@ -471,13 +473,14 @@ class _BookingDetailsState extends State<BookingDetails> {
                                                                 .state
                                                                 .amountToUse
                                                             : 0,
-                                                        venueMarketingCampaignId: context
-                                                                .read<
-                                                                    VenueCampaignCubit>()
-                                                                .state
-                                                                .selectedOffer
-                                                                ?.id ??
-                                                            0,
+                                                        venueMarketingCampaignId:
+                                                            context
+                                                                    .read<
+                                                                        VenueCampaignCubit>()
+                                                                    .state
+                                                                    .selectedOffer
+                                                                    ?.id ??
+                                                                0,
                                                       );
                                                 },
                                               );
@@ -744,6 +747,7 @@ class _MonthlyConfirmButton extends StatelessWidget {
           // One sheet for the whole series, never one per occurrence.
           await showMonthlySuccessSheet(context, series: state.series);
           if (context.mounted) {
+            context.read<BalanceCubit>().getBalance();
             pushReplacement(RoutesKeys.kHome, context);
           }
         } else if (state is CreateMonthlyBookingConflict) {
