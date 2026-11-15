@@ -17,6 +17,7 @@ import '../penalty/penalty_sounds.dart';
 import '../penalty/penalty_painter.dart';
 import '../penalty/penalty_world.dart';
 import 'keeper_model.dart';
+import '../game_errors.dart';
 
 const _gold = Color(0xffffc928);
 const _night = Color(0xff07110b);
@@ -81,7 +82,7 @@ class _GoalkeeperPageState extends State<GoalkeeperPage> {
     setState(() => _error = null);
     final res = await _repo.status();
     if (!mounted) return;
-    res.fold((f) => setState(() => _error = f.errMessage), (s) {
+    res.fold((f) => setState(() => _error = friendlyGameError(f.errMessage)), (s) {
       _timer?.cancel();
       setState(() {
         _status = s;
@@ -448,7 +449,7 @@ class _GoalkeeperMatchPageState extends State<GoalkeeperMatchPage> with SingleTi
   int _saves = 0;
   GoalkeeperResult? _final;
 
-  double _last = 0, _phaseTime = 0, _shake = 0, _celebrate = 0, _frozenClock = 0;
+  double _last = 0, _phaseTime = 0, _shake = 0, _celebrate = 0;
   bool _whistled = false;
 
   // The current shot.
@@ -457,7 +458,8 @@ class _GoalkeeperMatchPageState extends State<GoalkeeperMatchPage> with SingleTi
   double _kickT = 0, _timeScale = 1, _afterT = 0;
   ({double x, double y})? _diveAt;
   int? _diveMs;
-  bool _diveSent = false, _impactDone = false, _kicked = false;
+  bool _diveSent = false, _impactDone = false;
+  (int, int)? _padDir;
   GoalkeeperVerdict? _verdict;
 
   // Captain Ayoub, coaching from the corner.
@@ -520,7 +522,7 @@ class _GoalkeeperMatchPageState extends State<GoalkeeperMatchPage> with SingleTi
     res.fold(
       (f) => setState(() {
         _phase = _Phase.error;
-        _error = f.errMessage;
+        _error = friendlyGameError(f.errMessage);
       }),
       (round) {
         _round = round;
@@ -532,7 +534,7 @@ class _GoalkeeperMatchPageState extends State<GoalkeeperMatchPage> with SingleTi
         setState(() => _phase = _Phase.intro);
         _phaseTime = 0;
         _whistled = false;
-        _say('صدّ ${round.savesToWin} من ${round.shotsTotal}. اضغط وين بتمشي الكرة!', _Mood.calm);
+        _say('صدّ ${round.savesToWin} من ${round.shotsTotal}. اختار الاتجاه بالأسهم!', _Mood.calm);
       },
     );
   }
@@ -552,9 +554,9 @@ class _GoalkeeperMatchPageState extends State<GoalkeeperMatchPage> with SingleTi
     _timeScale = 1;
     _diveAt = null;
     _diveMs = null;
+    _padDir = null;
     _diveSent = false;
     _impactDone = false;
-    _kicked = false;
     _verdict = null;
     _afterT = 0;
   }
@@ -624,8 +626,6 @@ class _GoalkeeperMatchPageState extends State<GoalkeeperMatchPage> with SingleTi
   void _kick() {
     final shot = _shot!;
     final s = _scene;
-    _kicked = true;
-    _frozenClock = s.clock;
     _flight = BallFlight(
       aim: ShotAim(shot.x / Pitch.goalWidth + 0.5, shot.y / Pitch.goalHeight),
       curl: shot.curl,
@@ -726,6 +726,43 @@ class _GoalkeeperMatchPageState extends State<GoalkeeperMatchPage> with SingleTi
     if (_phase == _Phase.flight) _commitDive();
   }
 
+  /// The pad, PlayStation style: pick a direction and he goes that way,
+  /// reading the ball's line along it (how far and how high) the way a
+  /// keeper does once he has committed to a side. The middle stays put.
+  void _onPad(int dx, int dy) {
+    if (_diveAt != null) return;
+    if (_phase != _Phase.runup && _phase != _Phase.flight) return;
+    final f = _flight;
+    if (_phase == _Phase.flight && f != null && _kickT >= f.duration - 0.04) return;
+    const sx = KeeperModel.startX, sy = KeeperModel.startY;
+    ({double x, double y}) point;
+    if (dx == 0 && dy == 0) {
+      point = (x: sx, y: sy);
+    } else {
+      // Direction in goal metres; the goal is wide and short.
+      var vx = dx * 3.0, vy = dy * 1.15;
+      final len = math.sqrt(vx * vx + vy * vy);
+      vx /= len;
+      vy /= len;
+      final shot = _shot!;
+      final along = (shot.x - sx) * vx + (shot.y - sy) * vy;
+      // The right way: he goes as far as the ball's line. The wrong way: he
+      // has committed, so it's a full dive that way anyway.
+      final reach = dx == 0
+          ? (along > 0 ? along.clamp(0.4, 1.5) : 1.2)
+          : (along > 0.4 ? along.clamp(1.1, 3.7) : 2.6);
+      point = (x: sx + vx * reach, y: (sy + vy * reach).clamp(0.15, KeeperModel.bar));
+    }
+    _padDir = (dx, dy);
+    _diveAt = point;
+    _diveMs = _phase == _Phase.runup ? 0 : (_kickT * 1000).round();
+    _scene.reticle = ShotAim(point.x / Pitch.goalWidth + 0.5, point.y / Pitch.goalHeight);
+    _scene.guideReach = 1;
+    HapticFeedback.mediumImpact();
+    setState(() {});
+    if (_phase == _Phase.flight) _commitDive();
+  }
+
   Future<void> _sendDive() async {
     final shot = _shot, round = _round;
     if (shot == null || round == null || _diveSent) return;
@@ -813,7 +850,7 @@ class _GoalkeeperMatchPageState extends State<GoalkeeperMatchPage> with SingleTi
       final early = _diveAt != null && (_diveMs ?? 0) == 0;
       _say(
           _diveAt == null
-              ? _pick(['لازم ترتمي! اضغط وين بتمشي الكرة', 'ما تتحركش؟ اضغط بسرعة!'])
+              ? _pick(['لازم ترتمي! اختار اتجاه بالأسهم', 'ما تتحركش؟ اضغط سهم بسرعة!'])
               : early
                   ? 'خمّنت قبل التسديدة… مرات تصيب ومرات لا'
                   : _pick(['كانت قريبة! أسرع شوية', 'ولا يهمك، اللي بعدها', 'ركّز على الزاوية']),
@@ -976,9 +1013,24 @@ class _GoalkeeperMatchPageState extends State<GoalkeeperMatchPage> with SingleTi
           if (_banner != null) _bannerWidget(),
           Positioned(
             left: 12,
-            right: 12,
+            right: 182,
             bottom: 0,
             child: SafeArea(top: false, child: _CoachBar(art: _art, mood: _mood, line: _coach, id: _coachId)),
+          ),
+          Positioned(
+            right: 12,
+            bottom: 0,
+            child: SafeArea(
+              top: false,
+              child: Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: _DivePad(
+                  enabled: (_phase == _Phase.runup || _phase == _Phase.flight) && _diveAt == null,
+                  chosen: _padDir,
+                  onPick: _onPad,
+                ),
+              ),
+            ),
           ),
           if (_phase == _Phase.runup && _taken < 2 && _diveAt == null) const _TapHint(),
           if (_phase == _Phase.finishing)
@@ -1138,6 +1190,75 @@ class _GoalkeeperMatchPageState extends State<GoalkeeperMatchPage> with SingleTi
               onPlayAgain: () => Navigator.of(context).pop(true),
               onExit: () => Navigator.of(context).pop(false),
             ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Nine buttons laid out like the goal: corners, sides, high, low, and the
+/// middle to stand his ground. Arrows point where he'll go, as seen from
+/// behind the spot (right on screen is right in the goal).
+class _DivePad extends StatelessWidget {
+  const _DivePad({required this.enabled, required this.chosen, required this.onPick});
+  final bool enabled;
+  final (int, int)? chosen;
+  final void Function(int dx, int dy) onPick;
+
+  static const _icons = {
+    (-1, 1): Icons.north_west_rounded,
+    (0, 1): Icons.north_rounded,
+    (1, 1): Icons.north_east_rounded,
+    (-1, 0): Icons.west_rounded,
+    (0, 0): Icons.adjust_rounded,
+    (1, 0): Icons.east_rounded,
+    (-1, -1): Icons.south_west_rounded,
+    (0, -1): Icons.south_rounded,
+    (1, -1): Icons.south_east_rounded,
+  };
+
+  @override
+  Widget build(BuildContext context) => Directionality(
+        // Directions are physical: keep the grid left-to-right even in RTL.
+        textDirection: TextDirection.ltr,
+        child: Container(
+          padding: const EdgeInsets.all(6),
+          decoration: BoxDecoration(
+            color: const Color(0x9907110b),
+            borderRadius: BorderRadius.circular(22),
+            border: Border.all(color: Colors.white12),
+          ),
+          child: Column(mainAxisSize: MainAxisSize.min, children: [
+            for (final dy in const [1, 0, -1])
+              Row(mainAxisSize: MainAxisSize.min, children: [
+                for (final dx in const [-1, 0, 1]) _button(dx, dy),
+              ]),
+          ]),
+        ),
+      );
+
+  Widget _button(int dx, int dy) {
+    final picked = chosen == (dx, dy);
+    final centre = dx == 0 && dy == 0;
+    return Padding(
+      padding: const EdgeInsets.all(3),
+      child: Material(
+        color: picked
+            ? _gold
+            : enabled
+                ? Colors.white.withValues(alpha: centre ? .1 : .16)
+                : Colors.white.withValues(alpha: .05),
+        shape: const CircleBorder(),
+        child: InkWell(
+          customBorder: const CircleBorder(),
+          onTap: enabled ? () => onPick(dx, dy) : null,
+          child: SizedBox(
+            width: 45,
+            height: 45,
+            child: Icon(_icons[(dx, dy)],
+                size: centre ? 20 : 26,
+                color: picked ? Colors.black : (enabled ? Colors.white : Colors.white30)),
           ),
         ),
       ),
@@ -1315,7 +1436,8 @@ class _TapHintState extends State<_TapHint> with SingleTickerProviderStateMixin 
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               decoration: BoxDecoration(color: Colors.black54, borderRadius: BorderRadius.circular(20)),
-              child: const Text('اضغط حيث ستذهب الكرة لترتمي',
+              child: const Text('اختار اتجاه الارتماء بالأسهم\nأو اضغط على مكان الكرة في المرمى',
+                  textAlign: TextAlign.center,
                   style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
             ),
           ]),

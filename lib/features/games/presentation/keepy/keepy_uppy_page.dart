@@ -16,6 +16,7 @@ import '../penalty/penalty_sounds.dart';
 import 'alley_scene.dart';
 import 'captain_rig.dart';
 import 'keepy_sim.dart';
+import '../game_errors.dart';
 
 const _gold = Color(0xffffc928);
 const _night = Color(0xff07110b);
@@ -98,7 +99,7 @@ class _KeepyUppyPageState extends State<KeepyUppyPage> {
     setState(() => _error = null);
     final res = await _repo.status();
     if (!mounted) return;
-    res.fold((f) => setState(() => _error = f.errMessage), (s) {
+    res.fold((f) => setState(() => _error = friendlyGameError(f.errMessage)), (s) {
       _timer?.cancel();
       setState(() {
         _status = s;
@@ -793,7 +794,7 @@ class _KeepyMatchPageState extends State<KeepyMatchPage>
     res.fold(
       (f) => setState(() {
         _phase = _Phase.error;
-        _error = f.errMessage;
+        _error = friendlyGameError(f.errMessage);
       }),
       (round) {
         _round = round;

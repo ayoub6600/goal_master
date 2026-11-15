@@ -97,6 +97,31 @@ void main() {
     expect(find.text('فزت بالتحدي!'), findsOneWidget);
   });
 
+  testWidgets('the arrow pad: going the right way saves it', (tester) async {
+    tester.view.physicalSize = const Size(440 * 3, 956 * 3);
+    tester.view.devicePixelRatio = 3;
+    addTearDown(tester.view.reset);
+    final server = _Server();
+    await tester.pumpWidget(MaterialApp(home: GoalkeeperMatchPage(tier: _tier, repo: server, sounds: false)));
+
+    // First shot goes right (x = 2.0, y = 1.2): wait for the strike, press →.
+    for (var i = 0; i < 200 && find.byIcon(Icons.east_rounded).evaluate().isEmpty; i++) {
+      await tester.pump(const Duration(milliseconds: 20));
+    }
+    for (var i = 0; i < 160; i++) {
+      await tester.pump(const Duration(milliseconds: 20));
+      if (server.dives.isNotEmpty) break;
+      if (i == 75) await tester.tap(find.byIcon(Icons.east_rounded));
+    }
+    for (var i = 0; i < 100 && server.taken < 1; i++) {
+      await tester.pump(const Duration(milliseconds: 20));
+    }
+    expect(server.dives[1]!.x, greaterThan(1.5), reason: 'went right, along the ball\'s line');
+    expect(server.saves, 1);
+    await tester.pumpWidget(const SizedBox());
+    await tester.pump(const Duration(seconds: 3));
+  });
+
   testWidgets('standing still lets a corner shot in, and tells the server so', (tester) async {
     tester.view.physicalSize = const Size(440 * 3, 956 * 3);
     tester.view.devicePixelRatio = 3;

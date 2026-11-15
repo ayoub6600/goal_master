@@ -8,6 +8,7 @@ import 'package:goal_master/features/games/data/prediction_repo.dart';
 import 'package:intl/intl.dart' show DateFormat;
 
 import '../keepy/captain_rig.dart';
+import '../game_errors.dart';
 
 const _bg = Color(0xff07110b);
 const _card = Color(0xff112019);
@@ -68,7 +69,7 @@ class _PredictionPageState extends State<PredictionPage> {
     setState(() => _error = null);
     final res = await _repo.board();
     if (!mounted) return;
-    res.fold((f) => setState(() => _error = f.errMessage), (b) => setState(() => _board = b));
+    res.fold((f) => setState(() => _error = friendlyGameError(f.errMessage)), (b) => setState(() => _board = b));
   }
 
   Future<bool> _predict(PredictionMatch m, int home, int away) async {

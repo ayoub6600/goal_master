@@ -15,6 +15,7 @@ import 'penalty_painter.dart';
 import 'penalty_reward_card.dart';
 import 'penalty_sounds.dart';
 import 'penalty_world.dart';
+import '../game_errors.dart';
 
 const _gold = Color(0xffffc928);
 const _night = Color(0xff07110b);
@@ -95,7 +96,7 @@ class _PenaltyShootoutPageState extends State<PenaltyShootoutPage> {
     setState(() => _error = null);
     final res = await _repo.status();
     if (!mounted) return;
-    res.fold((f) => setState(() => _error = f.errMessage), (s) {
+    res.fold((f) => setState(() => _error = friendlyGameError(f.errMessage)), (s) {
       _timer?.cancel();
       setState(() {
         _status = s;
@@ -533,7 +534,7 @@ class _PenaltyMatchPageState extends State<PenaltyMatchPage> with SingleTickerPr
     if (!mounted) return;
     res.fold((f) => setState(() {
           _phase = _Phase.error;
-          _error = f.errMessage;
+          _error = friendlyGameError(f.errMessage);
         }), (a) {
       setState(() {
         _attempt = a;

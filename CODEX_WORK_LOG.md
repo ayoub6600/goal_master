@@ -6998,3 +6998,8 @@ deployed; dev DB not migrated.
 - Flow: whistle → 1.1 s run-up (keeper drifts to centre and sets, tension vignette) → strike (sound, turf, shockwave) → ball flight with curl → tap where to dive; tapping during the run-up is an early guess. The keeper's glove target is the server reach model's point at ball arrival (`KeeperModel.glove`), so what you see is what the server judges. Server API/rules unchanged.
 - Captain Ayoub moves to a coach bar (his calm / delighted / gutted faces cropped from the assistant poses) with advice after each shot.
 - Removed `keeper/keeper_scene.dart` and `assets/images/keeper/glove.webp`. Tests updated; all Flutter tests pass.
+
+## 2026-11-16 — "Too Many Attempts" fix; goalkeeper arrow pad
+
+- **Bug (user report, production):** games sometimes failed with "Too Many Attempts.". Every `throttle:N,1` route shared ONE counter per customer (Laravel's unprefixed throttle key), so a goalkeeper round (~14 calls) tripped the next round's 10/min start limit; when the JWT user wasn't resolved it even fell back to the IP, pooling customers on the same mobile carrier. Backend now uses named per-customer limiters (`games-start` 20/min, `games-play` 150/min, `games-finish` 30/min, `predict`, `coupon-check`) in `RouteServiceProvider`. HTTP-level regression test `GameRateLimitTest` (fails on the old routes with 429, passes now). App shows Arabic, actionable messages for server errors in games (`presentation/game_errors.dart`).
+- **Goalkeeper controls:** PlayStation-style 3×3 arrow pad (8 directions + stay). The right way: he goes along the ball's line as far as it is; the wrong way: a full committed dive that way. Tapping the goal still works for precise aim. Widget test for the pad.
