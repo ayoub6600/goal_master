@@ -159,7 +159,7 @@ class _GamesRewardsViewState extends State<GamesRewardsView> {
           ),
           _GameTile(
             title: 'كن الحارس',
-            text: 'كابتن أيوب يسدد وانت ترتمي لتصدّ.',
+            text: 'انت الحارس: اقرأ التسديدة وارتمِ في الزاوية الصح.',
             icon: Icons.sports_handball_rounded,
             color: _mint,
             tag: 'جديد',

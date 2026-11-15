@@ -6,7 +6,6 @@ import 'package:goal_master/features/games/data/goalkeeper_repo.dart';
 import 'package:goal_master/features/games/data/penalty_shootout_repo.dart';
 import 'package:goal_master/features/games/presentation/keeper/goalkeeper_page.dart';
 import 'package:goal_master/features/games/presentation/keeper/keeper_model.dart';
-import 'package:goal_master/features/games/presentation/keeper/keeper_scene.dart';
 
 /// Plays the server: fixed shots, judged by the shared reach model.
 class _Server implements GoalkeeperRepo {
@@ -59,16 +58,16 @@ void main() {
     addTearDown(tester.view.reset);
     final server = _Server();
     GoalkeeperShot? current;
-    KeeperView? view;
+    Offset Function(double x, double y)? toScreen;
 
     await tester.pumpWidget(MaterialApp(
       home: GoalkeeperMatchPage(
         tier: _tier,
         repo: server,
         sounds: false,
-        debugOnShot: (s, v) {
+        debugOnShot: (s, map) {
           current = s;
-          view = v;
+          toScreen = map;
         },
       ),
     ));
@@ -83,7 +82,7 @@ void main() {
         await tester.pump(const Duration(milliseconds: 20));
       }
       // A quick, accurate dive just after the strike.
-      await tester.tapAt(view!.goal(current!.x, current!.y));
+      await tester.tapAt(toScreen!(current!.x, current!.y));
       for (var i = 0; i < 120; i++) {
         await tester.pump(const Duration(milliseconds: 20));
       }

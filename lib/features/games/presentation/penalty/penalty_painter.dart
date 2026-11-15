@@ -2,6 +2,7 @@ import 'dart:math' as math;
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import 'penalty_fx.dart';
 import 'penalty_world.dart';
@@ -919,4 +920,12 @@ class PenaltyPainter extends CustomPainter {
     final l = math.sqrt(v[0] * v[0] + v[1] * v[1] + v[2] * v[2]);
     return [v[0] / l, v[1] / l, v[2] / l];
   }
+}
+
+/// The goalkeeper sprite strip, decoded (shared by the shoot-out and the
+/// keeper game).
+Future<ui.Image> loadKeeperSprite() async {
+  final data = await rootBundle.load('assets/images/football_keeper_strip.webp');
+  final codec = await ui.instantiateImageCodec(data.buffer.asUint8List());
+  return (await codec.getNextFrame()).image;
 }

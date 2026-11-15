@@ -25,7 +25,6 @@ import 'package:goal_master/features/games/data/keepy_uppy_repo.dart';
 import 'package:goal_master/features/games/data/penalty_shootout_repo.dart';
 import 'package:goal_master/features/games/presentation/keeper/goalkeeper_page.dart';
 import 'package:goal_master/features/games/presentation/keeper/keeper_model.dart';
-import 'package:goal_master/features/games/presentation/keeper/keeper_scene.dart';
 import 'package:goal_master/features/games/presentation/keepy/alley_scene.dart';
 import 'package:goal_master/features/games/presentation/keepy/keepy_sim.dart';
 import 'package:goal_master/features/games/presentation/keepy/keepy_uppy_page.dart';
@@ -487,10 +486,10 @@ class _MenuState extends State<_Menu> {
 
   /// Dives for the keeper with a real tap: a human-ish reaction after the
   /// strike, aimed near (not exactly at) where the shot is going.
-  void _keeperBot(GoalkeeperShot shot, KeeperView view) {
+  void _keeperBot(GoalkeeperShot shot, Offset Function(double x, double y) goal) {
     final delay = shot.runupMs + 220 + _rng.nextInt(160);
     Future<void>.delayed(Duration(milliseconds: delay), () {
-      final at = view.goal(shot.x + (_rng.nextDouble() - 0.5) * 0.6, shot.y + (_rng.nextDouble() - 0.5) * 0.4);
+      final at = goal(shot.x + (_rng.nextDouble() - 0.5) * 0.6, shot.y + (_rng.nextDouble() - 0.5) * 0.4);
       final id = _pointer++;
       GestureBinding.instance.handlePointerEvent(PointerDownEvent(pointer: id, position: at));
       GestureBinding.instance.handlePointerEvent(PointerUpEvent(pointer: id, position: at));

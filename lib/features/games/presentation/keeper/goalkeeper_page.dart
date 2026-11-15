@@ -14,8 +14,9 @@ import 'package:goal_master/features/games/data/goalkeeper_repo.dart';
 import '../keepy/captain_rig.dart';
 import '../penalty/penalty_reward_card.dart';
 import '../penalty/penalty_sounds.dart';
+import '../penalty/penalty_painter.dart';
+import '../penalty/penalty_world.dart';
 import 'keeper_model.dart';
-import 'keeper_scene.dart';
 
 const _gold = Color(0xffffc928);
 const _night = Color(0xff07110b);
@@ -137,10 +138,10 @@ class _GoalkeeperPageState extends State<GoalkeeperPage> {
         SliverPadding(
           padding: const EdgeInsets.fromLTRB(16, 4, 16, 28),
           sliver: SliverList.list(children: [
-            const Text('كابتن أيوب يسدد… وانت الحارس',
+            const Text('انت الحارس… وكابتن أيوب مدربك',
                 style: TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.w900)),
             const SizedBox(height: 6),
-            const Text('اضغط على المكان اللي بتمشي له الكرة لترتمي وتصدها. كل تسديدة يختارها الخادم لحظة تنفيذها.',
+            const Text('انت الحارس. اضغط على المكان اللي بتمشي له الكرة، والحارس يرتمي ويصدها. كل تسديدة يختارها الخادم لحظة تنفيذها.',
                 style: TextStyle(color: Colors.white70, height: 1.45)),
             const SizedBox(height: 14),
             if (status != null) ...[
@@ -291,7 +292,7 @@ class _HowToPlay extends StatelessWidget {
       (Icons.touch_app_rounded, 'اضغط على المكان اللي تتوقع الكرة تجي فيه، والحارس يرتمي له.'),
       (Icons.bolt_rounded, 'كل ما ضغطت أبكر، وصلت أبعد. التسديدات في الزوايا تحتاج قرار سريع.'),
       (Icons.psychology_alt_rounded, 'تقدر تتوقع قبل التسديدة… لكن لو غلطت الاتجاه ما عاد تلحق.'),
-      (Icons.visibility_rounded, 'في المستوى السهل، راقب كابتن أيوب: يميل شوية ناحية تسديدته.'),
+      (Icons.sports_handball_rounded, 'الحارس يرتمي بحركة حقيقية: لو وصل بدري يمسكها، ولو وصل على الحافة يبعدها.'),
     ];
     return Container(
       padding: const EdgeInsets.all(16),
@@ -331,7 +332,8 @@ class _ErrorBox extends StatelessWidget {
       );
 }
 
-/// The keeper's view with Captain Ayoub waiting on the spot.
+/// The stadium from behind the spot, the keeper on his line, the ball
+/// waiting — the same world as the shoot-out.
 class _KeeperPreview extends StatefulWidget {
   const _KeeperPreview();
   @override
@@ -339,40 +341,34 @@ class _KeeperPreview extends StatefulWidget {
 }
 
 class _KeeperPreviewState extends State<_KeeperPreview> with SingleTickerProviderStateMixin {
-  final _scene = KeeperScene()..captainZ = KeeperView.spotZ + 0.8;
+  final _scene = PenaltyScene()
+    ..zoom = 1.35
+    ..zoomFocus = const V3(0, 1.0, Pitch.goalLineZ);
   final _frame = ValueNotifier(0);
   late final Ticker _ticker;
   double _last = 0;
-  KeeperBackdrop? _backdrop;
+  PenaltyBackdrop? _backdrop;
   Size? _building;
-  CaptainArt? _art;
-  ui.Image? _glove;
+  ui.Image? _keeper;
 
   @override
   void initState() {
     super.initState();
-    _scene.captain
-      ..setPose(CaptainPose.rig)
-      ..poseBlend = 1;
     _ticker = createTicker((elapsed) {
       final now = elapsed.inMicroseconds / 1e6;
       final dt = (now - _last).clamp(0.0, 0.05);
       _last = now;
-      _scene.clock += dt;
-      _scene.captain.update(dt);
-      // A little sway on the line, like a keeper waiting.
-      _scene.gloveX = math.sin(_scene.clock * 1.3) * 0.35;
+      _scene
+        ..clock += dt
+        ..keeper = KeeperMotion.idle(_scene.clock);
       _frame.value++;
     })
       ..start();
-    CaptainArt.shared().then((a) {
-      if (mounted) setState(() => _art = a);
-    }).catchError((_) {});
-    loadGlove().then((g) {
+    loadKeeperSprite().then((img) {
       if (mounted) {
-        setState(() => _glove = g);
+        setState(() => _keeper = img);
       } else {
-        g.dispose();
+        img.dispose();
       }
     }).catchError((_) {});
   }
@@ -381,14 +377,14 @@ class _KeeperPreviewState extends State<_KeeperPreview> with SingleTickerProvide
   void dispose() {
     _ticker.dispose();
     _backdrop?.dispose();
-    _glove?.dispose();
+    _keeper?.dispose();
     super.dispose();
   }
 
   void _ensureBackdrop(Size size) {
     if (_backdrop?.size == size || _building == size || size.isEmpty) return;
     _building = size;
-    KeeperBackdrop.build(size, MediaQuery.devicePixelRatioOf(context)).then((b) {
+    PenaltyBackdrop.build(size, MediaQuery.devicePixelRatioOf(context)).then((b) {
       if (!mounted || _building != size) return b.dispose();
       setState(() {
         _backdrop?.dispose();
@@ -401,13 +397,9 @@ class _KeeperPreviewState extends State<_KeeperPreview> with SingleTickerProvide
   Widget build(BuildContext context) => LayoutBuilder(builder: (context, box) {
         final size = box.biggest;
         _ensureBackdrop(size);
-        final v = KeeperView(size);
-        _scene
-          ..ballAt = v.world(0, 0.11, KeeperView.spotZ - 0.4)
-          ..ballR = 0.11 * v.scaleAt(KeeperView.spotZ - 0.4);
         return CustomPaint(
           size: size,
-          painter: KeeperPainter(scene: _scene, backdrop: _backdrop, art: _art, glove: _glove, repaint: _frame),
+          painter: PenaltyPainter(scene: _scene, backdrop: _backdrop, keeper: _keeper, repaint: _frame),
         );
       });
 }
@@ -418,32 +410,35 @@ class _KeeperPreviewState extends State<_KeeperPreview> with SingleTickerProvide
 
 enum _Phase { loading, intro, fetching, runup, flight, after, finishing, done, error }
 
+enum _Mood { calm, happy, sad }
+
 class GoalkeeperMatchPage extends StatefulWidget {
   const GoalkeeperMatchPage({super.key, required this.tier, required this.repo, this.sounds = true, this.debugOnShot});
   final GoalkeeperTier tier;
   final GoalkeeperRepo repo;
   final bool sounds;
 
-  /// Tests and the preview only: told about each shot as it's revealed.
+  /// Tests and the preview only: told about each shot as it's revealed,
+  /// with a way to turn goal metres into a screen point.
   @visibleForTesting
-  final void Function(GoalkeeperShot shot, KeeperView view)? debugOnShot;
+  final void Function(GoalkeeperShot shot, Offset Function(double x, double y) toScreen)? debugOnShot;
 
   @override
   State<GoalkeeperMatchPage> createState() => _GoalkeeperMatchPageState();
 }
 
 class _GoalkeeperMatchPageState extends State<GoalkeeperMatchPage> with SingleTickerProviderStateMixin {
-  final _scene = KeeperScene();
+  final _scene = PenaltyScene();
   final _frame = ValueNotifier(0);
   final _rng = math.Random();
   late final Ticker _ticker;
   late final PenaltySounds _sounds = PenaltySounds(enabled: widget.sounds);
 
-  KeeperBackdrop? _backdrop;
+  PenaltyBackdrop? _backdrop;
   Size? _building;
   Size _size = Size.zero;
+  ui.Image? _keeperImage;
   CaptainArt? _art;
-  ui.Image? _glove;
 
   _Phase _phase = _Phase.loading;
   String? _error;
@@ -453,18 +448,22 @@ class _GoalkeeperMatchPageState extends State<GoalkeeperMatchPage> with SingleTi
   int _saves = 0;
   GoalkeeperResult? _final;
 
-  double _last = 0, _phaseTime = 0, _shake = 0, _tell = 0;
+  double _last = 0, _phaseTime = 0, _shake = 0, _celebrate = 0, _frozenClock = 0;
   bool _whistled = false;
 
   // The current shot.
-  double _kickMs = 0, _timeScale = 1;
+  BallFlight? _flight;
+  KeeperMotion? _motion;
+  double _kickT = 0, _timeScale = 1, _afterT = 0;
   ({double x, double y})? _diveAt;
   int? _diveMs;
-  bool _diveSent = false;
+  bool _diveSent = false, _impactDone = false, _kicked = false;
   GoalkeeperVerdict? _verdict;
-  bool _impactDone = false;
-  Offset _afterVel = Offset.zero;
-  double _afterT = 0;
+
+  // Captain Ayoub, coaching from the corner.
+  _Mood _mood = _Mood.calm;
+  String _coach = 'ركّز… الكرة أسرع مما تتوقع';
+  int _coachId = 0;
 
   String? _banner;
   Color _bannerColor = Colors.white;
@@ -474,22 +473,21 @@ class _GoalkeeperMatchPageState extends State<GoalkeeperMatchPage> with SingleTi
   int get _total => _round?.shotsTotal ?? widget.tier.shotsTotal;
   int get _taken => _results.where((r) => r != null).length;
 
+  static V3 _goal(double x, double y) => V3(x, y, Pitch.goalLineZ);
+
   @override
   void initState() {
     super.initState();
     _ticker = createTicker(_tick)..start();
     _sounds.init();
-    _scene.captain
-      ..setPose(CaptainPose.rig)
-      ..poseBlend = 1;
     CaptainArt.shared().then((a) {
       if (mounted) setState(() => _art = a);
     }).catchError((_) {});
-    loadGlove().then((g) {
+    loadKeeperSprite().then((img) {
       if (mounted) {
-        setState(() => _glove = g);
+        setState(() => _keeperImage = img);
       } else {
-        g.dispose();
+        img.dispose();
       }
     }).catchError((_) {});
     _start();
@@ -500,9 +498,17 @@ class _GoalkeeperMatchPageState extends State<GoalkeeperMatchPage> with SingleTi
     _ticker.dispose();
     _sounds.dispose();
     _backdrop?.dispose();
-    _glove?.dispose();
+    _keeperImage?.dispose();
     super.dispose();
   }
+
+  void _say(String line, _Mood mood) => setState(() {
+        _coach = line;
+        _mood = mood;
+        _coachId++;
+      });
+
+  String _pick(List<String> lines) => lines[_rng.nextInt(lines.length)];
 
   Future<void> _start() async {
     setState(() {
@@ -526,42 +532,31 @@ class _GoalkeeperMatchPageState extends State<GoalkeeperMatchPage> with SingleTi
         setState(() => _phase = _Phase.intro);
         _phaseTime = 0;
         _whistled = false;
+        _say('صدّ ${round.savesToWin} من ${round.shotsTotal}. اضغط وين بتمشي الكرة!', _Mood.calm);
       },
     );
   }
 
   void _resetForShot() {
-    final s = _scene;
-    s
-      ..captainZ = KeeperView.spotZ + 1.9
-      ..ballVisible = true
+    _scene
+      ..ball = Pitch.ballSpot
       ..trail.clear()
-      ..gloveX = KeeperModel.startX
-      ..gloveY = KeeperModel.startY
-      ..dive = 0
-      ..lean = 0
-      ..tapMark = null;
-    s.captain
-      ..x = 0
-      ..targetX = 0
-      ..vx = 0;
-    _kickMs = 0;
+      ..ripple = null
+      ..boardMessage = null
+      ..zoom = 1
+      ..reticle = null
+      ..guide = const [];
+    _flight = null;
+    _motion = null;
+    _kickT = 0;
     _timeScale = 1;
     _diveAt = null;
     _diveMs = null;
     _diveSent = false;
-    _verdict = null;
     _impactDone = false;
+    _kicked = false;
+    _verdict = null;
     _afterT = 0;
-    _placeBallOnSpot();
-  }
-
-  void _placeBallOnSpot() {
-    if (_size == Size.zero) return;
-    final v = KeeperView(_size);
-    _scene
-      ..ballAt = v.world(0, 0.11, KeeperView.spotZ - 0.4)
-      ..ballR = 0.11 * v.scaleAt(KeeperView.spotZ - 0.4);
   }
 
   // ---- frame loop ----------------------------------------------------------
@@ -573,109 +568,143 @@ class _GoalkeeperMatchPageState extends State<GoalkeeperMatchPage> with SingleTi
     final s = _scene;
     s.clock += dt;
     _phaseTime += dt;
+    s.flash = math.max(0, s.flash - dt * 2.2);
     s.fx.update(dt);
-    s.captain.update(dt);
-    s.tapAge += dt;
-    s.flash = math.max(0, s.flash - dt * 2.4);
+    s.squash = math.max(0, s.squash - dt * 7);
+    s.speed = math.max(0, s.speed - dt * 1.6);
     _shake *= math.exp(-dt * 9);
     s.shake = _shake < 0.2 ? Offset.zero : Offset((_rng.nextDouble() - 0.5) * _shake, (_rng.nextDouble() - 0.5) * _shake);
-    final rollTarget = _phase == _Phase.flight || _phase == _Phase.after ? -s.lean * 0.07 : 0.0;
-    s.roll += (rollTarget - s.roll) * math.min(1, dt * 8);
+    if (_celebrate > 0) {
+      _celebrate = math.max(0, _celebrate - dt * 0.3);
+      s.crowdJump = (math.sin(s.clock * 11).abs() * 3.2) * math.min(1, _celebrate * 2);
+      if (_rng.nextDouble() < 0.25) s.flashSeed = _rng.nextInt(1 << 30);
+    } else {
+      s.crowdJump = 0;
+    }
+    final tense = _phase == _Phase.runup ? 1.0 : 0.0;
+    s.tension += (tense * 0.6 - s.tension) * math.min(1, dt * 3);
 
     switch (_phase) {
       case _Phase.intro:
-        if (_size != Size.zero && s.ballAt == null) _placeBallOnSpot();
+        s.keeper = KeeperMotion.idle(s.clock);
         if (_phaseTime > 0.8 && !_whistled) {
           _whistled = true;
           _sounds.play(PenaltySfx.whistle);
         }
-        if (_phaseTime > 1.3) _nextShot();
+        if (_phaseTime > 1.4) _nextShot();
+      case _Phase.fetching:
+        s.keeper = KeeperMotion.idle(s.clock);
       case _Phase.runup:
         _runup();
       case _Phase.flight:
-        _flight(dt);
+        _fly(dt);
       case _Phase.after:
-        _after(dt);
+        _fly(dt);
+        _afterShot(dt);
       default:
-        break;
+        s.keeper = KeeperMotion.idle(s.clock);
     }
     _frame.value++;
   }
 
+  /// The striker's run-up: the keeper drifts back to the middle and sets.
   void _runup() {
     final shot = _shot!;
-    final total = shot.runupMs / 1000;
-    final t = (_phaseTime / total).clamp(0.0, 1.0);
-    final e = Curves.easeInQuad.transform(t);
-    final s = _scene;
-    s.captainZ = KeeperView.spotZ + 1.9 - 1.15 * e;
-    s.captain
-      ..targetX = _tell * t
-      ..stride += 0.25;
+    final t = (_phaseTime / (shot.runupMs / 1000)).clamp(0.0, 1.0);
+    final idle = KeeperMotion.idle(_scene.clock);
+    final settle = Curves.easeInOut.transform(t);
+    _scene.keeper = KeeperPose(
+        V3(idle.centre.x * (1 - settle), idle.centre.y - 0.04 * settle, idle.centre.z), KeeperFrame.ready, 0,
+        sy: idle.sy - 0.05 * settle);
+    // The ball twitches as the striker plants his foot.
+    if (t > 0.82) _scene.ballSpin += 0.02;
     if (t >= 1) _kick();
   }
 
   void _kick() {
-    final s = _scene;
-    s.captain.play(CaptainMove.foot);
-    _sounds.play(PenaltySfx.kick);
-    Future<void>.delayed(const Duration(milliseconds: 40), () {
-      if (mounted) _sounds.play(PenaltySfx.whoosh);
-    });
-    _sounds.crowdLevel(0.5);
-    HapticFeedback.mediumImpact();
-    if (s.ballAt != null) s.fx.strike(s.ballAt!, s.ballR * 1.6, power: 0.4);
-    setState(() => _phase = _Phase.flight);
-    _phaseTime = 0;
-    _kickMs = 0;
-    // Guessed during the run-up: the dive goes now.
-    if (_diveAt != null && !_diveSent) _sendDive();
-  }
-
-  void _flight(double dt) {
     final shot = _shot!;
     final s = _scene;
-    // After a dive, wait for the server's verdict near the end rather than
-    // show a guess. With no dive there's nothing to wait for: the keeper is
-    // where he started, and the server can only agree.
-    final waiting = _diveAt != null && _verdict == null && _kickMs >= shot.flightMs * 0.8;
+    _kicked = true;
+    _frozenClock = s.clock;
+    _flight = BallFlight(
+      aim: ShotAim(shot.x / Pitch.goalWidth + 0.5, shot.y / Pitch.goalHeight),
+      curl: shot.curl,
+      duration: shot.flightMs / 1000,
+    );
+    _kickT = 0;
+    _timeScale = 1;
+    _sounds.play(PenaltySfx.kick);
+    Future<void>.delayed(const Duration(milliseconds: 45), () {
+      if (mounted) _sounds.play(PenaltySfx.whoosh);
+    });
+    _sounds.crowdLevel(0.55);
+    HapticFeedback.mediumImpact();
+    if (_size != Size.zero) {
+      final cam = PenaltyCamera(_size);
+      s.fx.strike(cam.project(Pitch.ballSpot), Pitch.ballRadius * cam.scaleAt(0), power: 0.6);
+    }
+    s
+      ..squash = 1
+      ..speed = 0.7;
+    _shake = 5;
+    setState(() => _phase = _Phase.flight);
+    _phaseTime = 0;
+    // Guessed during the run-up: he goes the moment the ball is struck.
+    if (_diveAt != null) _commitDive();
+  }
+
+  void _commitDive() {
+    final dive = _diveAt!, f = _flight!, shot = _shot!;
+    final g = KeeperModel.glove(dive.x, dive.y, _diveMs, shot.flightMs);
+    _motion = KeeperMotion(
+      reactAt: math.max(_diveMs ?? 0, KeeperModel.minReactMs) / 1000,
+      arriveAt: f.duration,
+    )..diveTo(_goal(g.x, g.y), 0);
+    _sendDive();
+  }
+
+  void _fly(double dt) {
+    final f = _flight;
+    if (f == null) return;
+    final s = _scene;
+    // After a dive, wait for the server near the end rather than guess.
+    final waiting = _diveAt != null && _verdict == null && _kickT >= f.duration * 0.8;
     final target = waiting ? 0.12 : 1.0;
     _timeScale += (target - _timeScale) * math.min(1, dt * (waiting ? 14 : 8));
-    _kickMs += dt * 1000 * _timeScale;
-    if (_diveAt != null && _verdict == null) _kickMs = math.min(_kickMs, shot.flightMs * 0.97);
+    final prev = _kickT;
+    _kickT += dt * _timeScale;
+    if (_diveAt != null && _verdict == null) _kickT = math.min(_kickT, f.duration * 0.97);
 
-    if (_size != Size.zero) {
-      final v = KeeperView(_size);
-      final b = v.ballInFlight(_kickMs / shot.flightMs, shot.x, shot.y, shot.curl);
-      if (s.ballAt != null) {
-        s.trail.add(s.ballAt!);
-        if (s.trail.length > 7) s.trail.removeAt(0);
-      }
-      s
-        ..ballAt = b.c
-        ..ballR = b.r
-        ..spin += dt * 18 * _timeScale;
+    final set = KeeperPose(V3(0, KeeperSprite.standingHeight / 2 - 0.04, Pitch.keeperZ), KeeperFrame.ready, 0, sy: 0.95);
+    s.keeper = _motion?.at(_kickT, 0) ?? set;
+
+    var ball = f.at(_kickT);
+    if (f.caught && _kickT >= f.duration) ball = s.keeper.hands;
+    if (_size != Size.zero && _kickT < f.duration + 0.25) {
+      s.trail.add(PenaltyCamera(_size).project(s.ball));
+      if (s.trail.length > 12) s.trail.removeAt(0);
+    } else if (s.trail.isNotEmpty) {
+      s.trail.removeAt(0);
     }
+    s
+      ..ball = ball
+      ..ballSpin += dt * _timeScale * (_kickT < f.duration ? 30 : 8)
+      ..spinTilt = f.curl * 0.6
+      ..netClock = _kickT;
 
-    // The gloves follow the same reach model the server uses.
-    final dive = _diveAt;
-    if (dive != null) {
-      final g = KeeperModel.glove(dive.x, dive.y, _diveMs, _kickMs.round());
-      final dx = dive.x - KeeperModel.startX, dy = dive.y - KeeperModel.startY;
-      final dist = math.sqrt(dx * dx + dy * dy);
-      final moved = math.sqrt(math.pow(g.x - KeeperModel.startX, 2) + math.pow(g.y - KeeperModel.startY, 2));
-      s
-        ..gloveX = g.x
-        ..gloveY = g.y
-        ..dive = dist < 1e-6 ? 0 : (moved / dist).clamp(0.0, 1.0)
-        ..lean = (dx / KeeperModel.halfWidth).clamp(-1.0, 1.0) * 0.9 * s.dive;
+    final lands = _motion?.landsAt;
+    if (lands != null && prev < lands && _kickT >= lands && _size != Size.zero) {
+      final cam = PenaltyCamera(_size);
+      final k = s.keeper.centre;
+      s.fx.landing(cam.project(V3(k.x, 0.05, k.z)), cam.scaleAt(k.z));
+      HapticFeedback.lightImpact();
     }
 
     // Never moved: tell the server once the ball is in.
-    if (!_diveSent && _kickMs >= shot.flightMs - 30) _sendDive();
+    if (_phase == _Phase.flight && !_diveSent && _kickT >= f.duration - 0.03) _sendDive();
 
-    if (!_impactDone && _kickMs >= shot.flightMs) {
-      final v = _verdict ?? (_diveAt == null ? _standingVerdict(shot) : null);
+    if (!_impactDone && _kickT >= f.duration) {
+      final v = _verdict ?? (_diveAt == null ? _standingVerdict() : null);
       if (v != null) _impact(v);
     }
   }
@@ -683,17 +712,18 @@ class _GoalkeeperMatchPageState extends State<GoalkeeperMatchPage> with SingleTi
   void _onTap(PointerDownEvent e) {
     if (_size == Size.zero || _diveAt != null) return;
     if (_phase != _Phase.runup && _phase != _Phase.flight) return;
-    final shot = _shot;
-    if (shot == null || (_phase == _Phase.flight && _kickMs >= shot.flightMs - 40)) return;
-    final v = KeeperView(_size);
-    final g = v.toGoal(e.localPosition);
-    _diveAt = (x: g.x.clamp(-KeeperModel.halfWidth - 0.3, KeeperModel.halfWidth + 0.3), y: g.y.clamp(0.0, KeeperModel.bar + 0.3));
-    _diveMs = _phase == _Phase.runup ? 0 : _kickMs.round();
-    _scene
-      ..tapMark = e.localPosition
-      ..tapAge = 0;
+    final f = _flight;
+    if (_phase == _Phase.flight && f != null && _kickT >= f.duration - 0.04) return;
+    final w = PenaltyCamera(_size).onPlane(e.localPosition, Pitch.goalLineZ);
+    _diveAt = (
+      x: w.x.clamp(-KeeperModel.halfWidth - 0.3, KeeperModel.halfWidth + 0.3),
+      y: w.y.clamp(0.0, KeeperModel.bar + 0.3),
+    );
+    _diveMs = _phase == _Phase.runup ? 0 : (_kickT * 1000).round();
+    _scene.reticle = ShotAim(_diveAt!.x / Pitch.goalWidth + 0.5, _diveAt!.y / Pitch.goalHeight);
+    _scene.guideReach = 1;
     HapticFeedback.selectionClick();
-    if (_phase == _Phase.flight) _sendDive();
+    if (_phase == _Phase.flight) _commitDive();
   }
 
   Future<void> _sendDive() async {
@@ -709,6 +739,7 @@ class _GoalkeeperMatchPageState extends State<GoalkeeperMatchPage> with SingleTi
       final ok = res.fold((_) => null, (v) => v);
       if (ok != null) {
         _verdict = ok;
+        _applyOutcome(ok);
         return;
       }
     }
@@ -718,80 +749,83 @@ class _GoalkeeperMatchPageState extends State<GoalkeeperMatchPage> with SingleTi
     });
   }
 
+  /// Decide how the ball carries on past the moment: in the gloves, off
+  /// them, or into the net.
+  void _applyOutcome(GoalkeeperVerdict v) {
+    final f = _flight;
+    if (f == null || f.outcome != null) return;
+    if (v.saved) {
+      f.outcome = KickOutcome.save;
+      final dx = f.target.x - v.gloveX, dy = f.target.y - v.gloveY;
+      f.caught = dx * dx + dy * dy < 0.34 * 0.34 && f.target.y < 2.0;
+      f.parrySide = f.target.x >= v.gloveX ? 1 : -1;
+    } else {
+      f.outcome = KickOutcome.goal;
+    }
+  }
+
   /// What the server will say about a keeper who never moved.
-  GoalkeeperVerdict _standingVerdict(GoalkeeperShot shot) {
+  GoalkeeperVerdict _standingVerdict() {
+    final shot = _shot!;
     final saved = KeeperModel.saved(shot.x, shot.y, KeeperModel.startX, KeeperModel.startY);
     final saves = _saves + (saved ? 1 : 0), taken = _taken + 1, left = _total - taken;
     return GoalkeeperVerdict(
-        saved: saved, gloveX: KeeperModel.startX, gloveY: KeeperModel.startY, saves: saves, shotsTaken: taken,
+        saved: saved,
+        gloveX: KeeperModel.startX,
+        gloveY: KeeperModel.startY,
+        saves: saves,
+        shotsTaken: taken,
         decided: left <= 0 || saves >= _need || saves + left < _need);
   }
 
-  void _impact(GoalkeeperVerdict verdict) {
-    final s = _scene;
+  void _impact(GoalkeeperVerdict v) {
     _impactDone = true;
-    // Settle the gloves exactly where the server says they were.
-    s
-      ..gloveX = verdict.gloveX
-      ..gloveY = verdict.gloveY
-      ..dive = math.max(s.dive, 0.75);
+    _applyOutcome(v);
+    final f = _flight!;
+    final s = _scene;
     final idx = _shot!.number - 1;
     setState(() {
-      if (idx >= 0 && idx < _results.length) _results[idx] = verdict.saved;
-      _saves = verdict.saves;
+      if (idx >= 0 && idx < _results.length) _results[idx] = v.saved;
+      _saves = v.saves;
+      _phase = _Phase.after;
     });
-    final ball = s.ballAt ?? Offset.zero;
-    final v = KeeperView(_size);
-    final gloveC = v.goal(verdict.gloveX, verdict.gloveY);
-    if (verdict.saved) {
+    _phaseTime = 0;
+    _afterT = 0;
+    final hit = f.target;
+    if (v.saved) {
       _sounds.play(PenaltySfx.glove);
-      _sounds.play(PenaltySfx.cheer, volume: 0.7);
+      _sounds.play(PenaltySfx.cheer, volume: 0.75);
       HapticFeedback.heavyImpact();
-      s.fx.sparks(ball, 1.3, const Color(0xffe8f6ff));
-      var away = ball - gloveC;
-      if (away.distance < 1) away = const Offset(0, -1);
-      away = away / away.distance;
-      _afterVel = Offset(away.dx * 900, -700 + away.dy * 300);
-      _showBanner(_rng.nextBool() ? 'تصدّي!' : 'يا سلام!', _mint);
+      _celebrate = 0.8;
+      if (_size != Size.zero) {
+        final cam = PenaltyCamera(_size);
+        s.fx.sparks(cam.project(hit), (cam.scaleAt(hit.z) / 40).clamp(0.6, 1.6), const Color(0xffe8f6ff));
+      }
+      _showBanner(f.caught ? 'مسكها!' : 'تصدّي!', _mint);
+      _say(_pick(['يا سلام عليك!', 'حارس عالمي!', 'هذا هو! كمّل هكي', 'قرأتها صح!']), _Mood.happy);
     } else {
+      s.ripple = NetRipple(V3(hit.x, hit.y, 0), f.duration + 0.04, 0.5);
       _sounds.play(PenaltySfx.net);
       _sounds.play(PenaltySfx.groan);
       HapticFeedback.mediumImpact();
-      _shake = 10;
-      s
-        ..flash = 1
-        ..flashColor = const Color(0xffff3b30);
-      final dir = s.trail.isNotEmpty ? ball - s.trail.last : const Offset(0, 1);
-      _afterVel = dir.distance < 1 ? const Offset(0, 600) : dir / dir.distance * 1400;
+      _shake = 8;
       _showBanner('هدف!', const Color(0xffff6b5f));
+      final early = _diveAt != null && (_diveMs ?? 0) == 0;
+      _say(
+          _diveAt == null
+              ? _pick(['لازم ترتمي! اضغط وين بتمشي الكرة', 'ما تتحركش؟ اضغط بسرعة!'])
+              : early
+                  ? 'خمّنت قبل التسديدة… مرات تصيب ومرات لا'
+                  : _pick(['كانت قريبة! أسرع شوية', 'ولا يهمك، اللي بعدها', 'ركّز على الزاوية']),
+          _Mood.sad);
     }
     _sounds.crowdLevel(0.32);
-    setState(() => _phase = _Phase.after);
-    _phaseTime = 0;
   }
 
-  void _after(double dt) {
-    final s = _scene;
+  void _afterShot(double dt) {
     _afterT += dt;
-    final saved = _results[(_shot?.number ?? 1) - 1] ?? false;
-    if (s.ballAt != null) {
-      _afterVel = Offset(_afterVel.dx * math.exp(-dt * 1.5), _afterVel.dy + (saved ? 1400 : 300) * dt);
-      s
-        ..ballAt = s.ballAt! + _afterVel * dt
-        ..ballR = s.ballR * (saved ? math.exp(-dt * 1.8) : math.exp(dt * 0.9))
-        ..spin += dt * 14;
-      if (s.trail.isNotEmpty) s.trail.removeAt(0);
-    }
-    // Gloves drift back to the middle.
-    if (_afterT > 0.6) {
-      s
-        ..gloveX += (KeeperModel.startX - s.gloveX) * math.min(1, dt * 4)
-        ..gloveY += (KeeperModel.startY - s.gloveY) * math.min(1, dt * 4)
-        ..dive = math.max(0, s.dive - dt * 2)
-        ..lean *= math.exp(-dt * 5);
-    }
-    // Move on once the server has confirmed this shot.
-    if (_afterT > 1.6 && _verdict != null) {
+    // Watch him land and pick himself up, then the next one.
+    if (_afterT > 2.3 && _verdict != null) {
       if (_verdict!.decided || _taken >= _total) {
         _finish();
       } else {
@@ -815,12 +849,14 @@ class _GoalkeeperMatchPageState extends State<GoalkeeperMatchPage> with SingleTi
       final shot = res.fold((_) => null, (s) => s);
       if (shot != null) {
         _shot = shot;
-        // Easy strikers give their side away a little in the run-up.
-        final honesty = (1 - round.shooterSkill / 100).clamp(0.0, 1.0);
-        _tell = shot.x.sign * 0.22 * honesty * honesty;
-        if (_size != Size.zero) widget.debugOnShot?.call(shot, KeeperView(_size));
+        if (_size != Size.zero) {
+          final cam = PenaltyCamera(_size);
+          widget.debugOnShot?.call(shot, (x, y) => cam.project(_goal(x, y)));
+        }
         setState(() => _phase = _Phase.runup);
         _phaseTime = 0;
+        _sounds.crowdLevel(0.45);
+        if (_taken > 0) _say(_pick(['خلّك جاهز…', 'عينك على الكرة', 'اقرأ التسديدة!', 'هذي مهمة!']), _Mood.calm);
         return;
       }
     }
@@ -838,7 +874,7 @@ class _GoalkeeperMatchPageState extends State<GoalkeeperMatchPage> with SingleTi
 
   Future<void> _finish() async {
     final round = _round;
-    if (round == null || !mounted) return;
+    if (round == null || !mounted || _phase == _Phase.finishing) return;
     setState(() {
       _phase = _Phase.finishing;
       _banner = null;
@@ -854,11 +890,12 @@ class _GoalkeeperMatchPageState extends State<GoalkeeperMatchPage> with SingleTi
           _phase = _Phase.done;
         });
         if (ok.prize.won) {
+          _celebrate = 1.4;
           _sounds.play(PenaltySfx.cheer);
           if (_size != Size.zero) _scene.fx.confetti(_size, count: 140);
-          _scene.captain.setPose(CaptainPose.shrug);
+          _say('انت حارس حقيقي! 🧤', _Mood.happy);
         } else {
-          _scene.captain.setPose(CaptainPose.celebrate);
+          _say('قريب! جرب مرة ثانية', _Mood.sad);
         }
         if (ok.prize.rewardType == 'coins') {
           try {
@@ -891,12 +928,10 @@ class _GoalkeeperMatchPageState extends State<GoalkeeperMatchPage> with SingleTi
   }
 
   void _ensureBackdrop(Size size) {
-    final first = _size == Size.zero;
     _size = size;
-    if (first) _placeBallOnSpot();
     if (_backdrop?.size == size || _building == size || size.isEmpty) return;
     _building = size;
-    KeeperBackdrop.build(size, MediaQuery.devicePixelRatioOf(context)).then((b) {
+    PenaltyBackdrop.build(size, MediaQuery.devicePixelRatioOf(context)).then((b) {
       if (!mounted || _building != size) return b.dispose();
       setState(() {
         _backdrop?.dispose();
@@ -926,7 +961,7 @@ class _GoalkeeperMatchPageState extends State<GoalkeeperMatchPage> with SingleTi
                 onPointerDown: _onTap,
                 child: CustomPaint(
                   size: box.biggest,
-                  painter: KeeperPainter(scene: _scene, backdrop: _backdrop, art: _art, glove: _glove, repaint: _frame),
+                  painter: PenaltyPainter(scene: _scene, backdrop: _backdrop, keeper: _keeperImage, repaint: _frame),
                 ),
               );
             }),
@@ -939,9 +974,15 @@ class _GoalkeeperMatchPageState extends State<GoalkeeperMatchPage> with SingleTi
             ),
           Positioned(top: 0, left: 0, right: 0, child: SafeArea(bottom: false, child: _hud())),
           if (_banner != null) _bannerWidget(),
-          if ((_phase == _Phase.runup || _phase == _Phase.intro) && _taken < 2) const _TapHint(),
+          Positioned(
+            left: 12,
+            right: 12,
+            bottom: 0,
+            child: SafeArea(top: false, child: _CoachBar(art: _art, mood: _mood, line: _coach, id: _coachId)),
+          ),
+          if (_phase == _Phase.runup && _taken < 2 && _diveAt == null) const _TapHint(),
           if (_phase == _Phase.finishing)
-            const Positioned(bottom: 90, left: 0, right: 0, child: Center(child: CircularProgressIndicator(color: _gold))),
+            const Positioned(top: 160, left: 0, right: 0, child: Center(child: CircularProgressIndicator(color: _gold))),
           if (_phase == _Phase.error) _errorOverlay(),
           if (_phase == _Phase.done && _final != null) _resultOverlay(),
         ]),
@@ -1006,7 +1047,7 @@ class _GoalkeeperMatchPageState extends State<GoalkeeperMatchPage> with SingleTi
 
   Widget _bannerWidget() => IgnorePointer(
         child: Align(
-          alignment: const Alignment(0, -0.5),
+          alignment: const Alignment(0, -0.45),
           child: TweenAnimationBuilder<double>(
             key: ValueKey(_bannerId),
             tween: Tween(begin: 0, end: 1),
@@ -1093,7 +1134,7 @@ class _GoalkeeperMatchPageState extends State<GoalkeeperMatchPage> with SingleTi
               goalsToWin: r.savesToWin,
               kicksTaken: _taken,
               summary: summary,
-              lostNote: 'اضغط أبكر شوية، وخلّ عينك على قدم كابتن أيوب لحظة التسديد.',
+              lostNote: 'اضغط على المكان اللي تمشي له الكرة بأسرع ما يمكن بعد التسديدة. التخمين قبلها مخاطرة.',
               onPlayAgain: () => Navigator.of(context).pop(true),
               onExit: () => Navigator.of(context).pop(false),
             ),
@@ -1102,6 +1143,103 @@ class _GoalkeeperMatchPageState extends State<GoalkeeperMatchPage> with SingleTi
       ),
     );
   }
+}
+
+/// Captain Ayoub in the corner: his face (calm, delighted or gutted) and a
+/// line of advice.
+class _CoachBar extends StatelessWidget {
+  const _CoachBar({required this.art, required this.mood, required this.line, required this.id});
+  final CaptainArt? art;
+  final _Mood mood;
+  final String line;
+  final int id;
+
+  @override
+  Widget build(BuildContext context) => IgnorePointer(
+        child: Padding(
+          padding: const EdgeInsets.only(bottom: 10),
+          child: Row(crossAxisAlignment: CrossAxisAlignment.end, children: [
+            Container(
+              width: 62,
+              height: 62,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: const Color(0xff16402a),
+                border: Border.all(
+                    color: switch (mood) {
+                      _Mood.happy => _mint,
+                      _Mood.sad => const Color(0xffff8a65),
+                      _Mood.calm => _gold,
+                    },
+                    width: 2.5),
+                boxShadow: const [BoxShadow(color: Colors.black54, blurRadius: 10)],
+              ),
+              child: ClipOval(
+                child: art == null
+                    ? const Icon(Icons.sports_soccer, color: Colors.white54)
+                    : CustomPaint(painter: _FacePainter(art!, mood)),
+              ),
+            ),
+            const SizedBox(width: 8),
+            Flexible(
+              child: AnimatedSwitcher(
+                duration: const Duration(milliseconds: 250),
+                transitionBuilder: (child, a) => FadeTransition(
+                    opacity: a,
+                    child: SlideTransition(
+                        position: Tween(begin: const Offset(0.1, 0), end: Offset.zero).animate(a), child: child)),
+                child: Container(
+                  key: ValueKey(id),
+                  margin: const EdgeInsets.only(bottom: 8),
+                  padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 9),
+                  decoration: BoxDecoration(
+                    color: const Color(0xe607110b),
+                    borderRadius: const BorderRadiusDirectional.only(
+                      topStart: Radius.circular(16),
+                      topEnd: Radius.circular(16),
+                      bottomEnd: Radius.circular(16),
+                      bottomStart: Radius.circular(4),
+                    ),
+                    border: Border.all(color: Colors.white12),
+                  ),
+                  child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisSize: MainAxisSize.min, children: [
+                    const Text('كابتن أيوب',
+                        style: TextStyle(color: _gold, fontSize: 11, fontWeight: FontWeight.w800)),
+                    const SizedBox(height: 2),
+                    Text(line, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700, height: 1.3)),
+                  ]),
+                ),
+              ),
+            ),
+          ]),
+        ),
+      );
+}
+
+class _FacePainter extends CustomPainter {
+  _FacePainter(this.art, this.mood);
+  final CaptainArt art;
+  final _Mood mood;
+
+  // Head crops of each pose (asset pixels).
+  static const _crops = {
+    _Mood.calm: Rect.fromLTWH(185, 0, 260, 260),
+    _Mood.happy: Rect.fromLTWH(235, 5, 260, 260),
+    _Mood.sad: Rect.fromLTWH(295, 5, 260, 260),
+  };
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final img = switch (mood) {
+      _Mood.calm => art.wave,
+      _Mood.happy => art.celebrate,
+      _Mood.sad => art.shrug,
+    };
+    canvas.drawImageRect(img, _crops[mood]!, Offset.zero & size, Paint()..filterQuality = FilterQuality.medium);
+  }
+
+  @override
+  bool shouldRepaint(covariant _FacePainter old) => old.mood != mood || old.art != art;
 }
 
 class _ShotDot extends StatelessWidget {
@@ -1166,7 +1304,7 @@ class _TapHintState extends State<_TapHint> with SingleTickerProviderStateMixin 
   @override
   Widget build(BuildContext context) => IgnorePointer(
         child: Align(
-          alignment: const Alignment(0, 0.62),
+          alignment: const Alignment(0, 0.22),
           child: Column(mainAxisSize: MainAxisSize.min, children: [
             AnimatedBuilder(
               animation: _c,
