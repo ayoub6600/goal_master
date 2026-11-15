@@ -135,6 +135,7 @@ flutter:
     - assets/images/svg_image/sendotp.svg
     - assets/images/football_keeper_strip.webp
     - assets/images/football_striker_strip.webp
+    - assets/audio/penalty/
 
 
 flutter_icons:

@@ -80,6 +80,9 @@ abstract class BookingRepo {
     double promoCreditToUse,
     int venueMarketingCampaignId,
     String? checkoutReference,
+    // A discount code; the backend validates it (owner, field, minimum,
+    // uses left) again on submit whatever the checkout preview said.
+    String? couponCode,
   });
 
   // ---- Recurring bookings ("حجز شهري") ----

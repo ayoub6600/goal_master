@@ -1,3 +1,5 @@
+import 'package:goal_master/features/games/data/keepy_uppy_repo.dart';
+import 'package:goal_master/features/coupons/data/coupon_repo.dart';
 import 'package:get_it/get_it.dart';
 import 'package:dio/dio.dart';
 import 'package:goal_master/features/attendance/data/mandatory_action_repo.dart';
@@ -15,6 +17,7 @@ import 'package:goal_master/features/assistant/data/repo/assistant_repo_imp.dart
 import 'package:goal_master/features/coins/data/repo/coins_repo_imp.dart';
 import 'package:goal_master/features/promotional_credit/data/promotional_credit_repo.dart';
 import 'package:goal_master/features/games/data/moving_target_game_repo.dart';
+import 'package:goal_master/features/games/data/penalty_shootout_repo.dart';
 import '../../features/booking/data/repo/booking_repo_imp.dart';
 import '../databases/api/dio_consumer.dart';
 
@@ -65,6 +68,15 @@ void setupServiceLocator() {
   );
   getIt.registerSingleton<MovingTargetGameRepo>(
     MovingTargetGameRepo(getIt.get<DioConsumer>()),
+  );
+  getIt.registerSingleton<CouponRepo>(
+    CouponRepo(getIt.get<DioConsumer>()),
+  );
+  getIt.registerSingleton<KeepyUppyRepo>(
+    KeepyUppyRepo(getIt.get<DioConsumer>()),
+  );
+  getIt.registerSingleton<PenaltyShootoutRepo>(
+    PenaltyShootoutRepo(getIt.get<DioConsumer>()),
   );
   // Where the customer is shopping from. A singleton because every
   // marketplace surface asks the same question and must get the same answer.

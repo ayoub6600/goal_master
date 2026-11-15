@@ -6871,3 +6871,99 @@ device. **Status:** uncommitted, not deployed.
 
 Verification: focused marketing preview and payment parsing tests pass (9
 tests). **Status:** pending production merge.
+
+## 2026-11-15 — Realistic penalty shootout game (customer app + backend)
+
+Replaces the flat front-on penalty idea with a first-person shootout from the
+penalty spot. Every kick is decided on the server; the client only animates it.
+
+Backend (`goal-master-web`, branch `feature/gamification-rewards-ecosystem`):
+- Migration `2026_11_15_120000_create_penalty_shootout`: adds
+  `game_challenges.keeper_accuracy`, tables `penalty_shootout_attempts`,
+  `penalty_shootout_kicks` (unique attempt+event_uuid for idempotent kicks),
+  `penalty_reward_grants`; seeds easy/medium/hard tiers (accuracy 30/48/65,
+  unlock 0/2/5 bookings, 5 kicks, 3 goals to win). Additive only.
+- `PenaltyKickResolver`: aim is where the ball crosses the goal plane
+  (x 0..1 post to post, y 0..1 grass to bar). Miss/woodwork by geometry;
+  otherwise the keeper guesses the 3×3 zone with `keeper_accuracy` and, when
+  right, saves by reach in metres (better keepers reach further).
+- `PenaltyShootoutController` at `user/games/penalty` (status/start/kick/
+  complete). Shares the hub's daily/monthly reward budget and the one
+  reward-eligible attempt per 24h with the other games; prize is pre-rolled at
+  start and granted only on a win. Ends early once mathematically decided.
+  Coupon details now include percent, cap, min order and expiry.
+- Admin: penalty tiers get their own card in Game Configuration (keeper
+  skill %, kicks, goals to win, unlock bookings); type changes into/out of
+  penalty are refused. Penalty rows are excluded from the old cup/wheel hub.
+
+Customer app:
+- `lib/features/games/presentation/penalty/`: world model (camera, swipe →
+  aim with curl/power/execution error, ball flight, keeper dive matched to the
+  measured glove offsets of `football_keeper_strip.webp`), pre-rasterised
+  stadium (two tiers, LED boards, floodlights, mown turf), net ripple,
+  slow-motion while waiting for the server, replays, haptics, synthesized
+  sound effects in `assets/audio/penalty/`, result panel and coupon ticket.
+- Hub: new "ركلات الترجيح" card. The Captain Ayoub bubble hides while the
+  game is open (`CaptainAyoubBubble.suppressed`).
+
+Verification: backend resolver unit tests 10/10 and penalty feature tests
+15/15 (isolated `database/testing.sqlite`); Flutter penalty world tests 19/19;
+full Flutter suite 206 pass, 1 pre-existing failure
+(`monthly_series_card_test`, fails without these changes too). Played end to
+end on the iOS simulator against a local server on a throwaway DB copy:
+goals, saves, replays, early win, coins grant and a GMPK coupon all verified
+in the DB. Audio was not listened to. Dev DB `database/database.sqlite` was
+not migrated. **Status:** uncommitted, not deployed.
+
+## 2026-11-15 — Keepy-uppy game, admin-set prize cooldown, discount codes at checkout
+
+Backend (`goal-master-web`, branch `feature/gamification-rewards-ecosystem`):
+- Migration `2026_11_15_130000_add_game_cooldown_and_coupon_scope` (additive):
+  `loyalty_settings.game_reward_cooldown_hours` (default 24),
+  `cmn_coupons.cmn_branch_id` (NULL = every field) + `source` ('admin'/'game'),
+  `game_reward_rules.coupon_branch_id`.
+- `GameRewardGate`: one place for the prize cooldown (admin hours, clamped
+  1..720) and the daily/monthly budget, counted across ALL games. Fixes the
+  cup/wheel game, which only counted its own table. `GameCouponIssuer` creates
+  game coupons (personal, single use, optional field lock).
+- `CouponRepository`: personal (type 2) coupons are now checked against their
+  owner (previously anyone with the code could spend one); field lock;
+  "Fixed Amount" coupons now take off an amount (were always read as a %);
+  Arabic error messages. Booking/web/admin callers pass the booked field.
+- `CustomerCouponController`: `GET user/coupons` (my usable coupons) and
+  `POST user/coupons/check` (dry-run discount, throttled).
+- Admin: coupons page gets a field selector + field/source columns;
+  game reward coupons get «صالحة في»; coin settings get the cooldown hours.
+- Keepy-uppy: migration `2026_11_15_140000_create_keepy_uppy`
+  (`game_challenges.ball_difficulty`, `keepy_uppy_attempts`,
+  `keepy_uppy_reward_grants`, 3 tiers). `KeepyUppySimulator` is a
+  deterministic 120 Hz physics (integer inputs, xorshift32, + - * / only).
+  `KeepyUppyController` (`user/games/keepy-uppy`: status/start/finish): the
+  app sends taps `[frame, x_mm, y_mm]`, the server replays them with the
+  frozen seed/physics and only its count decides; rounds finished faster than
+  playable are rejected. Prize pre-rolled at start, granted on reaching the
+  target (`GamePrizes`). Admin: «صعوبة الكرة %», touches to win, unlock.
+
+Customer app:
+- `lib/features/coupons/`: `CouponRepo`, `CheckoutCouponCubit`,
+  `CouponCheckoutCard` («كود الخصم») on the booking checkout (hidden for
+  monthly series). Applying/removing a code re-quotes venue offer, promo
+  credit and coins on what is left (server order). `coupon_code` is sent with
+  the booking. Won coupons show their field and "saved to your account".
+- `lib/features/games/presentation/keepy/`: `keepy_sim.dart` (twin of the
+  server simulator), `keepy_uppy_page.dart` (picker with self-juggling
+  preview; match in the penalty stadium with sweet-spot ring, wind gauge,
+  trail, combo popups, milestones, celebration; shared result panel).
+- Hub card «تنطيط الكرة». Cooldown texts no longer say "24 ساعة".
+
+Verification: backend new tests — coupons/cooldown 13/13, simulator unit 8/8,
+keepy feature 8/8; full backend suite 38 failures, all pre-existing (a clean
+HEAD worktree fails 42, superset). Flutter: cross-language golden test (19
+server-recorded rounds incl. 200-touch runs) matches to the frame; widget
+test plays a round through the real page and the replay agrees; coupon cubit
+4/4. iOS simulator against a throwaway DB copy (deleted): lose flow, and a
+won eligible round (temporary autoplay, removed) — server verified 12/12 and
+issued a field-locked GMKU coupon; coupon check API returned 18 LYD at the
+right field and an Arabic refusal elsewhere. The checkout card itself was not
+seen on the simulator (test data has no slots). **Status:** uncommitted, not
+deployed; dev DB not migrated.

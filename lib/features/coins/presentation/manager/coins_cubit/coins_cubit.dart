@@ -75,10 +75,12 @@ class CoinsCubit extends Cubit<CoinsState> {
   Future<void> loadCheckoutQuote({
     required int serviceId,
     required int employeeId,
+    double? amount,
   }) async {
     final result = await coinsRepo.quoteForBooking(
       serviceId: serviceId,
       employeeId: employeeId,
+      amount: amount,
     );
     result.fold(
       // A failed quote just means no coins option is offered — it must never

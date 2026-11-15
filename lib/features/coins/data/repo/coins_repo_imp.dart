@@ -31,12 +31,17 @@ class CoinsRepoImp extends CoinsRepo {
   Future<Either<Failure, CoinCheckoutQuote>> quoteForBooking({
     required int serviceId,
     required int employeeId,
+    double? amount,
   }) {
     return apiConsumer.handleRequest(
       () => apiConsumer.post(
         EndPoints.coinsQuote,
         isFormData: false,
-        data: {'service_id': serviceId, 'employee_id': employeeId},
+        data: {
+          'service_id': serviceId,
+          'employee_id': employeeId,
+          if (amount != null) 'amount': double.parse(amount.toStringAsFixed(2)),
+        },
       ),
       (data) => CoinCheckoutQuote.fromJson(data),
     );

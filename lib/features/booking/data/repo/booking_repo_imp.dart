@@ -335,7 +335,8 @@ class BookingRepoImp extends BookingRepo {
       int coinsToRedeem = 0,
       double promoCreditToUse = 0,
       int venueMarketingCampaignId = 0,
-      String? checkoutReference}) {
+      String? checkoutReference,
+      String? couponCode}) {
     return apiConsumer.handleRequest(
       () => apiConsumer.post(
         EndPoints.addBooking,
@@ -357,6 +358,8 @@ class BookingRepoImp extends BookingRepo {
           if (promoCreditToUse > 0) 'promo_credit_to_use': promoCreditToUse,
           if (venueMarketingCampaignId > 0)
             'venue_marketing_campaign_id': venueMarketingCampaignId,
+          if (couponCode != null && couponCode.trim().isNotEmpty)
+            'coupon_code': couponCode.trim(),
           // Sent whenever coins are involved so a retried submit can't spend
           // them twice — the backend rejects a repeat of the same reference.
           if ((coinsToRedeem > 0 ||

@@ -1,3 +1,5 @@
+import 'package:goal_master/features/coupons/data/coupon_repo.dart';
+import 'package:goal_master/features/coupons/presentation/checkout_coupon_cubit.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart' show kReleaseMode;
 import 'package:flutter/material.dart';
@@ -236,6 +238,9 @@ class GoalMaster extends StatelessWidget {
               BlocProvider(
                 create: (_) =>
                     VenueCampaignCubit(getIt<PromotionalCreditRepo>()),
+              ),
+              BlocProvider(
+                create: (_) => CheckoutCouponCubit(getIt<CouponRepo>()),
               ),
             ],
             child: ScreenUtilInit(

@@ -26,6 +26,8 @@ import 'package:goal_master/features/location/presentation/manager/active_locati
 import 'package:goal_master/features/location/presentation/view/required_location_view.dart';
 import 'package:goal_master/core/components/preference_utility.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:goal_master/features/coupons/data/coupon_repo.dart';
+import 'package:goal_master/features/coupons/presentation/checkout_coupon_cubit.dart';
 
 /// A booking backend that records the one call these tests are about.
 ///
@@ -162,6 +164,8 @@ void main() {
               BlocProvider(create: (_) => CreateMonthlyBookingCubit(bookingRepo)),
               BlocProvider(create: (_) => CalendarCubit(bookingRepo)),
               BlocProvider(create: (_) => CoinsCubit(_FakeCoinsRepo())),
+              BlocProvider(
+                  create: (_) => CheckoutCouponCubit(_FakeCouponRepo())),
             ],
             child: BookingDetails(initialBranch: initialBranch),
           ),
@@ -333,6 +337,11 @@ void main() {
 }
 
 /// Only present so the checkout step can be constructed; never exercised here.
+class _FakeCouponRepo implements CouponRepo {
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
 class _FakeCoinsRepo implements CoinsRepo {
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);

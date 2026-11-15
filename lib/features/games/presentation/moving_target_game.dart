@@ -6,6 +6,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:goal_master/core/services/service_locator.dart';
 import 'package:goal_master/features/coins/presentation/manager/coins_cubit/coins_cubit.dart';
 import 'package:goal_master/features/games/data/moving_target_game_repo.dart';
+import 'package:goal_master/features/games/presentation/penalty/penalty_shootout_page.dart';
+import 'package:goal_master/features/games/presentation/keepy/keepy_uppy_page.dart';
 
 const _green = Color(0xff3f8d4b);
 
@@ -149,6 +151,10 @@ class _GamesRewardsViewState extends State<GamesRewardsView> {
           const Text('تحديات تنتظرك',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
           const SizedBox(height: 10),
+          const _PenaltyFeatureCard(),
+          const SizedBox(height: 12),
+          const _KeepyFeatureCard(),
+          const SizedBox(height: 14),
           FutureBuilder<dynamic>(
               future: _statusFuture,
               builder: (context, snapshot) {
@@ -216,6 +222,128 @@ class _GamesRewardsViewState extends State<GamesRewardsView> {
               icon: const Icon(Icons.history),
               label: const Text('سجل المكافآت')),
         ]),
+      );
+}
+
+class _KeepyFeatureCard extends StatelessWidget {
+  const _KeepyFeatureCard();
+
+  @override
+  Widget build(BuildContext context) => Material(
+        color: const Color(0xff0b1622),
+        borderRadius: BorderRadius.circular(22),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: () => Navigator.of(context)
+              .push(MaterialPageRoute(builder: (_) => const KeepyUppyPage())),
+          child: Stack(children: [
+            Positioned(
+                left: -20,
+                top: -30,
+                child: Icon(Icons.sports_soccer,
+                    size: 150, color: Colors.white.withValues(alpha: .06))),
+            Padding(
+              padding: const EdgeInsets.all(18),
+              child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 9, vertical: 3),
+                      decoration: BoxDecoration(
+                          color: const Color(0xff7fd3ff),
+                          borderRadius: BorderRadius.circular(8)),
+                      child: const Text('جديد',
+                          style: TextStyle(
+                              color: Color(0xff04202e),
+                              fontWeight: FontWeight.w900,
+                              fontSize: 12)),
+                    ),
+                    const SizedBox(height: 10),
+                    const Text('تنطيط الكرة',
+                        style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 22,
+                            fontWeight: FontWeight.w900)),
+                    const SizedBox(height: 4),
+                    const Text(
+                        'حافظ على الكرة في الهواء أطول مدة. رياح وارتدادات تختبر تركيزك، وجوائز عند الوصول للهدف.',
+                        style: TextStyle(color: Colors.white70, height: 1.4)),
+                    const SizedBox(height: 14),
+                    const Row(children: [
+                      Icon(Icons.play_circle_fill_rounded,
+                          color: Color(0xff7fd3ff)),
+                      SizedBox(width: 6),
+                      Text('العب الآن',
+                          style: TextStyle(
+                              color: Color(0xff7fd3ff),
+                              fontWeight: FontWeight.w800)),
+                    ]),
+                  ]),
+            ),
+          ]),
+        ),
+      );
+}
+
+class _PenaltyFeatureCard extends StatelessWidget {
+  const _PenaltyFeatureCard();
+
+  @override
+  Widget build(BuildContext context) => Material(
+        color: const Color(0xff07110b),
+        borderRadius: BorderRadius.circular(22),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: () => Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => const PenaltyShootoutPage())),
+          child: Stack(children: [
+            Positioned(
+                left: -30,
+                bottom: -40,
+                child: Icon(Icons.sports_soccer,
+                    size: 190, color: Colors.white.withValues(alpha: .06))),
+            Padding(
+              padding: const EdgeInsets.all(18),
+              child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 9, vertical: 3),
+                      decoration: BoxDecoration(
+                          color: const Color(0xffffc928),
+                          borderRadius: BorderRadius.circular(8)),
+                      child: const Text('جديد',
+                          style: TextStyle(
+                              color: Color(0xff1b1300),
+                              fontWeight: FontWeight.w900,
+                              fontSize: 12)),
+                    ),
+                    const SizedBox(height: 10),
+                    const Text('ركلات الترجيح',
+                        style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 22,
+                            fontWeight: FontWeight.w900)),
+                    const SizedBox(height: 4),
+                    const Text(
+                        'واجه حارسًا حقيقيًا في ملعب كامل. اختر مستواك، سجّل واربح كوينز وقسائم خصم.',
+                        style: TextStyle(color: Colors.white70, height: 1.4)),
+                    const SizedBox(height: 14),
+                    const Row(children: [
+                      Icon(Icons.play_circle_fill_rounded,
+                          color: Color(0xffffc928)),
+                      SizedBox(width: 6),
+                      Text('العب الآن',
+                          style: TextStyle(
+                              color: Color(0xffffc928),
+                              fontWeight: FontWeight.w800)),
+                    ]),
+                  ]),
+            ),
+          ]),
+        ),
       );
 }
 
@@ -289,7 +417,7 @@ class _HowToEarnCard extends StatelessWidget {
             '٢. اختر الكوب الذي تخفي تحته الكرة، أو أدر عجلة الحظ. نتيجة السحب يحددها الخادم وتظهر لك بوضوح.'),
         const SizedBox(height: 5),
         const Text(
-            '٣. يلزم توثيق الهاتف للمحاولة المؤهلة. توجد محاولة مكافأة واحدة كل ٢٤ ساعة؛ المحاولات الأخرى للتدريب.'),
+            '٣. يلزم توثيق الهاتف للمحاولة المؤهلة. توجد محاولة مكافأة واحدة خلال مدة تحددها الإدارة، مشتركة بين كل الألعاب؛ المحاولات الأخرى للتدريب.'),
         const SizedBox(height: 10),
         Text(eligibility,
             style: const TextStyle(color: _green, fontWeight: FontWeight.w700)),

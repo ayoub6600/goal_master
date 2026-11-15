@@ -9,5 +9,8 @@ abstract class CoinsRepo {
   Future<Either<Failure, CoinCheckoutQuote>> quoteForBooking({
     required int serviceId,
     required int employeeId,
+    // What is still payable after a coupon/offer; the server then caps the
+    // coins against that, exactly as the booking request will.
+    double? amount,
   });
 }

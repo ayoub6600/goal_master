@@ -60,6 +60,7 @@ class AddBookingCubit extends Cubit<AddBookingState> {
     int coinsToRedeem = 0,
     double promoCreditToUse = 0,
     int venueMarketingCampaignId = 0,
+    String? couponCode,
   }) async {
     if (_isSubmitting) {
       return;
@@ -114,6 +115,7 @@ class AddBookingCubit extends Cubit<AddBookingState> {
       coinsToRedeem: coinsToRedeem,
       promoCreditToUse: promoCreditToUse,
       venueMarketingCampaignId: venueMarketingCampaignId,
+      couponCode: couponCode,
       checkoutReference: _checkoutReference ??=
           'chk_${DateTime.now().microsecondsSinceEpoch}',
     );

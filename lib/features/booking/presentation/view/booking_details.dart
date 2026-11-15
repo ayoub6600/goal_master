@@ -8,6 +8,8 @@ import 'package:goal_master/features/coins/presentation/manager/coins_cubit/coin
 import 'package:goal_master/features/balance/presentation/balance_cubit/balance_cubit.dart';
 import 'package:goal_master/features/coins/presentation/view/widgets/booking_success_sheet.dart';
 import 'package:goal_master/features/coins/presentation/view/widgets/coins_checkout_card.dart';
+import 'package:goal_master/features/coupons/presentation/checkout_coupon_cubit.dart';
+import 'package:goal_master/features/coupons/presentation/coupon_checkout_card.dart';
 import 'package:goal_master/features/promotional_credit/presentation/promotional_credit_checkout_card.dart';
 import 'package:goal_master/features/promotional_credit/presentation/promotional_credit_cubit.dart';
 import 'package:goal_master/features/promotional_credit/presentation/venue_campaign_cubit.dart';
@@ -199,302 +201,320 @@ class _BookingDetailsState extends State<BookingDetails> {
                 employeeId: state.employeeId ?? 0,
               );
               if (!context.mounted) return;
-              final occurrence = BookingOccurrence.tryFrom(
-                context.read<CalendarCubit>().state.selectedTime,
-                context.read<CalendarCubit>().state.selectedTimeEnd,
-              );
               final amount = coinsCubit.state.checkoutQuote?.bookingAmount ?? 0;
-              final venueCampaignCubit = context.read<VenueCampaignCubit?>();
-              if (occurrence != null &&
-                  amount > 0 &&
-                  (state.serviceId ?? 0) > 0 &&
-                  venueCampaignCubit != null) {
-                await venueCampaignCubit.load(
-                  branchId: state.clubId ?? 0,
-                  serviceId: state.serviceId!,
-                  amount: amount,
-                  bookingAt: occurrence.startAtWire,
-                );
-              } else {
-                venueCampaignCubit?.clear();
-              }
-              if (!context.mounted) return;
-              final offerDiscount =
-                  venueCampaignCubit?.state.selectedOffer?.discount ?? 0;
-              await context.read<PromotionalCreditCubit>().loadQuote(
-                    (amount - offerDiscount)
-                        .clamp(0, double.infinity)
-                        .toDouble(),
-                  );
+              // A code from a previous booking never carries over.
+              context
+                  .read<CheckoutCouponCubit>()
+                  .begin(branchId: state.clubId ?? 0, amount: amount);
+              await _refreshDiscounts(context, state,
+                  gross: amount, couponDiscount: 0);
             },
-            child: BlocBuilder<PageViewCubit, PageViewState>(
-              builder: (context, state) {
-                // The occurrence the customer actually selected, straight from
-                // the server's slot. Everything on the checkout step — the
-                // summary card, the monthly preview and both submit buttons —
-                // reads this one value, so they cannot describe different dates
-                // from each other or from what gets booked.
-                final calendar = context.watch<CalendarCubit>().state;
-                final previewOccurrence = BookingOccurrence.tryFrom(
-                  calendar.selectedTime,
-                  calendar.selectedTimeEnd,
-                );
-                return Column(
-                  children: [
-                    // On the checkout step the PageView holds only the short
-                    // payment picker, while everything the customer has to read
-                    // sits below it. Giving it a smaller share there is what
-                    // makes the summary tall enough to scroll — as an equal
-                    // Expanded it swallowed the space and clipped the content.
-                    if (state.currentPage != PageViewCubit.checkout)
-                      Expanded(
-                        child: PageView(
-                          controller: _controller,
-                          physics: NeverScrollableScrollPhysics(),
-                          children: [
-                            // «اختر المنطقة» used to sit here. It is gone, not
-                            // hidden: the zone now arrives from the Active
-                            // Location, already resolved, before this screen is
-                            // ever built. Asking the customer to pick a region
-                            // they had just chosen on Home was the duplicate
-                            // location system this removes.
-                            ClubSelection(controller: _controller),
-                            CategorySelection(controller: _controller),
-                            ServiceSelection(controller: _controller),
-                            // «اختر الحجز» — the مسائي / بعد منتصف الليل choice —
-                            // used to sit here. It was never a question about the
-                            // booking: it was the scheduling engine's inability to
-                            // store a 17:00–03:00 band leaking onto the customer,
-                            // who had to know which side of midnight they wanted
-                            // before they could see a single time. The server now
-                            // merges the bands and returns one night's slots.
-                            //
-                            // The bands themselves are untouched, and each slot
-                            // still carries the one it belongs to.
-                            CustomCalder(controller: _controller),
-                            TimeSlotSection(controller: _controller),
-                            const SizedBox.shrink(),
-                          ],
-                        ),
-                      ),
-                    // Scrollable: the summary plus an expanded coins control is
-                    // taller than the space left under the PageView on smaller
-                    // screens.
-                    if (state.currentPage == PageViewCubit.checkout)
-                      Expanded(
-                        flex: 3,
-                        child: SingleChildScrollView(
-                          padding: EdgeInsets.only(bottom: 8.h),
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
+            child: BlocListener<CheckoutCouponCubit, CheckoutCouponState>(
+              // The coupon comes off first on the server (then the venue offer,
+              // promo credit and coins, each priced on what is left), so every
+              // other discount is re-quoted when a code is applied or removed.
+              listenWhen: (previous, current) =>
+                  previous.appliedCode != current.appliedCode ||
+                  previous.discount != current.discount,
+              listener: (context, coupon) {
+                final page = context.read<PageViewCubit>().state;
+                if (page.currentPage != PageViewCubit.checkout) return;
+                _refreshDiscounts(context, page,
+                    gross: coupon.amount,
+                    couponDiscount: coupon.discount,
+                    requoteCoins: true);
+              },
+              child: BlocBuilder<PageViewCubit, PageViewState>(
+                builder: (context, state) {
+                  // The occurrence the customer actually selected, straight from
+                  // the server's slot. Everything on the checkout step — the
+                  // summary card, the monthly preview and both submit buttons —
+                  // reads this one value, so they cannot describe different dates
+                  // from each other or from what gets booked.
+                  final calendar = context.watch<CalendarCubit>().state;
+                  final previewOccurrence = BookingOccurrence.tryFrom(
+                    calendar.selectedTime,
+                    calendar.selectedTimeEnd,
+                  );
+                  return Column(
+                    children: [
+                      // On the checkout step the PageView holds only the short
+                      // payment picker, while everything the customer has to read
+                      // sits below it. Giving it a smaller share there is what
+                      // makes the summary tall enough to scroll — as an equal
+                      // Expanded it swallowed the space and clipped the content.
+                      if (state.currentPage != PageViewCubit.checkout)
+                        Expanded(
+                          child: PageView(
+                            controller: _controller,
+                            physics: NeverScrollableScrollPhysics(),
                             children: [
-                              Padding(
-                                padding: EdgeInsets.symmetric(
-                                    horizontal: 16.w, vertical: 8.h),
-                                child: BookingTypeSelector(
-                                  branchId: pageViewCubit.state.clubId ?? 0,
-                                  employeeId:
-                                      pageViewCubit.state.employeeId ?? 0,
-                                  serviceId: pageViewCubit.state.serviceId ?? 0,
-                                  // The same date that will be submitted, so the
-                                  // preview can never describe different dates
-                                  // from the ones actually booked — and that
-                                  // date comes from the server's slot, never
-                                  // from the operational night.
-                                  date: previewOccurrence?.serviceDate ?? '',
-                                  startTime: previewOccurrence?.startTime ?? '',
-                                  endTime: previewOccurrence?.endTime ?? '',
-                                  startAt: previewOccurrence?.startAtWire,
-                                  endAt: previewOccurrence?.endAtWire,
-                                ),
-                              ),
-                              _CheckoutBookingSummary(
-                                venue: pageViewCubit.state.clubTitle ?? '',
-                                field: pageViewCubit.state.serviceTitle ?? '',
-                                sport: pageViewCubit.state.categoryTitle ?? '',
-                                occurrence: previewOccurrence,
-                                isMonthly: context
-                                    .watch<MonthlyBookingCubit>()
-                                    .state
-                                    .isMonthly,
-                              ),
-                              const ChoosePayment(),
-                              BlocBuilder<MonthlyBookingCubit,
-                                  MonthlyBookingState>(
-                                builder: (context, monthlyState) =>
-                                    monthlyState.isMonthly
-                                        ? const SizedBox.shrink()
-                                        : const VenueCampaignCheckoutCard(),
-                              ),
-                              // Coins are not part of a recurring booking in M3,
-                              // so the control is hidden rather than shown and
-                              // silently ignored.
-                              BlocBuilder<MonthlyBookingCubit,
-                                  MonthlyBookingState>(
-                                builder: (context, monthlyState) =>
-                                    monthlyState.isMonthly
-                                        ? const SizedBox.shrink()
-                                        : const CoinsCheckoutCard(),
-                              ),
-                              BlocBuilder<MonthlyBookingCubit,
-                                  MonthlyBookingState>(
-                                builder: (context, monthlyState) =>
-                                    monthlyState.isMonthly
-                                        ? const SizedBox.shrink()
-                                        : const PromotionalCreditCheckoutCard(),
-                              ),
+                              // «اختر المنطقة» used to sit here. It is gone, not
+                              // hidden: the zone now arrives from the Active
+                              // Location, already resolved, before this screen is
+                              // ever built. Asking the customer to pick a region
+                              // they had just chosen on Home was the duplicate
+                              // location system this removes.
+                              ClubSelection(controller: _controller),
+                              CategorySelection(controller: _controller),
+                              ServiceSelection(controller: _controller),
+                              // «اختر الحجز» — the مسائي / بعد منتصف الليل choice —
+                              // used to sit here. It was never a question about the
+                              // booking: it was the scheduling engine's inability to
+                              // store a 17:00–03:00 band leaking onto the customer,
+                              // who had to know which side of midnight they wanted
+                              // before they could see a single time. The server now
+                              // merges the bands and returns one night's slots.
+                              //
+                              // The bands themselves are untouched, and each slot
+                              // still carries the one it belongs to.
+                              CustomCalder(controller: _controller),
+                              TimeSlotSection(controller: _controller),
+                              const SizedBox.shrink(),
                             ],
                           ),
                         ),
-                      ),
-                    if (state.currentPage > 0)
-                      Padding(
-                        padding: EdgeInsets.all(16.w),
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: ButtonApp(
-                                backGround: AppColors.grey,
-                                text: "رجوع",
-                                onTap: () {
-                                  pageViewCubit.previousPage();
-                                  _controller.previousPage(
-                                    duration: Duration(milliseconds: 300),
-                                    curve: Curves.ease,
-                                  );
-                                },
-                              ),
+                      // Scrollable: the summary plus an expanded coins control is
+                      // taller than the space left under the PageView on smaller
+                      // screens.
+                      if (state.currentPage == PageViewCubit.checkout)
+                        Expanded(
+                          flex: 3,
+                          child: SingleChildScrollView(
+                            padding: EdgeInsets.only(bottom: 8.h),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Padding(
+                                  padding: EdgeInsets.symmetric(
+                                      horizontal: 16.w, vertical: 8.h),
+                                  child: BookingTypeSelector(
+                                    branchId: pageViewCubit.state.clubId ?? 0,
+                                    employeeId:
+                                        pageViewCubit.state.employeeId ?? 0,
+                                    serviceId:
+                                        pageViewCubit.state.serviceId ?? 0,
+                                    // The same date that will be submitted, so the
+                                    // preview can never describe different dates
+                                    // from the ones actually booked — and that
+                                    // date comes from the server's slot, never
+                                    // from the operational night.
+                                    date: previewOccurrence?.serviceDate ?? '',
+                                    startTime:
+                                        previewOccurrence?.startTime ?? '',
+                                    endTime: previewOccurrence?.endTime ?? '',
+                                    startAt: previewOccurrence?.startAtWire,
+                                    endAt: previewOccurrence?.endAtWire,
+                                  ),
+                                ),
+                                _CheckoutBookingSummary(
+                                  venue: pageViewCubit.state.clubTitle ?? '',
+                                  field: pageViewCubit.state.serviceTitle ?? '',
+                                  sport:
+                                      pageViewCubit.state.categoryTitle ?? '',
+                                  occurrence: previewOccurrence,
+                                  isMonthly: context
+                                      .watch<MonthlyBookingCubit>()
+                                      .state
+                                      .isMonthly,
+                                ),
+                                const ChoosePayment(),
+                                // Discount codes don't apply to an upfront monthly
+                                // series (the server refuses them there).
+                                BlocBuilder<MonthlyBookingCubit,
+                                    MonthlyBookingState>(
+                                  builder: (context, monthlyState) =>
+                                      monthlyState.isMonthly
+                                          ? const SizedBox.shrink()
+                                          : const CouponCheckoutCard(),
+                                ),
+                                BlocBuilder<MonthlyBookingCubit,
+                                    MonthlyBookingState>(
+                                  builder: (context, monthlyState) =>
+                                      monthlyState.isMonthly
+                                          ? const SizedBox.shrink()
+                                          : const VenueCampaignCheckoutCard(),
+                                ),
+                                // Coins are not part of a recurring booking in M3,
+                                // so the control is hidden rather than shown and
+                                // silently ignored.
+                                BlocBuilder<MonthlyBookingCubit,
+                                    MonthlyBookingState>(
+                                  builder: (context, monthlyState) =>
+                                      monthlyState.isMonthly
+                                          ? const SizedBox.shrink()
+                                          : const CoinsCheckoutCard(),
+                                ),
+                                BlocBuilder<MonthlyBookingCubit,
+                                    MonthlyBookingState>(
+                                  builder: (context, monthlyState) =>
+                                      monthlyState.isMonthly
+                                          ? const SizedBox.shrink()
+                                          : const PromotionalCreditCheckoutCard(),
+                                ),
+                              ],
                             ),
-                            SizedBox(width: 8.w),
-                            if (state.currentPage == PageViewCubit.checkout &&
-                                context
-                                    .watch<MonthlyBookingCubit>()
-                                    .state
-                                    .isMonthly)
-                              _MonthlyConfirmButton(
-                                pageViewCubit: pageViewCubit,
-                                controller: _controller,
-                              )
-                            else if (state.currentPage ==
-                                PageViewCubit.checkout)
-                              BlocConsumer<AddBookingCubit, AddBookingState>(
-                                listener: (context, state) async {
-                                  if (state is AddBookingSuccess) {
-                                    final coinsCubit =
-                                        context.read<CoinsCubit>();
-                                    final promoCubit =
-                                        context.read<PromotionalCreditCubit>();
-                                    await showBookingSuccessSheet(
-                                      context,
-                                      coinsRedeemed: state.coinsRedeemed,
-                                    );
-                                    if (!context.mounted) return;
-                                    coinsCubit.clearCheckout();
-                                    promoCubit.clearCheckout();
-                                    context
-                                        .read<VenueCampaignCubit?>()
-                                        ?.clear();
-                                    coinsCubit.getBalance();
-                                    context.read<BalanceCubit>().getBalance();
-                                    pushReplacement(RoutesKeys.kHome, context);
-                                  } else if (state is AddBookingFailure) {
-                                    showCustomFailureToast(state.massage);
-                                  }
-                                },
-                                builder: (context, state) {
-                                  return Expanded(
-                                    child: ButtonApp(
-                                      isLoading: state is AddBookingLoading,
-                                      enabled: state is! AddBookingLoading,
-                                      text: "تأكيد الحجز",
-                                      onTap: state is AddBookingLoading
-                                          ? null
-                                          : () {
-                                              shouldExecute(
-                                                context: context,
-                                                callback: () async {
-                                                  final occurrence =
-                                                      _requireOccurrence(
-                                                          context);
-                                                  if (occurrence == null) {
-                                                    return;
-                                                  }
-                                                  context
-                                                      .read<AddBookingCubit>()
-                                                      .addBooking(
-                                                        employeeId: pageViewCubit
-                                                                .state
-                                                                .employeeId ??
-                                                            0,
-                                                        serviceId: pageViewCubit
-                                                                .state
-                                                                .serviceId ??
-                                                            0,
-                                                        zoneId: pageViewCubit
-                                                                .state.zoneId ??
-                                                            0,
-                                                        clubId: pageViewCubit
-                                                                .state.clubId ??
-                                                            0,
-                                                        // The server's slot decides
-                                                        // the date. focusedDay is the
-                                                        // operational NIGHT, which is
-                                                        // a day behind for any slot
-                                                        // after midnight.
-                                                        date: occurrence
-                                                            .serviceDate,
-                                                        startTime: occurrence
-                                                            .startTime,
-                                                        endTime:
-                                                            occurrence.endTime,
-                                                        startAt: occurrence
-                                                            .startAtWire,
-                                                        endAt: occurrence
-                                                            .endAtWire,
-                                                        coinsToRedeem: context
-                                                                    .read<
-                                                                        AddBookingCubit>()
-                                                                    .selectedPaymentType ==
-                                                                4
-                                                            ? context
-                                                                .read<
-                                                                    CoinsCubit>()
-                                                                .state
-                                                                .coinsToRedeem
-                                                            : 0,
-                                                        promoCreditToUse: context
-                                                                    .read<
-                                                                        AddBookingCubit>()
-                                                                    .selectedPaymentType ==
-                                                                4
-                                                            ? context
-                                                                .read<
-                                                                    PromotionalCreditCubit>()
-                                                                .state
-                                                                .amountToUse
-                                                            : 0,
-                                                        venueMarketingCampaignId:
-                                                            context
-                                                                    .read<
-                                                                        VenueCampaignCubit>()
-                                                                    .state
-                                                                    .selectedOffer
-                                                                    ?.id ??
-                                                                0,
-                                                      );
-                                                },
-                                              );
-                                            },
-                                    ),
-                                  );
-                                },
-                              ),
-                          ],
+                          ),
                         ),
-                      ),
-                  ],
-                );
-              },
+                      if (state.currentPage > 0)
+                        Padding(
+                          padding: EdgeInsets.all(16.w),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: ButtonApp(
+                                  backGround: AppColors.grey,
+                                  text: "رجوع",
+                                  onTap: () {
+                                    pageViewCubit.previousPage();
+                                    _controller.previousPage(
+                                      duration: Duration(milliseconds: 300),
+                                      curve: Curves.ease,
+                                    );
+                                  },
+                                ),
+                              ),
+                              SizedBox(width: 8.w),
+                              if (state.currentPage == PageViewCubit.checkout &&
+                                  context
+                                      .watch<MonthlyBookingCubit>()
+                                      .state
+                                      .isMonthly)
+                                _MonthlyConfirmButton(
+                                  pageViewCubit: pageViewCubit,
+                                  controller: _controller,
+                                )
+                              else if (state.currentPage ==
+                                  PageViewCubit.checkout)
+                                BlocConsumer<AddBookingCubit, AddBookingState>(
+                                  listener: (context, state) async {
+                                    if (state is AddBookingSuccess) {
+                                      final coinsCubit =
+                                          context.read<CoinsCubit>();
+                                      final promoCubit = context
+                                          .read<PromotionalCreditCubit>();
+                                      await showBookingSuccessSheet(
+                                        context,
+                                        coinsRedeemed: state.coinsRedeemed,
+                                      );
+                                      if (!context.mounted) return;
+                                      coinsCubit.clearCheckout();
+                                      promoCubit.clearCheckout();
+                                      context
+                                          .read<CheckoutCouponCubit>()
+                                          .clear();
+                                      context
+                                          .read<VenueCampaignCubit?>()
+                                          ?.clear();
+                                      coinsCubit.getBalance();
+                                      context.read<BalanceCubit>().getBalance();
+                                      pushReplacement(
+                                          RoutesKeys.kHome, context);
+                                    } else if (state is AddBookingFailure) {
+                                      showCustomFailureToast(state.massage);
+                                    }
+                                  },
+                                  builder: (context, state) {
+                                    return Expanded(
+                                      child: ButtonApp(
+                                        isLoading: state is AddBookingLoading,
+                                        enabled: state is! AddBookingLoading,
+                                        text: "تأكيد الحجز",
+                                        onTap: state is AddBookingLoading
+                                            ? null
+                                            : () {
+                                                shouldExecute(
+                                                  context: context,
+                                                  callback: () async {
+                                                    final occurrence =
+                                                        _requireOccurrence(
+                                                            context);
+                                                    if (occurrence == null) {
+                                                      return;
+                                                    }
+                                                    context
+                                                        .read<AddBookingCubit>()
+                                                        .addBooking(
+                                                          employeeId: pageViewCubit
+                                                                  .state
+                                                                  .employeeId ??
+                                                              0,
+                                                          serviceId: pageViewCubit
+                                                                  .state
+                                                                  .serviceId ??
+                                                              0,
+                                                          zoneId: pageViewCubit
+                                                                  .state
+                                                                  .zoneId ??
+                                                              0,
+                                                          clubId: pageViewCubit
+                                                                  .state
+                                                                  .clubId ??
+                                                              0,
+                                                          // The server's slot decides
+                                                          // the date. focusedDay is the
+                                                          // operational NIGHT, which is
+                                                          // a day behind for any slot
+                                                          // after midnight.
+                                                          date: occurrence
+                                                              .serviceDate,
+                                                          startTime: occurrence
+                                                              .startTime,
+                                                          endTime: occurrence
+                                                              .endTime,
+                                                          startAt: occurrence
+                                                              .startAtWire,
+                                                          endAt: occurrence
+                                                              .endAtWire,
+                                                          coinsToRedeem: context
+                                                                      .read<
+                                                                          AddBookingCubit>()
+                                                                      .selectedPaymentType ==
+                                                                  4
+                                                              ? context
+                                                                  .read<
+                                                                      CoinsCubit>()
+                                                                  .state
+                                                                  .coinsToRedeem
+                                                              : 0,
+                                                          promoCreditToUse: context
+                                                                      .read<
+                                                                          AddBookingCubit>()
+                                                                      .selectedPaymentType ==
+                                                                  4
+                                                              ? context
+                                                                  .read<
+                                                                      PromotionalCreditCubit>()
+                                                                  .state
+                                                                  .amountToUse
+                                                              : 0,
+                                                          venueMarketingCampaignId: context
+                                                                  .read<
+                                                                      VenueCampaignCubit>()
+                                                                  .state
+                                                                  .selectedOffer
+                                                                  ?.id ??
+                                                              0,
+                                                          couponCode: context
+                                                              .read<
+                                                                  CheckoutCouponCubit>()
+                                                              .state
+                                                              .appliedCode,
+                                                        );
+                                                  },
+                                                );
+                                              },
+                                      ),
+                                    );
+                                  },
+                                ),
+                            ],
+                          ),
+                        ),
+                    ],
+                  );
+                },
+              ),
             ),
           ),
         ),
@@ -512,6 +532,49 @@ class _BookingDetailsState extends State<BookingDetails> {
           },
         ),
       ],
+    );
+  }
+}
+
+/// Re-prices the venue offer, promotional credit and (after a code change)
+/// the coins quote on what is left once the coupon is off — the same order
+/// the booking endpoint applies them in, so the preview and the server agree.
+Future<void> _refreshDiscounts(
+  BuildContext context,
+  PageViewState state, {
+  required double gross,
+  required double couponDiscount,
+  bool requoteCoins = false,
+}) async {
+  final occurrence = BookingOccurrence.tryFrom(
+    context.read<CalendarCubit>().state.selectedTime,
+    context.read<CalendarCubit>().state.selectedTimeEnd,
+  );
+  final base = (gross - couponDiscount).clamp(0, double.infinity).toDouble();
+  final venueCampaignCubit = context.read<VenueCampaignCubit?>();
+  final promoCubit = context.read<PromotionalCreditCubit>();
+  final coinsCubit = context.read<CoinsCubit>();
+  if (occurrence != null &&
+      base > 0 &&
+      (state.serviceId ?? 0) > 0 &&
+      venueCampaignCubit != null) {
+    await venueCampaignCubit.load(
+      branchId: state.clubId ?? 0,
+      serviceId: state.serviceId!,
+      amount: base,
+      bookingAt: occurrence.startAtWire,
+    );
+  } else {
+    venueCampaignCubit?.clear();
+  }
+  final offerDiscount = venueCampaignCubit?.state.selectedOffer?.discount ?? 0;
+  final remaining = (base - offerDiscount).clamp(0, double.infinity).toDouble();
+  await promoCubit.loadQuote(remaining);
+  if (requoteCoins) {
+    await coinsCubit.loadCheckoutQuote(
+      serviceId: state.serviceId ?? 0,
+      employeeId: state.employeeId ?? 0,
+      amount: couponDiscount > 0 ? remaining : null,
     );
   }
 }

@@ -21,6 +21,10 @@ const String _kPosYKey = 'captain_ayoub_pos_y';
 class CaptainAyoubBubble extends StatefulWidget {
   const CaptainAyoubBubble({super.key});
 
+  /// Full-screen experiences pushed outside go_router (games) raise this
+  /// while open, so the bubble doesn't sit over their touch area.
+  static final suppressed = ValueNotifier<int>(0);
+
   @override
   State<CaptainAyoubBubble> createState() => _CaptainAyoubBubbleState();
 }
@@ -145,12 +149,14 @@ class _CaptainAyoubBubbleState extends State<CaptainAyoubBubble>
       // restart. routerDelegate.currentConfiguration is the live matched route
       // stack and updates immediately on both push and pop.
       child: ListenableBuilder(
-        listenable: AppRouter.router.routerDelegate,
+        listenable: Listenable.merge(
+            [AppRouter.router.routerDelegate, CaptainAyoubBubble.suppressed]),
         builder: (context, _) {
           final location = AppRouter
               .router.routerDelegate.currentConfiguration.uri
               .toString();
-          if (location == RoutesKeys.kAssistantChat) {
+          if (location == RoutesKeys.kAssistantChat ||
+              CaptainAyoubBubble.suppressed.value > 0) {
             return const SizedBox.shrink();
           }
           return _buildBubble(context);
