@@ -109,6 +109,37 @@ class PenaltyFx {
     }
   }
 
+  /// A keeper hitting the turf: dust kicked out both ways, a few clods.
+  void landing(Offset at, double pxPerMetre) {
+    final w = pxPerMetre;
+    for (var i = 0; i < 12; i++) {
+      final side = i.isEven ? 1.0 : -1.0;
+      particles.add(FxParticle(
+        kind: FxKind.dust,
+        p: at + Offset(_r(-0.9, 0.9) * w, _r(-0.05, 0.05) * w),
+        v: Offset(side * _r(0.4, 1.4) * w, -_r(0.1, 0.5) * w),
+        life: _r(0.5, 0.9),
+        size: w * _r(0.12, 0.22),
+        color: const Color(0xffd8d2b8),
+        drag: 3,
+      ));
+    }
+    for (var i = 0; i < 10; i++) {
+      particles.add(FxParticle(
+        kind: FxKind.chunk,
+        p: at + Offset(_r(-0.8, 0.8) * w, 0),
+        v: Offset(_r(-1, 1) * w * 1.2, -_r(0.6, 1.4) * w),
+        life: _r(0.35, 0.6),
+        size: _r(0.02, 0.04) * w,
+        color: _turf[_rng.nextInt(_turf.length)],
+        gravity: 9.8 * w,
+        drag: 0.5,
+        rot: _r(0, math.pi),
+        spin: _r(-12, 12),
+      ));
+    }
+  }
+
   void ring(Offset at, double r0, Color color, {double grow = 4, double life = 0.35}) {
     particles.add(FxParticle(
       kind: FxKind.ring,

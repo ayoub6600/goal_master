@@ -1,5 +1,6 @@
 import 'dart:math' as math;
-import 'dart:ui';
+
+import 'package:flutter/animation.dart';
 
 /// World units are metres. x runs across the goal (0 = centre, + = right as
 /// the shooter sees it), y is up from the grass, z runs from the penalty spot
@@ -308,7 +309,8 @@ class BallFlight {
 enum KeeperFrame { ready, diveLeft, diveRight }
 
 class KeeperPose {
-  const KeeperPose(this.centre, this.frame, this.rotation);
+  const KeeperPose(this.centre, this.frame, this.rotation,
+      {this.sx = 1, this.sy = 1, this.ghost, this.ghostAlpha = 0, this.alpha = 1});
 
   /// Centre of the sprite's bounding box, in world metres.
   final V3 centre;
@@ -316,6 +318,25 @@ class KeeperPose {
 
   /// Radians, counter-clockwise in world space (y up).
   final double rotation;
+
+  /// Squash and stretch: a crouch is sy < 1, full extension sx > 1.
+  final double sx, sy;
+
+  /// Frame changes cross-fade: the outgoing pose, drawn underneath.
+  final KeeperPose? ghost;
+  final double ghostAlpha, alpha;
+
+  /// Where a caught ball sits: in the leading glove mid-dive, against the
+  /// chest when he's on his feet. World metres, just in front of him.
+  V3 get hands {
+    if (frame == KeeperFrame.ready) {
+      return V3(centre.x, centre.y + 0.1 * sy, centre.z - 0.3);
+    }
+    final arm = frame == KeeperFrame.diveLeft ? KeeperSprite.leftGlove : KeeperSprite.rightGlove;
+    final c = math.cos(rotation), s = math.sin(rotation);
+    final ax = arm.dx * sx * 0.92, ay = arm.dy * sy;
+    return V3(centre.x + ax * c - ay * s, centre.y + ax * s + ay * c, centre.z - 0.3);
+  }
 }
 
 /// Sprite geometry measured from football_keeper_strip.webp.
@@ -329,9 +350,15 @@ abstract final class KeeperSprite {
   static const leftGlove = Offset(-1.14, 0.31);
   static const rightGlove = Offset(1.14, 0.24);
   static const standingHeight = 568 / pxPerMetre;
+
+  /// Half the body's thickness when lying on the grass after a dive.
+  static const lyingHalf = 0.3;
 }
 
-/// The goalkeeper's movement for one kick, also a pure function of time.
+/// The goalkeeper's movement for one kick, a pure function of time (so the
+/// live kick and its replay match): set at the strike, load the legs, push
+/// off into a dive that rises with the shot, stretch, land on his side,
+/// slide, and get back up — with the ball in his gloves if he caught it.
 class KeeperMotion {
   KeeperMotion({required this.reactAt, required this.arriveAt});
 
@@ -342,16 +369,20 @@ class KeeperMotion {
   V3 _end = const V3(0, KeeperSprite.standingHeight / 2, Pitch.keeperZ);
   double _startX = 0;
 
+  static const _stand = KeeperSprite.standingHeight / 2;
+  static const _load = 0.11;
+  static const _getUpAfter = 1.15, _getUpTime = 0.4;
+
   static double idleX(double clock) =>
       0.3 * math.sin(clock * 1.7) + 0.1 * math.sin(clock * 4.1);
 
   /// On his line, shuffling side to side and bouncing on his toes.
-  static KeeperPose idle(double clock) => KeeperPose(
-      V3(idleX(clock),
-          KeeperSprite.standingHeight / 2 + 0.03 * math.sin(clock * 6),
-          Pitch.keeperZ),
-      KeeperFrame.ready,
-      0);
+  static KeeperPose idle(double clock) {
+    final bounce = math.sin(clock * 6);
+    return KeeperPose(
+        V3(idleX(clock), _stand + 0.03 * bounce, Pitch.keeperZ), KeeperFrame.ready, 0,
+        sy: 1 - 0.018 * (1 - bounce));
+  }
 
   /// Commits the dive. [glove] is where the leading hand should end up.
   void diveTo(V3 glove, double startX) {
@@ -361,8 +392,7 @@ class KeeperMotion {
     if (dx.abs() < 1.0) {
       _frame = KeeperFrame.ready;
       _jump = (glove.y - 1.55).clamp(0.0, 0.75);
-      _end = V3(startX + dx * 0.6, KeeperSprite.standingHeight / 2 + _jump,
-          Pitch.keeperZ);
+      _end = V3(startX + dx * 0.6, _stand + _jump, Pitch.keeperZ);
       return;
     }
     final left = dx < 0;
@@ -379,54 +409,94 @@ class KeeperMotion {
     }
     _rotation = rot.clamp(-0.7, 0.7);
     final c = math.cos(_rotation), s = math.sin(_rotation);
-    final ax = arm.dx * c - arm.dy * s, ay = arm.dx * s + arm.dy * c;
+    // At full stretch (see at()) the arm is drawn 4% longer.
+    final ax = arm.dx * 1.04 * 0.92 * c - arm.dy * s, ay = arm.dx * 1.04 * 0.92 * s + arm.dy * c;
     _end = V3(glove.x - ax, math.max(0.42, glove.y - ay), Pitch.keeperZ);
   }
 
   bool get committed => _gloveTarget != null;
 
+  /// When he hits the grass after a dive (null if he never left his feet).
+  double? get landsAt {
+    if (_frame == KeeperFrame.ready || _gloveTarget == null) return null;
+    return arriveAt + math.sqrt(2 * math.max(0.0, _end.y - KeeperSprite.lyingHalf) / 9.8);
+  }
+
   KeeperPose at(double t, double clock) {
-    final ready = V3(idleX(clock), KeeperSprite.standingHeight / 2 +
-        0.03 * math.sin(clock * 6), Pitch.keeperZ);
-    if (_gloveTarget == null || t < reactAt) {
-      return KeeperPose(ready, KeeperFrame.ready, 0);
+    final ready = idle(clock);
+    if (_gloveTarget == null) return ready;
+    final start = V3(_startX, _stand, Pitch.keeperZ);
+
+    // The set: weight forward, knees bent, as the ball is struck.
+    if (t < reactAt) {
+      final k = (t / math.max(0.05, reactAt)).clamp(0.0, 1.0);
+      return KeeperPose(V3(ready.centre.x, _stand - 0.05 * k, Pitch.keeperZ), KeeperFrame.ready, 0,
+          sy: 1 - 0.07 * k);
     }
-    final start = V3(_startX, KeeperSprite.standingHeight / 2, Pitch.keeperZ);
-    final u = ((t - reactAt) / math.max(0.05, arriveAt - reactAt)).clamp(0.0, 1.0);
-    final e = 1 - math.pow(1 - u, 2.2).toDouble();
+
+    final span = math.max(0.05, arriveAt - reactAt);
+    final u = ((t - reactAt) / span).clamp(0.0, 1.0);
 
     if (_frame == KeeperFrame.ready) {
+      // Straight at him: a step across and a spring up to meet it.
+      final e = Curves.easeOutCubic.transform(u);
       final up = math.sin(u * math.pi * 0.5) * _jump;
       final f = math.max(0.0, t - arriveAt);
       final fall = math.min(_jump, 0.5 * 9.8 * f * f);
-      return KeeperPose(
-          V3(start.x + (_end.x - start.x) * e,
-              KeeperSprite.standingHeight / 2 + up - fall, Pitch.keeperZ),
-          KeeperFrame.ready,
-          0);
+      final land = f > 0 && fall >= _jump ? math.exp(-f * 8) : 0.0;
+      return KeeperPose(V3(start.x + (_end.x - start.x) * e, _stand + up - fall, Pitch.keeperZ),
+          KeeperFrame.ready, 0,
+          sy: 1 - 0.08 * land);
     }
 
-    // Load the legs for the first instant, then fly.
-    if (u < 0.12) {
+    final dir = _frame == KeeperFrame.diveLeft ? -1.0 : 1.0;
+
+    // Load the legs: a deeper crouch, leaning into the dive.
+    if (u < _load) {
+      final k = Curves.easeOut.transform(u / _load);
       return KeeperPose(
-          V3(start.x + (_end.x - start.x) * 0.04,
-              start.y - 0.08 * (u / 0.12), Pitch.keeperZ),
-          KeeperFrame.ready,
-          (_frame == KeeperFrame.diveLeft ? 0.12 : -0.12) * (u / 0.12));
+          V3(start.x + (_end.x - start.x) * 0.03 * k, _stand - 0.1 * k, Pitch.keeperZ),
+          KeeperFrame.ready, -dir * 0.14 * k,
+          sy: 1 - 0.12 * k);
     }
-    final arc = math.sin(e * math.pi) * 0.18;
-    var centre = V3(start.x + (_end.x - start.x) * e,
-        start.y + (_end.y - start.y) * e + arc, Pitch.keeperZ);
-    var rot = _rotation * e;
-    if (t > arriveAt) {
-      // Gravity wins: the keeper comes down onto the grass.
-      final f = t - arriveAt;
-      final drop = math.min(centre.y - 0.3, 0.5 * 9.8 * f * f);
-      centre = V3(centre.x + (_end.x - start.x).sign * f * 0.6,
-          centre.y - drop, centre.z);
-      rot = rot * math.max(0, 1 - f * 2.5);
+
+    // In the air: the body starts nearly upright and lays out flat as he
+    // flies, rising with the shot; arms at full stretch at the moment.
+    final v = ((u - _load) / (1 - _load)).clamp(0.0, 1.0);
+    final e = 1 - math.pow(1 - v, 1.8).toDouble();
+    final rot0 = dir * 1.05;
+    final rotE = Curves.easeInOutSine.transform(v);
+    var rot = rot0 + (_rotation - rot0) * rotE;
+    final apex = math.sin(e * math.pi) * (0.2 + 0.12 * (_end.y - 0.6).clamp(0.0, 1.0));
+    var centre = V3(start.x + (_end.x - start.x) * e, start.y - 0.1 + (_end.y - start.y + 0.1) * e + apex,
+        Pitch.keeperZ);
+    final stretch = 1 + 0.04 * Curves.easeIn.transform(v);
+    // The standing frame melts into the dive as he leaves the ground.
+    final melt = (v / 0.28).clamp(0.0, 1.0);
+    final takeoff = KeeperPose(V3(centre.x, centre.y, Pitch.keeperZ), KeeperFrame.ready, -dir * 0.14, sy: 0.9);
+
+    if (t <= arriveAt) {
+      return KeeperPose(centre, _frame, rot, sx: stretch, ghost: melt < 1 ? takeoff : null, ghostAlpha: 1 - melt,
+          alpha: melt);
     }
-    return KeeperPose(centre, _frame, rot);
+
+    // Down he comes: gravity, a thump on his side, a slide, then up.
+    final f = t - arriveAt;
+    final fallTime = landsAt! - arriveAt;
+    final drop = math.min(centre.y - KeeperSprite.lyingHalf, 0.5 * 9.8 * f * f);
+    final slide = dir * (0.55 * (1 - math.exp(-f * 2.4)));
+    final settled = ((f - fallTime) / 0.25).clamp(0.0, 1.0);
+    rot = rot * (1 - Curves.easeOut.transform((f / (fallTime + 0.2)).clamp(0.0, 1.0)));
+    final thump = f > fallTime ? 0.035 * math.sin(math.min(math.pi, (f - fallTime) * 14)) * (1 - settled) : 0.0;
+    centre = V3(centre.x + slide, centre.y - drop + thump, Pitch.keeperZ);
+    final lying = KeeperPose(centre, _frame, rot, sx: 1 + 0.04 * (1 - settled), sy: 1 - 0.05 * (1 - settled));
+
+    final g = ((f - _getUpAfter) / _getUpTime).clamp(0.0, 1.0);
+    if (g <= 0) return lying;
+    final up = KeeperPose(V3(centre.x - dir * 0.35, _stand - 0.15 * (1 - g), Pitch.keeperZ), KeeperFrame.ready, 0,
+        sy: 1 - 0.1 * (1 - g));
+    return KeeperPose(up.centre, KeeperFrame.ready, 0,
+        sy: up.sy, ghost: g < 1 ? lying : null, ghostAlpha: 1 - g, alpha: g);
   }
 }
 

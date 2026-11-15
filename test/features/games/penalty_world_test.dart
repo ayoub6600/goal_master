@@ -169,6 +169,22 @@ void main() {
       expect(k.at(0.6, 0).frame, KeeperFrame.ready);
     });
 
+    for (final target in const [V3(-3.0, 1.9, 11), V3(2.8, 0.4, 11), V3(-2.2, 1.0, 11)]) {
+      test('a catch at $target: ball in his gloves, he lands, then gets up holding it', () {
+        final k = KeeperMotion(reactAt: 0.1, arriveAt: 0.6)..diveTo(target, 0);
+        final atCatch = k.at(0.6, 0);
+        expect(Offset(atCatch.hands.x - target.x, atCatch.hands.y - target.y).distance, lessThan(0.2));
+        expect(k.landsAt, isNotNull);
+        expect(k.landsAt!, inInclusiveRange(0.6, 1.2));
+        final lying = k.at(k.landsAt! + 0.3, 0);
+        expect(lying.centre.y, closeTo(KeeperSprite.lyingHalf, 0.06), reason: 'on the grass');
+        final up = k.at(3.0, 0);
+        expect(up.frame, KeeperFrame.ready);
+        expect(up.centre.y, closeTo(KeeperSprite.standingHeight / 2, 0.01));
+        expect(up.hands.y, greaterThan(0.8), reason: 'ball held at the chest');
+      });
+    }
+
     test('stays set on his line until he reacts', () {
       final k = KeeperMotion(reactAt: 0.2, arriveAt: 0.6)..diveTo(const V3(-3, 1, 11), 0);
       expect(k.at(0.1, 0).frame, KeeperFrame.ready);

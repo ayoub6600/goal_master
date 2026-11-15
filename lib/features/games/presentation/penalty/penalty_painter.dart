@@ -653,17 +653,27 @@ class PenaltyPainter extends CustomPainter {
     final pose = scene.keeper;
     final s = cam.scaleAt(pose.centre.z);
 
-    final airborne = math.max(0.0, pose.centre.y - 0.6);
+    // Shadow: tight under his feet standing, long under him when he's flat.
+    final lying = pose.frame != KeeperFrame.ready;
+    final airborne = math.max(0.0, pose.centre.y - (lying ? KeeperSprite.lyingHalf : KeeperSprite.standingHeight / 2));
     final shadowAt = cam.project(V3(pose.centre.x, 0, pose.centre.z + 0.15));
-    final spread = pose.frame == KeeperFrame.ready ? 0.9 : 2.2;
+    final spread = (lying ? 2.2 : 0.9) * (1 - math.min(0.4, airborne * 0.25));
     canvas.drawOval(
         Rect.fromCenter(center: shadowAt, width: spread * s, height: 0.28 * s),
         Paint()
-          ..color = Colors.black.withValues(alpha: (0.45 - airborne * 0.25).clamp(0.12, 0.45))
-          ..maskFilter = MaskFilter.blur(BlurStyle.normal, 0.08 * s));
+          ..color = Colors.black.withValues(alpha: (0.45 - airborne * 0.22).clamp(0.12, 0.45))
+          ..maskFilter = MaskFilter.blur(BlurStyle.normal, (0.08 + airborne * 0.08) * s));
 
     final image = keeper;
     if (image == null) return;
+    final ghost = pose.ghost;
+    if (ghost != null && pose.ghostAlpha > 0.01) _keeperSprite(canvas, cam, image, ghost, pose.ghostAlpha);
+    _keeperSprite(canvas, cam, image, pose, pose.alpha);
+  }
+
+  void _keeperSprite(Canvas canvas, PenaltyCamera cam, ui.Image image, KeeperPose pose, double alpha) {
+    if (alpha <= 0.01) return;
+    final s = cam.scaleAt(pose.centre.z);
     final src = switch (pose.frame) {
       KeeperFrame.ready => KeeperSprite.ready,
       KeeperFrame.diveLeft => KeeperSprite.diveLeft,
@@ -674,8 +684,17 @@ class PenaltyPainter extends CustomPainter {
     canvas.save();
     canvas.translate(centre.dx, centre.dy);
     canvas.rotate(-pose.rotation);
+    if (pose.sx != 1 || pose.sy != 1) {
+      // Squash from the feet when standing, from the middle when flying.
+      final pivotY = pose.frame == KeeperFrame.ready ? src.height * scale / 2 : 0.0;
+      canvas.translate(0, pivotY);
+      canvas.scale(pose.sx, pose.sy);
+      canvas.translate(0, -pivotY);
+    }
     final dst = Rect.fromCenter(center: Offset.zero, width: src.width * scale, height: src.height * scale);
-    final paint = Paint()..filterQuality = FilterQuality.medium;
+    final paint = Paint()
+      ..filterQuality = FilterQuality.medium
+      ..color = Color.fromRGBO(0, 0, 0, alpha.clamp(0.0, 1.0));
     // The first two frames overlap on the strip between x=468 and x=488: the
     // ready frame's right glove sits below y=300 there, the dive's leading
     // glove above it. Draw each frame around the other's fingers.

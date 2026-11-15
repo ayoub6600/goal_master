@@ -1,3 +1,5 @@
+import 'package:goal_master/features/games/data/goalkeeper_repo.dart';
+import 'package:goal_master/features/games/data/prediction_repo.dart';
 import 'package:goal_master/features/games/data/keepy_uppy_repo.dart';
 import 'package:goal_master/features/coupons/data/coupon_repo.dart';
 import 'package:get_it/get_it.dart';
@@ -74,6 +76,12 @@ void setupServiceLocator() {
   );
   getIt.registerSingleton<KeepyUppyRepo>(
     KeepyUppyRepo(getIt.get<DioConsumer>()),
+  );
+  getIt.registerSingleton<GoalkeeperRepo>(
+    GoalkeeperRepo(getIt.get<DioConsumer>()),
+  );
+  getIt.registerSingleton<PredictionRepo>(
+    PredictionRepo(getIt.get<DioConsumer>()),
   );
   getIt.registerSingleton<PenaltyShootoutRepo>(
     PenaltyShootoutRepo(getIt.get<DioConsumer>()),

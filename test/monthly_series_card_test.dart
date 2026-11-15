@@ -81,9 +81,15 @@ String _testSunday(int weeksFromNextSunday) {
   // The next occurrence must always be in the future.
   if (daysUntilSunday == 0) daysUntilSunday = 7;
 
-  final date = DateTime(now.year, now.month, now.day).add(
+  final today = DateTime(now.year, now.month, now.day);
+  var date = today.add(
     Duration(days: daysUntilSunday + weeksFromNextSunday * 7),
   );
+  // A "past" occurrence must really be past. On a Sunday, one week before
+  // next Sunday is today — and an occurrence later today is still upcoming.
+  if (weeksFromNextSunday < 0 && !date.isBefore(today)) {
+    date = date.subtract(const Duration(days: 7));
+  }
 
   return '${date.year.toString().padLeft(4, '0')}-'
       '${date.month.toString().padLeft(2, '0')}-'

@@ -51,6 +51,7 @@ void main() {
             target: 12, ballDifficulty: 15, unlockBookings: 0, unlocked: true, progress: 1),
         repo: server,
         sounds: false,
+        forceTouch: true,
         debugOnSim: (s) => live = s,
       ),
     ));
@@ -96,6 +97,7 @@ void main() {
             target: 12, ballDifficulty: 15, unlockBookings: 0, unlocked: true, progress: 1),
         repo: server,
         sounds: false,
+        forceTouch: true,
       ),
     ));
     for (var i = 0; i < 80; i++) {

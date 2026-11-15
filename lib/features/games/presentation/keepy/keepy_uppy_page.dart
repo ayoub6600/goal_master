@@ -4,6 +4,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
+import 'package:sensors_plus/sensors_plus.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:goal_master/core/services/service_locator.dart';
 import 'package:goal_master/features/assistant/presentation/view/widgets/captain_ayoub_bubble.dart';
@@ -40,12 +41,7 @@ String _clock(int s) {
   return days > 0 ? '$days يوم و $hms' : hms;
 }
 
-/// Captain Ayoub's art, decoded once and shared by the preview and rounds.
-Future<CaptainArt>? _artFuture;
-Future<CaptainArt> _captainArt() => _artFuture ??= CaptainArt.load().catchError((Object e) {
-      _artFuture = null; // try again next time
-      throw e;
-    });
+Future<CaptainArt> _captainArt() => CaptainArt.shared();
 
 /// Where a ball will be (x) when it next falls to [atY], walls included —
 /// so the captain can be there in time. Display only.
@@ -365,7 +361,9 @@ class _HowToPlay extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     const tips = [
-      (Icons.touch_app_rounded, 'اضغط على الكرة وهي نازلة لترفعها من جديد.'),
+      (Icons.screen_rotation_alt_rounded, 'ميّل الجوال يمين ويسار ليتحرك كابتن أيوب تحت الكرة.'),
+      (Icons.touch_app_rounded, 'لما تصير الدائرة خضراء، اضغط في أي مكان ليلعبها برجله أو ركبته أو صدره أو راسه.'),
+      (Icons.swap_horizontal_circle_outlined, 'تفضّل اللمس؟ زر اليد فوق يخليه يلحق الكرة لوحده، وانت تضغط على الكرة نفسها.'),
       (
         Icons.swap_horiz_rounded,
         'اضغط على جانب الكرة لتدفعها للجهة الأخرى — ارجعها للوسط قبل أن تبتعد.'
@@ -464,6 +462,7 @@ class _JugglingPreviewState extends State<_JugglingPreview>
   late final Ticker _ticker;
   KeepySim _sim = KeepySim(_physics, 7);
   double _acc = 0, _last = 0, _tapAt = 0.45;
+  bool _left = false;
   int _lastTap = -100;
   AlleyBackdrop? _backdrop;
   Size? _building;
@@ -492,7 +491,9 @@ class _JugglingPreviewState extends State<_JugglingPreview>
               (s.y * 1000).round()));
         }
         if (s.step(taps) == KeepyEvent.touch) {
-          _scene.captain.play(CaptainRig.moveFor(s.y));
+          final c = CaptainRig.contact(_scene.captain.x, s.x, s.y);
+          _scene.captain.play(c?.move ?? CaptainRig.moveFor(s.y), left: c?.left ?? false);
+          _left = _rng.nextDouble() < 0.45;
           // Mix it up: mostly feet and knees, now and then a header.
           final r = _rng.nextDouble();
           _tapAt = r < 0.45 ? 0.42 : (r < 0.8 ? 0.85 : (r < 0.92 ? 1.3 : 1.6));
@@ -507,7 +508,7 @@ class _JugglingPreviewState extends State<_JugglingPreview>
         ..ballY = math.max(_sim.p.ballRadius, _sim.y)
         ..spin += dt * (5 + _sim.vx.abs() * 5);
       _scene.captain
-        ..targetX = CaptainRig.standFor(_predictX(_sim, _tapAt), _tapAt)
+        ..targetX = CaptainRig.standFor(_predictX(_sim, _tapAt), _tapAt, left: _left)
         ..update(dt);
       _frame.value++;
     })
@@ -578,6 +579,9 @@ class _Fx {
   double ballRadius = 0, hitRadius = 0, ringAlpha = 0;
   double wind = 0, windMax = 0;
   bool showWind = false;
+
+  /// Tilt mode: the ball is in his reach right now — tap!
+  bool ready = false;
 }
 
 class _FxPainter extends CustomPainter {
@@ -587,16 +591,18 @@ class _FxPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     if (fx.ringAlpha > 0.01) {
-      // The sweet spot: where a tap still reaches the ball.
+      // The sweet spot: where a tap still reaches the ball. Green when he
+      // can play it right now.
+      final col = fx.ready ? const Color(0xff4ee08a) : Colors.white;
       canvas.drawCircle(
           fx.ball,
           fx.hitRadius,
           Paint()
             ..style = PaintingStyle.stroke
-            ..strokeWidth = 2
-            ..color = Colors.white.withValues(alpha: 0.28 * fx.ringAlpha));
+            ..strokeWidth = fx.ready ? 3 : 2
+            ..color = col.withValues(alpha: (fx.ready ? 0.8 : 0.28) * fx.ringAlpha));
       canvas.drawCircle(fx.ball, fx.hitRadius,
-          Paint()..color = Colors.white.withValues(alpha: 0.05 * fx.ringAlpha));
+          Paint()..color = col.withValues(alpha: (fx.ready ? 0.12 : 0.05) * fx.ringAlpha));
     }
     for (final r in fx.ripples) {
       final t = (r.age / 0.45).clamp(0.0, 1.0);
@@ -668,16 +674,22 @@ class _FxPainter extends CustomPainter {
   bool shouldRepaint(covariant _FxPainter old) => false;
 }
 
+enum _Control { tilt, touch }
+
 class KeepyMatchPage extends StatefulWidget {
   const KeepyMatchPage(
       {super.key,
       required this.tier,
       required this.repo,
       this.sounds = true,
+      this.forceTouch = false,
       this.debugOnSim});
   final KeepyTier tier;
   final KeepyUppyRepo repo;
   final bool sounds;
+
+  /// Skip tilt control (tests, autoplay).
+  final bool forceTouch;
 
   /// Tests only: hands over the live simulation so a test can play it.
   @visibleForTesting
@@ -707,6 +719,16 @@ class _KeepyMatchPageState extends State<KeepyMatchPage>
   double _lostT = -1, _lostVx = 0, _winT = -1;
   bool _flicked = false;
 
+  /// Tilt: lean the phone to move him, tap anywhere and he plays the ball
+  /// with whatever's nearest it. Touch: he follows the ball himself and you
+  /// tap the ball. Same physics and the same server check either way.
+  static _Control? _preferred;
+  _Control _control = _Control.touch;
+  bool _tiltAvailable = false;
+  StreamSubscription<AccelerometerEvent>? _accel;
+  double _tilt = 0;
+  bool _ready = false, _nextLeft = false;
+
   _Phase _phase = _Phase.loading;
   String? _error;
   KeepyRound? _round;
@@ -731,11 +753,30 @@ class _KeepyMatchPageState extends State<KeepyMatchPage>
     _captainArt().then((a) {
       if (mounted) setState(() => _art = a);
     }).catchError((_) {});
+    _listenTilt();
     _start();
+  }
+
+  void _listenTilt() {
+    if (widget.forceTouch) return;
+    try {
+      _accel = accelerometerEventStream(samplingPeriod: SensorInterval.gameInterval).listen((e) {
+        if (!_tiltAvailable && mounted) {
+          setState(() {
+            _tiltAvailable = true;
+            if (_preferred != _Control.touch) _control = _Control.tilt;
+          });
+        }
+        // Right edge down → he moves right.
+        final raw = (-e.x / 9.81).clamp(-1.0, 1.0);
+        _tilt += (raw - _tilt) * 0.35;
+      }, onError: (_) {}, cancelOnError: true);
+    } catch (_) {}
   }
 
   @override
   void dispose() {
+    _accel?.cancel();
     _ticker.dispose();
     _sounds.dispose();
     _backdrop?.dispose();
@@ -905,11 +946,30 @@ class _KeepyMatchPageState extends State<KeepyMatchPage>
       ..ballX = x
       ..ballY = y
       ..spin += dt * (4 + sim.vx.abs() * 5 + sim.vy.abs() * 1.2) * (sim.vx >= 0 ? 1 : -1);
+    final cap = _scene.captain;
     if (!sim.finished) {
-      // He reads the ball and shuffles to where it will come down.
       final meetAt = sim.vy < 0 ? math.min(y, 0.75) : 0.75;
-      _scene.captain.targetX = CaptainRig.standFor(_predictX(sim, meetAt), meetAt);
+      final auto = CaptainRig.standFor(_predictX(sim, meetAt), meetAt, left: _nextLeft);
+      if (_control == _Control.tilt) {
+        // The phone steers him; easy tiers lend a gentle hand.
+        const dead = 0.04;
+        final t = _tilt.abs() < dead ? 0.0 : (_tilt.abs() - dead) / (1 - dead) * _tilt.sign;
+        final assist = widget.tier.ballDifficulty <= 25 ? 1.1 : (widget.tier.ballDifficulty <= 50 ? 0.45 : 0.0);
+        var target = cap.targetX + t * 2.6 * dt;
+        target += (auto - target) * math.min(1, assist * dt);
+        cap.targetX = target.clamp(-0.58, 0.58);
+      } else {
+        // He reads the ball and shuffles to where it will come down.
+        cap.targetX = auto;
+      }
     }
+    final c = CaptainRig.contact(cap.x, x, y);
+    final r = sim.p.hitRadius;
+    _ready = !sim.finished &&
+        c != null &&
+        sim.vy < 0.8 &&
+        (c.x - x) * (c.x - x) + (c.y - y) * (c.y - y) <= r * r * 0.9;
+    _fx.ready = _control == _Control.tilt && _ready;
     _fx.wind = sim.wind;
   }
 
@@ -920,7 +980,7 @@ class _KeepyMatchPageState extends State<KeepyMatchPage>
     _fx.ballRadius = _scene.ballR * cam.ppm;
     _fx.hitRadius = (_round?.physics.hitRadius ?? 0.25) * cam.ppm;
     final sim = _sim;
-    final guided = widget.tier.ballDifficulty <= 50 || _touches < 3;
+    final guided = _control == _Control.tilt || widget.tier.ballDifficulty <= 50 || _touches < 3;
     final want = _phase == _Phase.playing && sim != null && sim.vy < 0 && guided
         ? 1.0
         : 0.0;
@@ -940,23 +1000,39 @@ class _KeepyMatchPageState extends State<KeepyMatchPage>
     if (_phase != _Phase.playing || _size == Size.zero) return;
     final sim = _sim!;
     if (sim.finished || _taps.length >= _maxTaps) return;
-    final w = AlleyCamera(_size).unproject(e.localPosition);
-    final tap = KeepyTap(sim.frame, (w.x * 1000).round(), (w.y * 1000).round());
+    final cam = AlleyCamera(_size);
+    final cap = _scene.captain;
+    // Tilt: the tap means "play it now" — with his nearest foot, knee,
+    // chest or head. Touch: the tap is where the finger landed.
+    late final ({double x, double y}) at;
+    var side = false;
+    if (_control == _Control.tilt) {
+      final c = CaptainRig.contact(cap.x, sim.x, sim.y);
+      at = c == null ? (x: cap.x, y: CaptainRig.maxReach) : (x: c.x, y: c.y);
+      side = c?.left ?? false;
+    } else {
+      at = cam.unproject(e.localPosition);
+      side = at.x < cap.x;
+    }
+    final tap = KeepyTap(sim.frame, (at.x * 1000).round(), (at.y * 1000).round());
     _taps.add(tap);
     // Preview the verdict for the ripple colour only; the step decides.
     final dx = sim.x - tap.xMm / 1000.0, dy = sim.y - tap.yMm / 1000.0;
     final r = sim.p.hitRadius;
     final hit = dx * dx + dy * dy <= r * r;
-    _fx.ripples.add(_Ripple(e.localPosition, hit));
-    if (!hit) _scene.captain.play(CaptainMove.whiff);
+    _fx.ripples.add(_Ripple(_control == _Control.tilt ? cam.project(at.x, at.y) : e.localPosition, hit));
+    if (!hit) cap.play(CaptainMove.whiff, left: side);
   }
 
   void _onTouch() {
     final sim = _sim!;
     _touches = sim.touches;
     _counterPop++;
-    final move = CaptainRig.moveFor(sim.y);
-    _scene.captain.play(move);
+    final c = CaptainRig.contact(_scene.captain.x, sim.x, sim.y);
+    final move = c?.move ?? CaptainRig.moveFor(sim.y);
+    _scene.captain.play(move, left: c?.left ?? false);
+    // Mix the feet up: sometimes the right, sometimes the left.
+    _nextLeft = _rng.nextDouble() < 0.45;
     _sounds.play(PenaltySfx.kick, volume: move == CaptainMove.foot ? 0.7 : 0.5);
     HapticFeedback.lightImpact();
     if (_size != Size.zero) {
@@ -1157,7 +1233,12 @@ class _KeepyMatchPageState extends State<KeepyMatchPage>
               right: 0,
               child: SafeArea(bottom: false, child: _hud())),
           if (_banner != null) _bannerWidget(),
-          if (_phase == _Phase.countdown) const _TapHint(),
+          if (_phase == _Phase.countdown)
+            _TapHint(
+                text: _control == _Control.tilt
+                    ? 'ميّل الجوال يمين ويسار لتحرّك كابتن أيوب\nواضغط في أي مكان ليلعب الكرة'
+                    : 'اضغط على الكرة وهي نازلة',
+                icon: _control == _Control.tilt ? Icons.screen_rotation_alt_rounded : Icons.touch_app_rounded),
           if (_phase == _Phase.finishing)
             const Positioned(
               bottom: 90,
@@ -1253,15 +1334,33 @@ class _KeepyMatchPageState extends State<KeepyMatchPage>
           ),
         ),
         const SizedBox(width: 10),
-        _GlassButton(
-          icon: PenaltySounds.muted
-              ? Icons.volume_off_rounded
-              : Icons.volume_up_rounded,
-          onTap: () async {
-            await _sounds.setMuted(!PenaltySounds.muted);
-            if (mounted) setState(() {});
-          },
-        ),
+        Column(mainAxisSize: MainAxisSize.min, children: [
+          _GlassButton(
+            icon: PenaltySounds.muted
+                ? Icons.volume_off_rounded
+                : Icons.volume_up_rounded,
+            onTap: () async {
+              await _sounds.setMuted(!PenaltySounds.muted);
+              if (mounted) setState(() {});
+            },
+          ),
+          if (_tiltAvailable) ...[
+            const SizedBox(height: 8),
+            _GlassButton(
+              icon: _control == _Control.tilt
+                  ? Icons.screen_rotation_alt_rounded
+                  : Icons.touch_app_rounded,
+              onTap: () {
+                setState(() {
+                  _control = _control == _Control.tilt ? _Control.touch : _Control.tilt;
+                  _preferred = _control;
+                });
+                _showBanner(_control == _Control.tilt ? 'تحكم بالميلان' : 'تحكم باللمس', Colors.white);
+                HapticFeedback.selectionClick();
+              },
+            ),
+          ],
+        ]),
       ]),
     );
   }
@@ -1387,7 +1486,9 @@ class _GlassButton extends StatelessWidget {
 }
 
 class _TapHint extends StatefulWidget {
-  const _TapHint();
+  const _TapHint({required this.text, required this.icon});
+  final String text;
+  final IconData icon;
   @override
   State<_TapHint> createState() => _TapHintState();
 }
@@ -1413,8 +1514,7 @@ class _TapHintState extends State<_TapHint>
               animation: _c,
               builder: (context, child) =>
                   Transform.scale(scale: 0.9 + 0.15 * _c.value, child: child),
-              child: const Icon(Icons.touch_app_rounded,
-                  color: Colors.white, size: 40),
+              child: Icon(widget.icon, color: Colors.white, size: 40),
             ),
             const SizedBox(height: 6),
             Container(
@@ -1422,9 +1522,10 @@ class _TapHintState extends State<_TapHint>
               decoration: BoxDecoration(
                   color: Colors.black54,
                   borderRadius: BorderRadius.circular(20)),
-              child: const Text('اضغط على الكرة وهي نازلة',
-                  style: TextStyle(
-                      color: Colors.white, fontWeight: FontWeight.w700)),
+              child: Text(widget.text,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                      color: Colors.white, fontWeight: FontWeight.w700, height: 1.4)),
             ),
           ]),
         ),

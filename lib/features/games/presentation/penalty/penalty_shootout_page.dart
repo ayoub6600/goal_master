@@ -665,8 +665,15 @@ class _PenaltyMatchPageState extends State<PenaltyMatchPage> with SingleTickerPr
     s.keeper = _keeper?.at(_kickT, _frozenClock) ?? KeeperMotion.idle(_frozenClock);
     var ball = f.at(_kickT);
     if (f.caught && _kickT >= f.duration) {
+      // Held: in his gloves as he lands, against his chest when he's up.
+      ball = s.keeper.hands;
+    }
+    final lands = _keeper?.landsAt;
+    if (lands != null && prev < lands && _kickT >= lands && _size != Size.zero) {
+      final cam = PenaltyCamera(_size);
       final k = s.keeper.centre;
-      ball = V3(k.x, k.y + 0.05, k.z - 0.3);
+      s.fx.landing(cam.project(V3(k.x, 0.05, k.z)), cam.scaleAt(k.z));
+      if (!replay) HapticFeedback.lightImpact();
     }
     if (_size != Size.zero && _kickT < f.duration + 0.25) {
       s.trail.add(PenaltyCamera(_size).project(s.ball));

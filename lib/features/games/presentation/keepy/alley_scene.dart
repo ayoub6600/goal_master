@@ -18,8 +18,15 @@ class AlleyCamera {
     this.wallX = wallX;
   }
 
+  /// A closer shot of the same lane (the cups table): explicit scale and
+  /// where the cobbles meet the bottom of the frame.
+  AlleyCamera.closeUp(this.size, {required this.ppm, required this.groundY, double eye = 1.3}) {
+    vp = Offset(size.width / 2, groundY - eye * ppm);
+    wallX = 0.73;
+  }
+
   final Size size;
-  final double ppm, groundY;
+  late final double ppm, groundY;
   late final Offset vp;
   late final double wallX;
 
@@ -78,11 +85,11 @@ class AlleyBackdrop {
 
   static const _farDepth = 13.0;
 
-  static Future<AlleyBackdrop> build(Size size, double dpr) async {
+  static Future<AlleyBackdrop> build(Size size, double dpr, {AlleyCamera? camera}) async {
     final rec = ui.PictureRecorder();
     final canvas = Canvas(rec);
     canvas.scale(dpr);
-    paintStill(canvas, AlleyCamera(size));
+    paintStill(canvas, camera ?? AlleyCamera(size));
     final pic = rec.endRecording();
     final img = await pic.toImage((size.width * dpr).ceil(), (size.height * dpr).ceil());
     pic.dispose();
