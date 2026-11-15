@@ -6967,3 +6967,11 @@ issued a field-locked GMKU coupon; coupon check API returned 18 LYD at the
 right field and an Arabic refusal elsewhere. The checkout card itself was not
 seen on the simulator (test data has no slots). **Status:** uncommitted, not
 deployed; dev DB not migrated.
+
+## 2026-11-15 — Game sound fix, penalty kick effects, keepy-uppy redone with Captain Ayoub
+
+- **Sound bug (crowd kept playing after mute/exit):** `PenaltySounds` used fixed player ids (`penalty_crowd`), so a new match page (play again / the other game) replaced the old native player and orphaned a looping crowd. Players now get unique ids; `dispose()` wins over an `init()` still loading; all live instances are tracked so mute silences every one; audio pauses when the app goes to the background; game audio mixes with other apps' audio.
+- **Penalty:** new synthesized `kick.wav` (thump + leather slap) and `whoosh.wav` (synthesized locally with numpy, no third-party samples). The shot now has a 0.12 s wind-up, then on contact: kick sound, whoosh, heavy haptic, hit-stop, camera punch, ball squash, turf/dust burst, shockwave; comet trail; speed lines. Sparks on saves/woodwork, confetti on goals, live power ring while swiping, "ركلة حاسمة!" + red pulse when the next kick decides the match. New file `penalty/penalty_fx.dart`. Server contract unchanged.
+- **Keepy-uppy:** new scene — an old-city lane at night (`keepy/alley_scene.dart`): doors, windows, lanterns, string lights, timber beams; neighbours light up their windows as touches climb and cheer on milestones/win. Captain Ayoub juggles (`keepy/captain_rig.dart`): his assistant art cut into body/thigh/shin (`assets/images/captain/`) and animated for foot, knee, chest and head touches; he shuffles to where the ball will land; waves during the countdown, celebrates on a win, shrugs on a loss. Physics/replay untouched (`keepy_sim.dart` + server simulator unchanged); only the camera mapping of taps changed (`AlleyCamera`), covered by the widget test that plays a round and checks the server replay agrees.
+- `tool/game_preview.dart`: dev-only entry (`flutter run -t tool/game_preview.dart`) that opens the games against an in-memory fake server, with ×5 slow motion and keepy autoplay — for checking visuals without any backend.
+- Tests: Flutter 233 pass, 1 pre-existing failure (`monthly_series_card_test`).

@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:math' as math;
-import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
@@ -11,10 +10,10 @@ import 'package:goal_master/features/assistant/presentation/view/widgets/captain
 import 'package:goal_master/features/coins/presentation/manager/coins_cubit/coins_cubit.dart';
 import 'package:goal_master/features/games/data/keepy_uppy_repo.dart';
 
-import '../penalty/penalty_painter.dart';
 import '../penalty/penalty_reward_card.dart';
 import '../penalty/penalty_sounds.dart';
-import '../penalty/penalty_world.dart';
+import 'alley_scene.dart';
+import 'captain_rig.dart';
 import 'keepy_sim.dart';
 
 const _gold = Color(0xffffc928);
@@ -41,15 +40,27 @@ String _clock(int s) {
   return days > 0 ? '$days يوم و $hms' : hms;
 }
 
-Future<ui.Image> _loadKeeper() async {
-  final data =
-      await rootBundle.load('assets/images/football_keeper_strip.webp');
-  final codec = await ui.instantiateImageCodec(data.buffer.asUint8List());
-  return (await codec.getNextFrame()).image;
-}
+/// Captain Ayoub's art, decoded once and shared by the preview and rounds.
+Future<CaptainArt>? _artFuture;
+Future<CaptainArt> _captainArt() => _artFuture ??= CaptainArt.load().catchError((Object e) {
+      _artFuture = null; // try again next time
+      throw e;
+    });
 
-/// Ball on the keepy plane (z = 0, the penalty spot) for the shared painter.
-V3 _ballAt(double x, double y) => V3(x, y, 0);
+/// Where a ball will be (x) when it next falls to [atY], walls included —
+/// so the captain can be there in time. Display only.
+double _predictX(KeepySim sim, double atY) {
+  final g = sim.p.gravityMm / 1000.0 * (1 + sim.p.rampPermille / 1000.0 * math.min(sim.touches, 40));
+  final dy = sim.y - atY;
+  final t = dy > 0 || sim.vy > 0 ? (sim.vy + math.sqrt(math.max(0, sim.vy * sim.vy + 2 * g * dy))) / g : 0.0;
+  var x = sim.x + sim.vx * t;
+  final w = sim.p.halfWidth;
+  for (var i = 0; i < 3; i++) {
+    if (x > w) x = w - (x - w) * 0.6;
+    if (x < -w) x = -w + (-w - x) * 0.6;
+  }
+  return x;
+}
 
 // ===========================================================================
 // Tier picker
@@ -447,57 +458,62 @@ class _JugglingPreviewState extends State<_JugglingPreview>
     cooldownFrames: 9,
     maxFrames: 1 << 30,
   );
-  final _scene = PenaltyScene()
-    ..zoom = 1.7
-    ..zoomFocus = const V3(0, 0.75, 0);
+  final _scene = AlleyScene();
   final _frame = ValueNotifier(0);
+  final _rng = math.Random();
   late final Ticker _ticker;
   KeepySim _sim = KeepySim(_physics, 7);
-  double _acc = 0, _last = 0;
+  double _acc = 0, _last = 0, _tapAt = 0.45;
   int _lastTap = -100;
-  PenaltyBackdrop? _backdrop;
+  AlleyBackdrop? _backdrop;
   Size? _building;
-  ui.Image? _keeper;
+  CaptainArt? _art;
 
   @override
   void initState() {
     super.initState();
+    _scene.captain.setPose(CaptainPose.rig);
+    _scene.captain.poseBlend = 1;
     _ticker = createTicker((elapsed) {
       final now = elapsed.inMicroseconds / 1e6;
       final dt = (now - _last).clamp(0.0, 0.05);
       _last = now;
       _scene.clock += dt;
-      _scene.keeper = KeeperMotion.idle(_scene.clock);
       _acc += dt;
       while (_acc >= 1 / 120) {
         _acc -= 1 / 120;
         final s = _sim;
         final taps = <KeepyTap>[];
-        if (s.vy < 0 && s.y < 0.55 && s.frame - _lastTap > 14) {
+        if (s.vy < 0 && s.y < _tapAt && s.frame - _lastTap > 14) {
           _lastTap = s.frame;
           taps.add(KeepyTap(
               s.frame,
               ((s.x + (s.x * 0.4).clamp(-0.1, 0.1)) * 1000).round(),
               (s.y * 1000).round()));
         }
-        s.step(taps);
+        if (s.step(taps) == KeepyEvent.touch) {
+          _scene.captain.play(CaptainRig.moveFor(s.y));
+          // Mix it up: mostly feet and knees, now and then a header.
+          final r = _rng.nextDouble();
+          _tapAt = r < 0.45 ? 0.42 : (r < 0.8 ? 0.85 : (r < 0.92 ? 1.3 : 1.6));
+        }
         if (s.finished) {
           _sim = KeepySim(_physics, _sim.frame + 1);
           _lastTap = -100;
         }
       }
-      _scene.ball = _ballAt(_sim.x, _sim.y);
-      _scene.ballSpin += dt * (6 + _sim.vx.abs() * 4);
-      _scene.spinTilt = (_sim.vx * 0.35).clamp(-0.8, 0.8);
+      _scene
+        ..ballX = _sim.x
+        ..ballY = math.max(_sim.p.ballRadius, _sim.y)
+        ..spin += dt * (5 + _sim.vx.abs() * 5);
+      _scene.captain
+        ..targetX = CaptainRig.standFor(_predictX(_sim, _tapAt), _tapAt)
+        ..update(dt);
       _frame.value++;
     })
       ..start();
-    _loadKeeper().then((img) {
-      if (mounted) {
-        setState(() => _keeper = img);
-      } else {
-        img.dispose();
-      }
+    _captainArt().then((a) {
+      if (mounted) setState(() => _art = a);
     }).catchError((_) {});
   }
 
@@ -505,14 +521,13 @@ class _JugglingPreviewState extends State<_JugglingPreview>
   void dispose() {
     _ticker.dispose();
     _backdrop?.dispose();
-    _keeper?.dispose();
     super.dispose();
   }
 
   void _ensureBackdrop(Size size) {
     if (_backdrop?.size == size || _building == size || size.isEmpty) return;
     _building = size;
-    PenaltyBackdrop.build(size, MediaQuery.devicePixelRatioOf(context))
+    AlleyBackdrop.build(size, MediaQuery.devicePixelRatioOf(context))
         .then((b) {
       if (!mounted || _building != size) return b.dispose();
       setState(() {
@@ -528,11 +543,8 @@ class _JugglingPreviewState extends State<_JugglingPreview>
         _ensureBackdrop(size);
         return CustomPaint(
           size: size,
-          painter: PenaltyPainter(
-              scene: _scene,
-              backdrop: _backdrop,
-              keeper: _keeper,
-              repaint: _frame),
+          painter: AlleyPainter(
+              scene: _scene, backdrop: _backdrop, art: _art, repaint: _frame),
         );
       });
 }
@@ -679,17 +691,21 @@ class _KeepyMatchPageState extends State<KeepyMatchPage>
     with SingleTickerProviderStateMixin {
   static const _maxTaps = 3000;
 
-  final _scene = PenaltyScene();
+  final _scene = AlleyScene();
   final _fx = _Fx();
   final _frame = ValueNotifier(0);
   final _rng = math.Random();
   late final Ticker _ticker;
   late final PenaltySounds _sounds = PenaltySounds(enabled: widget.sounds);
 
-  PenaltyBackdrop? _backdrop;
+  AlleyBackdrop? _backdrop;
   Size? _building;
   Size _size = Size.zero;
-  ui.Image? _keeperImage;
+  CaptainArt? _art;
+
+  /// After the round: the ball bouncing away, or flying off in triumph.
+  double _lostT = -1, _lostVx = 0, _winT = -1;
+  bool _flicked = false;
 
   _Phase _phase = _Phase.loading;
   String? _error;
@@ -712,12 +728,8 @@ class _KeepyMatchPageState extends State<KeepyMatchPage>
     super.initState();
     _ticker = createTicker(_tick)..start();
     _sounds.init();
-    _loadKeeper().then((img) {
-      if (mounted) {
-        setState(() => _keeperImage = img);
-      } else {
-        img.dispose();
-      }
+    _captainArt().then((a) {
+      if (mounted) setState(() => _art = a);
     }).catchError((_) {});
     _start();
   }
@@ -727,7 +739,6 @@ class _KeepyMatchPageState extends State<KeepyMatchPage>
     _ticker.dispose();
     _sounds.dispose();
     _backdrop?.dispose();
-    _keeperImage?.dispose();
     super.dispose();
   }
 
@@ -750,9 +761,20 @@ class _KeepyMatchPageState extends State<KeepyMatchPage>
         _taps.clear();
         _touches = 0;
         _scene
-          ..ball = _ballAt(0, round.physics.ballRadius)
-          ..trail.clear()
-          ..boardMessage = null;
+          ..ballX = 0
+          ..ballY = round.physics.ballRadius
+          ..ballR = round.physics.ballRadius
+          ..ballVisible = true
+          ..crowd = 0
+          ..cheer = 0
+          ..trail.clear();
+        _scene.captain
+          ..x = -CaptainArt.legOffset
+          ..targetX = -CaptainArt.legOffset
+          ..setPose(CaptainPose.wave);
+        _lostT = -1;
+        _winT = -1;
+        _flicked = false;
         _fx
           ..windMax = round.physics.windMm / 1000.0
           ..showWind = round.physics.windMm > 0;
@@ -772,7 +794,6 @@ class _KeepyMatchPageState extends State<KeepyMatchPage>
     final s = _scene;
     s.clock += dt;
     _phaseTime += dt;
-    s.keeper = KeeperMotion.idle(s.clock);
 
     s.flash = math.max(0, s.flash - dt * 2.2);
     _shake *= math.exp(-dt * 9);
@@ -780,14 +801,13 @@ class _KeepyMatchPageState extends State<KeepyMatchPage>
         ? Offset.zero
         : Offset((_rng.nextDouble() - 0.5) * _shake,
             (_rng.nextDouble() - 0.5) * _shake);
-    if (_celebrate > 0) {
-      _celebrate = math.max(0, _celebrate - dt * 0.3);
-      s.crowdJump =
-          (math.sin(s.clock * 11).abs() * 3.2) * math.min(1, _celebrate * 2);
-      if (_rng.nextDouble() < 0.25) s.flashSeed = _rng.nextInt(1 << 30);
-    } else {
-      s.crowdJump = 0;
-    }
+    _celebrate = math.max(0, _celebrate - dt * 0.3);
+    s.cheer = math.min(1, _celebrate * 2);
+    s.lightsPulse = math.max(0, s.lightsPulse - dt * 0.8);
+    s.crowd += ((_touches / _target).clamp(0.0, 1.0) - s.crowd) * math.min(1, dt * 3);
+    s.fx.update(dt);
+    s.captain.update(dt);
+    _afterRound(dt);
     for (final r in _fx.ripples) {
       r.age += dt;
     }
@@ -818,12 +838,21 @@ class _KeepyMatchPageState extends State<KeepyMatchPage>
       HapticFeedback.selectionClick();
     }
     final r = sim.p.ballRadius;
+    if (_phaseTime > 2.3) _scene.captain.setPose(CaptainPose.rig);
     if (_phaseTime >= 3.0) {
-      // The flick-up: from the grass to where the physics starts.
+      // The flick-up: the captain toes the ball up to where the physics
+      // starts.
+      if (!_flicked) {
+        _flicked = true;
+        _scene.captain.play(CaptainMove.foot);
+        _sounds.play(PenaltySfx.kick, volume: 0.6);
+      }
       final t = ((_phaseTime - 3.0) / 0.22).clamp(0.0, 1.0);
       final e = Curves.easeOutCubic.transform(t);
-      _scene.ball = _ballAt(0, r + (sim.y - r) * e);
-      _scene.ballSpin += 0.2;
+      _scene
+        ..ballX = 0
+        ..ballY = r + (sim.y - r) * e
+        ..spin += 0.2;
       if (t >= 1) {
         _sounds.play(PenaltySfx.whistle);
         _prevX = sim.x;
@@ -835,7 +864,9 @@ class _KeepyMatchPageState extends State<KeepyMatchPage>
         });
       }
     } else {
-      _scene.ball = _ballAt(0, r);
+      _scene
+        ..ballX = 0
+        ..ballY = r;
     }
   }
 
@@ -870,21 +901,24 @@ class _KeepyMatchPageState extends State<KeepyMatchPage>
     final a = sim.finished ? 1.0 : (_acc / step).clamp(0.0, 1.0);
     final x = _prevX + (sim.x - _prevX) * a;
     final y = math.max(sim.p.ballRadius, _prevY + (sim.y - _prevY) * a);
-    _scene.ball = _ballAt(x, y);
-    _scene.ballSpin += dt * (5 + sim.vx.abs() * 6 + sim.vy.abs() * 1.5);
-    _scene.spinTilt += ((sim.vx * 0.35).clamp(-0.9, 0.9) - _scene.spinTilt) *
-        math.min(1, dt * 6);
+    _scene
+      ..ballX = x
+      ..ballY = y
+      ..spin += dt * (4 + sim.vx.abs() * 5 + sim.vy.abs() * 1.2) * (sim.vx >= 0 ? 1 : -1);
+    if (!sim.finished) {
+      // He reads the ball and shuffles to where it will come down.
+      final meetAt = sim.vy < 0 ? math.min(y, 0.75) : 0.75;
+      _scene.captain.targetX = CaptainRig.standFor(_predictX(sim, meetAt), meetAt);
+    }
     _fx.wind = sim.wind;
   }
 
   void _updateBallFx(double dt) {
     if (_size == Size.zero) return;
-    final cam = PenaltyCamera(_size);
-    final b = _scene.ball;
-    _fx.ball = cam.project(b);
-    final scale = cam.scaleAt(b.z);
-    _fx.ballRadius = Pitch.ballRadius * scale;
-    _fx.hitRadius = (_round?.physics.hitRadius ?? 0.25) * scale;
+    final cam = AlleyCamera(_size);
+    _fx.ball = cam.project(_scene.ballX, _scene.ballY);
+    _fx.ballRadius = _scene.ballR * cam.ppm;
+    _fx.hitRadius = (_round?.physics.hitRadius ?? 0.25) * cam.ppm;
     final sim = _sim;
     final guided = widget.tier.ballDifficulty <= 50 || _touches < 3;
     final want = _phase == _Phase.playing && sim != null && sim.vy < 0 && guided
@@ -906,32 +940,41 @@ class _KeepyMatchPageState extends State<KeepyMatchPage>
     if (_phase != _Phase.playing || _size == Size.zero) return;
     final sim = _sim!;
     if (sim.finished || _taps.length >= _maxTaps) return;
-    final w = PenaltyCamera(_size).onPlane(e.localPosition, 0);
+    final w = AlleyCamera(_size).unproject(e.localPosition);
     final tap = KeepyTap(sim.frame, (w.x * 1000).round(), (w.y * 1000).round());
     _taps.add(tap);
     // Preview the verdict for the ripple colour only; the step decides.
     final dx = sim.x - tap.xMm / 1000.0, dy = sim.y - tap.yMm / 1000.0;
     final r = sim.p.hitRadius;
-    _fx.ripples.add(_Ripple(e.localPosition, dx * dx + dy * dy <= r * r));
+    final hit = dx * dx + dy * dy <= r * r;
+    _fx.ripples.add(_Ripple(e.localPosition, hit));
+    if (!hit) _scene.captain.play(CaptainMove.whiff);
   }
 
   void _onTouch() {
     final sim = _sim!;
     _touches = sim.touches;
     _counterPop++;
-    _sounds.play(PenaltySfx.kick);
+    final move = CaptainRig.moveFor(sim.y);
+    _scene.captain.play(move);
+    _sounds.play(PenaltySfx.kick, volume: move == CaptainMove.foot ? 0.7 : 0.5);
     HapticFeedback.lightImpact();
+    if (_size != Size.zero) {
+      final cam = AlleyCamera(_size);
+      _scene.fx.ring(cam.project(sim.x, sim.y - sim.p.ballRadius * 0.7), _fx.ballRadius * 0.7, Colors.white,
+          grow: 2.4, life: 0.28);
+    }
     if (sim.lastOffset.abs() < 0.18) {
       _fx.popups
           .add(_Popup('مثالي!', _fx.ball.translate(0, -_fx.ballRadius), _gold));
     }
     if (_touches % 5 == 0 && _touches < _target) {
-      _scene.boardMessage = '×$_touches';
+      _scene.lightsPulse = 1;
+      _fx.popups.add(_Popup('×$_touches', _fx.ball.translate(0, -_fx.ballRadius * 2.2), Colors.white));
       _celebrate = math.max(_celebrate, 0.45);
       _sounds.crowdLevel(0.55);
       Future.delayed(const Duration(milliseconds: 1400), () {
         if (mounted && _phase == _Phase.playing) {
-          _scene.boardMessage = null;
           _sounds.crowdLevel(0.32);
         }
       });
@@ -943,7 +986,10 @@ class _KeepyMatchPageState extends State<KeepyMatchPage>
     _celebrate = 1.4;
     _scene
       ..flash = 1
-      ..boardMessage = 'GOAL MASTER';
+      ..lightsPulse = 1.5;
+    _winT = 0;
+    _scene.captain.setPose(CaptainPose.celebrate);
+    if (_size != Size.zero) _scene.fx.confetti(_size, count: 140);
     _sounds.play(PenaltySfx.cheer);
     HapticFeedback.heavyImpact();
     _showBanner('أسطوري!', _gold);
@@ -953,7 +999,14 @@ class _KeepyMatchPageState extends State<KeepyMatchPage>
 
   void _onLost() {
     final sim = _sim!;
-    _scene.ball = _ballAt(sim.x, sim.p.ballRadius);
+    _scene
+      ..ballX = sim.x
+      ..ballY = sim.p.ballRadius;
+    _lostT = 0;
+    _lostVx = sim.vx.clamp(-1.5, 1.5) + (sim.vx >= 0 ? 0.4 : -0.4);
+    Future.delayed(const Duration(milliseconds: 380), () {
+      if (mounted) _scene.captain.setPose(CaptainPose.shrug);
+    });
     _shake = 7;
     _sounds.play(PenaltySfx.groan);
     HapticFeedback.mediumImpact();
@@ -1025,7 +1078,7 @@ class _KeepyMatchPageState extends State<KeepyMatchPage>
     _size = size;
     if (_backdrop?.size == size || _building == size || size.isEmpty) return;
     _building = size;
-    PenaltyBackdrop.build(size, MediaQuery.devicePixelRatioOf(context))
+    AlleyBackdrop.build(size, MediaQuery.devicePixelRatioOf(context))
         .then((b) {
       if (!mounted || _building != size) return b.dispose();
       setState(() {
@@ -1033,6 +1086,26 @@ class _KeepyMatchPageState extends State<KeepyMatchPage>
         _backdrop = b;
       });
     });
+  }
+
+  /// The ball after the round is over: a dying bounce across the cobbles
+  /// after a drop, or a hoof into the night sky after a win.
+  void _afterRound(double dt) {
+    final s = _scene;
+    if (_lostT >= 0) {
+      _lostT += dt;
+      final t = _lostT;
+      final r = s.ballR;
+      s.ballY = r + 0.32 * math.exp(-t * 2.6) * math.sin(t * 10).abs();
+      s.ballX = (s.ballX + _lostVx * math.exp(-t * 1.2) * dt).clamp(-0.62, 0.62);
+      s.spin += _lostVx * dt * 8 * math.exp(-t);
+    }
+    if (_winT >= 0) {
+      _winT += dt;
+      s.ballY += (3 + _winT * 6) * dt;
+      s.spin += dt * 20;
+      if (s.ballY > 6) s.ballVisible = false;
+    }
   }
 
   // ---- UI ------------------------------------------------------------------
@@ -1058,10 +1131,10 @@ class _KeepyMatchPageState extends State<KeepyMatchPage>
                 child: Stack(fit: StackFit.expand, children: [
                   CustomPaint(
                     size: box.biggest,
-                    painter: PenaltyPainter(
+                    painter: AlleyPainter(
                         scene: _scene,
                         backdrop: _backdrop,
-                        keeper: _keeperImage,
+                        art: _art,
                         repaint: _frame),
                   ),
                   CustomPaint(

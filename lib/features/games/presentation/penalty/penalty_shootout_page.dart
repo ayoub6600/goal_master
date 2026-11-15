@@ -482,6 +482,11 @@ class _PenaltyMatchPageState extends State<PenaltyMatchPage> with SingleTickerPr
   bool _sendFailed = false;
   double _kickT = 0, _timeScale = 1, _frozenClock = 0;
 
+  /// The boot swings in for [_windup] seconds before contact, then the
+  /// world holds still for a beat ([_hitStop]) as the ball leaves.
+  double _windup = 0, _hitStop = 0, _shotPower = 0.5;
+  bool _decisive = false;
+
   double _last = 0, _phaseTime = 0, _shake = 0, _celebrate = 0;
   bool _whistled = false;
   final List<SwipeSample> _swipe = [];
@@ -551,10 +556,18 @@ class _PenaltyMatchPageState extends State<PenaltyMatchPage> with SingleTickerPr
 
   void _enterIntro() {
     _resetBall();
+    final left = _total - _kickIndex;
+    // This kick settles it either way: score and you've won, or miss and
+    // you're out.
+    _decisive = _kickIndex > 0 && (_goals + 1 >= _need || _goals + left - 1 < _need) && _goals + left >= _need;
     setState(() {
       _phase = _Phase.intro;
       _banner = null;
     });
+    if (_decisive) {
+      _showBanner('ركلة حاسمة!', _gold);
+      _sounds.crowdLevel(0.5);
+    }
     _phaseTime = 0;
     _whistled = false;
   }
@@ -587,6 +600,11 @@ class _PenaltyMatchPageState extends State<PenaltyMatchPage> with SingleTickerPr
     _phaseTime += dt;
 
     s.flash = math.max(0, s.flash - dt * 2.2);
+    s.fx.update(dt);
+    s.squash = math.max(0, s.squash - dt * 7);
+    s.speed = math.max(0, s.speed - dt * 1.6);
+    final tensionTarget = _decisive && (_phase == _Phase.intro || _phase == _Phase.aiming) ? 1.0 : 0.0;
+    s.tension += (tensionTarget - s.tension) * math.min(1, dt * 3);
     _shake *= math.exp(-dt * 9);
     s.shake = _shake < 0.2
         ? Offset.zero
@@ -624,6 +642,18 @@ class _PenaltyMatchPageState extends State<PenaltyMatchPage> with SingleTickerPr
     final f = _flight!;
     final s = _scene;
     final replay = _phase == _Phase.replay;
+    if (!replay && _windup > 0) {
+      // Boot swinging in: the camera leans back, then snaps on contact.
+      _windup -= dt;
+      s.zoom = 1 - 0.035 * (1 - (_windup / 0.12).clamp(0.0, 1.0));
+      s.keeper = KeeperMotion.idle(_frozenClock);
+      if (_windup <= 0) _contact();
+      return;
+    }
+    if (!replay && _hitStop > 0) {
+      _hitStop -= dt;
+      return;
+    }
     final waiting = _result == null && _kickT >= f.duration * 0.16;
     final target = replay ? 0.36 : (waiting ? 0.1 : 1.0);
     _timeScale += (target - _timeScale) * math.min(1, dt * (waiting ? 12 : 7));
@@ -640,7 +670,7 @@ class _PenaltyMatchPageState extends State<PenaltyMatchPage> with SingleTickerPr
     }
     if (_size != Size.zero && _kickT < f.duration + 0.25) {
       s.trail.add(PenaltyCamera(_size).project(s.ball));
-      if (s.trail.length > 5) s.trail.removeAt(0);
+      if (s.trail.length > 12) s.trail.removeAt(0);
     } else {
       s.trail.clear();
     }
@@ -653,7 +683,8 @@ class _PenaltyMatchPageState extends State<PenaltyMatchPage> with SingleTickerPr
       s.zoom += (1.5 - s.zoom) * math.min(1, dt * 3);
       s.zoomFocus = V3(f.target.x * 0.8, 0.5 + f.target.y * 0.4, Pitch.goalLineZ);
     } else {
-      s.zoom = 1 + 0.05 * math.sin(math.pi * (_kickT / 0.3).clamp(0.0, 1.0));
+      // Punched in at contact, easing back as the ball flies.
+      s.zoom += (1 - s.zoom) * math.min(1, dt * 5);
     }
 
     if (prev < f.duration && _kickT >= f.duration && f.outcome != null) {
@@ -673,6 +704,27 @@ class _PenaltyMatchPageState extends State<PenaltyMatchPage> with SingleTickerPr
     }
   }
 
+  /// Boot meets ball: the sound, the jolt and the debris all land together.
+  void _contact() {
+    final s = _scene;
+    _sounds.play(PenaltySfx.kick);
+    Future<void>.delayed(const Duration(milliseconds: 45), () {
+      if (mounted) _sounds.play(PenaltySfx.whoosh);
+    });
+    _sounds.crowdLevel(0.55);
+    HapticFeedback.heavyImpact();
+    _hitStop = 0.045 + 0.03 * _shotPower;
+    _shake = 5 + 7 * _shotPower;
+    s
+      ..zoom = 1.06 + 0.04 * _shotPower
+      ..squash = 1
+      ..speed = 0.55 + 0.45 * _shotPower;
+    if (_size != Size.zero) {
+      final cam = PenaltyCamera(_size);
+      s.fx.strike(cam.project(Pitch.ballSpot), Pitch.ballRadius * cam.scaleAt(0), power: _shotPower);
+    }
+  }
+
   void _impact({required bool replay}) {
     final f = _flight!;
     final hit = f.at(f.duration);
@@ -683,6 +735,9 @@ class _PenaltyMatchPageState extends State<PenaltyMatchPage> with SingleTickerPr
         if (!replay) {
           _sounds.play(PenaltySfx.cheer);
           _celebrate = 1;
+          _shake = 7;
+          _burst(hit, Colors.white, 0.8);
+          if (_size != Size.zero) _scene.fx.confetti(_size);
           _scene
             ..flash = 1
             ..boardMessage = 'GOAL!';
@@ -691,6 +746,7 @@ class _PenaltyMatchPageState extends State<PenaltyMatchPage> with SingleTickerPr
         }
       case KickOutcome.save:
         _sounds.play(PenaltySfx.glove);
+        _burst(_scene.ball, const Color(0xffe8f6ff), 1);
         if (!replay) {
           _sounds.play(PenaltySfx.groan);
           HapticFeedback.mediumImpact();
@@ -698,7 +754,8 @@ class _PenaltyMatchPageState extends State<PenaltyMatchPage> with SingleTickerPr
         }
       case KickOutcome.post:
         _sounds.play(PenaltySfx.post);
-        _shake = 9;
+        _shake = 11;
+        _burst(hit, const Color(0xffffc46b), 1.2);
         if (!replay) {
           _sounds.play(PenaltySfx.groan);
           HapticFeedback.heavyImpact();
@@ -714,6 +771,12 @@ class _PenaltyMatchPageState extends State<PenaltyMatchPage> with SingleTickerPr
     }
     if (!replay) _reveal();
     _sounds.crowdLevel(0.32);
+  }
+
+  void _burst(V3 at, Color color, double scale) {
+    if (_size == Size.zero) return;
+    final cam = PenaltyCamera(_size);
+    _scene.fx.sparks(cam.project(at), scale * (cam.scaleAt(at.z) / 40).clamp(0.6, 1.6), color);
   }
 
   void _reveal() {
@@ -777,6 +840,8 @@ class _PenaltyMatchPageState extends State<PenaltyMatchPage> with SingleTickerPr
     if (_phase != _Phase.aiming || _swipe.isEmpty) return;
     _swipe.add(SwipeSample(d.localPosition, _stopwatch.elapsedMilliseconds));
     _updateGuide();
+    final shot = SwipeReader.read(_swipe, PenaltyCamera(_size));
+    _scene.power = shot == null ? 0 : shot.power;
   }
 
   void _updateGuide() {
@@ -799,10 +864,14 @@ class _PenaltyMatchPageState extends State<PenaltyMatchPage> with SingleTickerPr
     if (_phase != _Phase.aiming || _swipe.isEmpty) return;
     _scene
       ..guide = const []
-      ..reticle = null;
+      ..reticle = null
+      ..power = -1;
     final shot = SwipeReader.read(_swipe, PenaltyCamera(_size));
     _swipe.clear();
     if (shot == null) return;
+    _shotPower = shot.power;
+    _windup = 0.12;
+    _hitStop = 0;
 
     final raw = SwipeReader.withExecutionError(shot, _executionSpread(widget.tier.difficulty), _rng);
     // Rounded exactly as sent, so the client animates the shot the server judges.
@@ -817,9 +886,7 @@ class _PenaltyMatchPageState extends State<PenaltyMatchPage> with SingleTickerPr
       _phase = _Phase.flying;
       _banner = null;
     });
-    _sounds.play(PenaltySfx.kick);
-    _sounds.crowdLevel(0.5);
-    HapticFeedback.heavyImpact();
+    HapticFeedback.selectionClick();
     _send();
   }
 

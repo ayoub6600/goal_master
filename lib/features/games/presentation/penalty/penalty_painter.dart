@@ -3,6 +3,7 @@ import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 
+import 'penalty_fx.dart';
 import 'penalty_world.dart';
 
 const _brandGreen = Color(0xff3f8d4b);
@@ -367,6 +368,14 @@ class PenaltyScene {
   double guideReach = 0;
   ShotAim? reticle;
   int flashSeed = 0;
+
+  /// Hit effects, plus the strike's squash, speed streaks and the red pulse
+  /// of a decisive kick. [power] is the live swipe power (-1 when idle).
+  final fx = PenaltyFx();
+  double squash = 0;
+  double speed = 0;
+  double tension = 0;
+  double power = -1;
 }
 
 class PenaltyPainter extends CustomPainter {
@@ -419,9 +428,15 @@ class PenaltyPainter extends CustomPainter {
     _frame(canvas, cam);
     _keeper(canvas, cam);
     _guide(canvas, cam);
+    _powerRing(canvas, cam);
     if (!ballBehindLine) _ball(canvas, cam);
+    s.fx.paint(canvas, screen: false);
 
     canvas.restore();
+
+    PenaltyFx.speedLines(canvas, size, s.speed, s.clock);
+    s.fx.paint(canvas, screen: true);
+    PenaltyFx.tension(canvas, size, s.tension, s.clock);
 
     // Lens and grade, outside the camera transform.
     canvas.drawRect(
@@ -697,12 +712,37 @@ class PenaltyPainter extends CustomPainter {
           ..maskFilter = MaskFilter.blur(BlurStyle.normal, r * (0.25 + h * 0.3)));
 
     final trail = scene.trail;
-    for (var i = 0; i < trail.length; i++) {
-      final a = (i + 1) / (trail.length + 1);
-      canvas.drawCircle(trail[i], r * (0.55 + 0.4 * a),
-          Paint()..color = Colors.white.withValues(alpha: 0.12 * a));
+    if (trail.isNotEmpty) {
+      // A comet tail: soft glow underneath, a bright tapering core on top.
+      final glow = Paint()..maskFilter = MaskFilter.blur(BlurStyle.normal, math.max(2, r * 0.45));
+      final core = Paint();
+      for (var i = 0; i < trail.length; i++) {
+        final a = (i + 1) / (trail.length + 1);
+        glow.color = const Color(0xffffe9a8).withValues(alpha: 0.16 * a);
+        canvas.drawCircle(trail[i], r * (0.35 + 0.75 * a), glow);
+      }
+      for (var i = 1; i < trail.length; i++) {
+        final a = i / trail.length;
+        core
+          ..color = Colors.white.withValues(alpha: 0.38 * a)
+          ..strokeWidth = r * (0.15 + 1.1 * a)
+          ..strokeCap = StrokeCap.round;
+        canvas.drawLine(trail[i - 1], trail[i], core);
+      }
+      core
+        ..color = Colors.white.withValues(alpha: 0.38)
+        ..strokeWidth = r * 1.2;
+      canvas.drawLine(trail.last, c, core);
     }
 
+    canvas.save();
+    if (scene.squash > 0.01) {
+      // Boot-on-leather squash, springing back.
+      final q = scene.squash;
+      canvas.translate(c.dx, c.dy);
+      canvas.scale(1 + 0.28 * q, 1 - 0.24 * q);
+      canvas.translate(-c.dx, -c.dy);
+    }
     canvas.drawCircle(c, r, Paint()..color = const Color(0xfff7f7f5));
 
     // Classic 32-panel ball: draw the 12 pentagons that face the camera.
@@ -761,6 +801,7 @@ class PenaltyPainter extends CustomPainter {
         Paint()
           ..color = const Color(0x99ffffff)
           ..maskFilter = MaskFilter.blur(BlurStyle.normal, r * 0.15));
+    canvas.restore();
 
     if (ball.z < 0.05 && ball.y <= Pitch.ballRadius + 0.01) {
       // Sitting in the turf on the spot: a few blades in front of it.
@@ -775,6 +816,40 @@ class PenaltyPainter extends CustomPainter {
         canvas.drawLine(Offset(x, y), Offset(x + (rng.nextDouble() - 0.5) * r * 0.2, y - r * (0.15 + rng.nextDouble() * 0.25)), blade);
       }
     }
+  }
+
+  /// Live power while the finger is still on the glass: an arc that fills
+  /// green to gold to red around the ball.
+  void _powerRing(Canvas canvas, PenaltyCamera cam) {
+    final p = scene.power;
+    if (p < 0) return;
+    final c = cam.project(scene.ball);
+    final r = Pitch.ballRadius * cam.scaleAt(scene.ball.z) * 1.9;
+    final rect = Rect.fromCircle(center: c, radius: r);
+    canvas.drawArc(
+        rect,
+        math.pi * 0.75,
+        math.pi * 1.5,
+        false,
+        Paint()
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 7
+          ..strokeCap = StrokeCap.round
+          ..color = const Color(0x55000000));
+    final col = Color.lerp(
+        Color.lerp(const Color(0xff2fbf5b), const Color(0xffffd54a), (p * 2).clamp(0.0, 1.0)),
+        const Color(0xffff5a4f),
+        ((p - 0.5) * 2).clamp(0.0, 1.0))!;
+    canvas.drawArc(
+        rect,
+        math.pi * 0.75,
+        math.pi * 1.5 * p.clamp(0.02, 1.0),
+        false,
+        Paint()
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 7
+          ..strokeCap = StrokeCap.round
+          ..color = col);
   }
 
   void _guide(Canvas canvas, PenaltyCamera cam) {

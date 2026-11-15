@@ -6,7 +6,7 @@ import 'package:goal_master/features/games/data/keepy_uppy_repo.dart';
 import 'package:goal_master/features/games/data/penalty_shootout_repo.dart';
 import 'package:goal_master/features/games/presentation/keepy/keepy_sim.dart';
 import 'package:goal_master/features/games/presentation/keepy/keepy_uppy_page.dart';
-import 'package:goal_master/features/games/presentation/penalty/penalty_world.dart';
+import 'package:goal_master/features/games/presentation/keepy/alley_scene.dart';
 
 const _easy = KeepyPhysics(
   hz: 120, target: 12, gravityMm: 8675, kickMm: 4268, hitMm: 282, sideMm: 1700,
@@ -62,14 +62,14 @@ void main() {
       await tester.pump(const Duration(milliseconds: 10));
     }
 
-    final cam = PenaltyCamera(const Size(440, 956));
+    final cam = AlleyCamera(const Size(440, 956));
     var lastTap = -100;
     for (var guard = 0; guard < 6000 && !live!.finished; guard++) {
       final s = live!;
       if (s.vy < 0 && s.y < 0.6 && s.frame - lastTap > 15) {
         lastTap = s.frame;
         final steer = (s.x * 0.35).clamp(-0.12, 0.12);
-        await tester.tapAt(cam.project(V3(s.x + steer, s.y, 0)));
+        await tester.tapAt(cam.project(s.x + steer, s.y));
       }
       await tester.pump(const Duration(milliseconds: 8));
     }
