@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:goal_master/features/booking/presentation/view/widgets/booking_case_sheet.dart';
 import 'package:goal_master/features/booking/presentation/view/widgets/cancellation_preview_sheet.dart';
@@ -45,12 +46,16 @@ class BookingItems extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Expanded(child: BookingIdentityLabel(booking: booking)),
-                  Text(
-                    "( ${_getPaymentStatusText(booking.paymentStatus)} )",
-                    style: AppTextStyles.font16Bold.copyWith(
-                      color: _getPaymentStatusColor(booking.paymentStatus),
+                  // A cancelled booking said "(مدفوع)" in green next to
+                  // "ملغي" — what happened to the money is in the
+                  // cancellation box below instead.
+                  if (booking.status != 3)
+                    Text(
+                      "( ${_getPaymentStatusText(booking.paymentStatus)} )",
+                      style: AppTextStyles.font16Bold.copyWith(
+                        color: _getPaymentStatusColor(booking.paymentStatus),
+                      ),
                     ),
-                  ),
                 ],
               ),
             ),
@@ -87,10 +92,15 @@ class BookingItems extends StatelessWidget {
                                     child: Icon(Icons.sports_soccer,
                                         color: AppColors.primary, size: 26.w),
                                   )
-                                : Image.network(
-                                    booking.serviceImage,
+                                // Cached, and decoded at thumbnail size: a
+                                // full photo per row made the list heavy.
+                                : CachedNetworkImage(
+                                    imageUrl: booking.serviceImage,
                                     fit: BoxFit.cover,
-                                    errorBuilder: (_, __, ___) => Container(
+                                    memCacheWidth: 160,
+                                    placeholder: (_, __) => Container(
+                                        color: const Color(0xffEAF4E8)),
+                                    errorWidget: (_, __, ___) => Container(
                                       color: const Color(0xffEAF4E8),
                                       child: Icon(Icons.sports_soccer,
                                           color: AppColors.primary, size: 26.w),
@@ -323,8 +333,8 @@ class BookingItems extends StatelessWidget {
                         Expanded(
                           child: ButtonApp(
                             text: state is CancelBookingLoading
-                                ? "جاري الغاء الحجز"
-                                : "الغاء الحجز",
+                                ? "جارٍ إلغاء الحجز"
+                                : "إلغاء الحجز",
                             textColor: Colors.white,
                             backGround: AppColors.redcolor,
                             onTap: () async {
@@ -340,7 +350,7 @@ class BookingItems extends StatelessWidget {
                                 // Offered right here, while the customer is
                                 // still looking at the outcome — an appeal
                                 // buried in a menu is one nobody finds.
-                                await BookingCaseSheet.show(
+                                await BookingCaseSheet.showIfActionable(
                                     context, booking.id);
 
                                 if (context.mounted) {

@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:goal_master/core/styles/assets.dart';
@@ -24,11 +25,12 @@ class BuildHeaderImage extends StatelessWidget {
                   Image.asset(Assets.imagesPngImageBackgroundLogin,
                       width: double.infinity, fit: BoxFit.cover)
                 else
-                  Image.network(
-                    booking!.serviceImage,
+                  CachedNetworkImage(
+                    imageUrl: booking!.serviceImage,
                     width: double.infinity,
                     fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) => Image.asset(
+                    memCacheWidth: 1080,
+                    errorWidget: (_, __, ___) => Image.asset(
                       Assets.imagesPngImageBackgroundLogin,
                       width: double.infinity,
                       fit: BoxFit.cover,

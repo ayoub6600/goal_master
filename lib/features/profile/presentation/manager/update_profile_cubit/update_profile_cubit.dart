@@ -46,7 +46,6 @@ class UpdateProfileCubit extends Cubit<UpdateProfileState> {
       (failure) => emit(UpdateProfileError(errMessage: failure.errMessage)),
       (data) {
         print("data: ${data.user?.name}");
-        print("---->UserData token ${data.token}");
         emit(UpdateProfileSuccess(message: data));
         _saveUserData(data);
       },
@@ -54,7 +53,6 @@ class UpdateProfileCubit extends Cubit<UpdateProfileState> {
   }
 
   Future<void> _saveUserData(UserData userData) async {
-    print("---->UserData token ${userData.toString()}");
 
     // Save user data to SharedPreferences
     await SharedPreferenceUtil.putString(PrefKey.fcmToken, userData.token!);
@@ -69,7 +67,6 @@ class UpdateProfileCubit extends Cubit<UpdateProfileState> {
 
     // Update Dio Authorization header immediately after saving token
     String token = SharedPreferenceUtil.getString(PrefKey.fcmToken);
-    print("Updated Authorization token: $token");
 
     // Here you need to directly update Dio's Authorization header
 

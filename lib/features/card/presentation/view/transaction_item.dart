@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:goal_master/core/styles/app_colors.dart';
 import 'package:goal_master/core/styles/app_text_styles.dart';
+import 'package:goal_master/core/utils/arabic_dates.dart';
 import 'package:goal_master/features/balance/data/model/transactions_response.dart';
 import 'package:intl/intl.dart';
 
@@ -16,7 +17,23 @@ class TransactionItem extends StatelessWidget {
   bool get _isOnlineTopUp =>
       transaction.description?.startsWith('online_topup') == true;
 
+  String get _description => transaction.description?.trim() ?? '';
+
+  /// Money coming back from a cancelled booking. Recorded as an ordinary
+  /// credit, so it used to read "إيداع من الإدارة / شحن من الإدارة".
+  bool get _isBookingRefund =>
+      transaction.balanceType == 1 && _description.startsWith('استرجاع');
+
+  /// Paying for a booking. Recorded as a transfer to the venue's wallet, so it
+  /// used to read like sending money to a person ("تحويل صادر").
+  bool get _isBookingPayment =>
+      transaction.balanceType == 0 &&
+      (_description.startsWith('دفعة حجز') ||
+          _description.startsWith('دفع الحجز'));
+
   String get _transactionTypeLabel {
+    if (_isBookingRefund) return 'استرجاع حجز';
+    if (_isBookingPayment) return 'دفع حجز';
     switch (transaction.type) {
       case 'credit':
         return _isOnlineTopUp ? 'شحن أونلاين' : 'شحن من الإدارة';
@@ -32,6 +49,8 @@ class TransactionItem extends StatelessWidget {
   }
 
   Color get _transactionTypeColor {
+    if (_isBookingRefund) return Colors.teal;
+    if (_isBookingPayment) return Colors.blueGrey;
     switch (transaction.type) {
       case 'credit':
         return _isOnlineTopUp ? Colors.blue : Colors.teal;
@@ -49,6 +68,15 @@ class TransactionItem extends StatelessWidget {
   String get _descriptionText {
     final description = transaction.description?.trim();
     if (description == null || description.isEmpty) {
+      // A transfer between customers carries no description of its own;
+      // who it went to (or came from) is the useful part.
+      final other = transaction.referenceUser;
+      if (transaction.type == 'transfer' && other != null) {
+        final who = other.name.trim().isNotEmpty
+            ? other.name.trim()
+            : other.phoneNumber;
+        return transaction.balanceType == 1 ? 'من $who' : 'إلى $who';
+      }
       return 'لا يوجد وصف';
     }
     if (description.startsWith('online_topup:')) {
@@ -69,8 +97,12 @@ class TransactionItem extends StatelessWidget {
     final icon =
         isCredit ? Icons.arrow_downward_rounded : Icons.arrow_upward_rounded;
 
+    // Arabic, in reading order: "16 نوفمبر 2026 • 5:24 مساءً". The English
+    // pattern came out scrambled inside the right-to-left line.
+    final local = transaction.createdAt.toLocal();
     final formattedDate =
-        DateFormat("dd MMM yyyy • hh:mm a").format(transaction.createdAt);
+        '${local.day} ${arabicMonthName(local.month)} ${local.year} • '
+        '${formatArabicTime(DateFormat('HH:mm').format(local))}';
     final user = transaction.user;
     final referenceUser = transaction.referenceUser;
 
@@ -109,9 +141,13 @@ class TransactionItem extends StatelessWidget {
               child: Icon(icon, color: Colors.white, size: 24),
             ),
             title: Text(
-              _isAdminCredit
-                  ? 'إيداع من الإدارة'
-                  : (isCredit ? 'إيداع' : 'سحب'),
+              _isBookingRefund
+                  ? 'استرجاع'
+                  : _isBookingPayment
+                      ? 'دفع حجز'
+                      : _isAdminCredit
+                          ? 'إيداع من الإدارة'
+                          : (isCredit ? 'إيداع' : 'سحب'),
               style: AppTextStyles.font16Bold,
             ),
             subtitle: Text(

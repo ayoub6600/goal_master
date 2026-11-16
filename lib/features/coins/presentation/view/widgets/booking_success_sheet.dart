@@ -164,7 +164,7 @@ class _BookingSuccessContent extends StatelessWidget {
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
-                  'كوينز المكافأة تنضاف لرصيدك بعد ما يكتمل الحجز',
+                  'كوينز المكافأة تنضاف لرصيدك لما يتأكد الحجز (فورًا عند الدفع من المحفظة)، وتنخصم لو ألغيته',
                   style: AppTextStyles.font14Medium.copyWith(color: _goldDark),
                 ),
               ),

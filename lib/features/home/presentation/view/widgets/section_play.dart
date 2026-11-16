@@ -19,14 +19,14 @@ class SectionPlay extends StatelessWidget {
       runSpacing: 8.h,
       children: [
         CornerStatCard(
-          title: "الغير خالص",
+          title: "غير خالص",
           value: analysis.pending,
           icon: Icons.schedule,
           bgColor: AppColors.grey.withOpacity(0.2),
           iconColor: AppColors.grey,
         ),
         CornerStatCard(
-          title: "بإنتظار قبول الطلب",
+          title: "بانتظار قبول الطلب",
           value: analysis.processing,
           icon: Icons.sync,
           bgColor: Colors.yellow.withOpacity(0.2),

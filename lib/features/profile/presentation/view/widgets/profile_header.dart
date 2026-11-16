@@ -77,7 +77,7 @@ class ProfileHeader extends StatelessWidget {
                     style: TextStyle(color: Colors.red),
                   );
                 }
-                return Text("No Data Available");
+                return const SizedBox.shrink();
               },
             ),
           ),
@@ -138,7 +138,7 @@ class ProfileHeader extends StatelessWidget {
                           ),
                         );
                       }
-                      return Center(child: Text("No Data"));
+                      return const SizedBox.shrink();
                     },
                   ),
                 ),

@@ -10,6 +10,7 @@ class SendMoneyCubit extends Cubit<SendMoneyState> {
     // اسمع لأي تغيير في الحقول وحدّث الـ state علشان الزر يتفعّل/يتعطّل لحظيًا
     amountController.addListener(_onFieldsChanged);
     receiverIdController.addListener(_onFieldsChanged);
+    passwordController.addListener(_onFieldsChanged);
   }
 
   final BalanceRepo balanceRep;
@@ -17,11 +18,13 @@ class SendMoneyCubit extends Cubit<SendMoneyState> {
   // Controllers (بتستخدمهم في الواجهة)
   final TextEditingController amountController = TextEditingController();
   final TextEditingController receiverIdController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
 
   void _onFieldsChanged() {
     emit(state.copyWith(
       amount: amountController.text,
       receiver: receiverIdController.text,
+      password: passwordController.text,
       status: SendMoneyStatus.idle,
       errorMessage: null,
     ));
@@ -50,7 +53,11 @@ class SendMoneyCubit extends Cubit<SendMoneyState> {
     final result = await balanceRep.sendMoney(
       amount: amount,
       receiverId: receiver,
+      password: state.password,
     );
+
+    // The password is asked for each transfer and never kept.
+    passwordController.clear();
 
     result.fold(
       (l) => emit(state.copyWith(
@@ -64,6 +71,7 @@ class SendMoneyCubit extends Cubit<SendMoneyState> {
   void reset() {
     amountController.clear();
     receiverIdController.clear();
+    passwordController.clear();
     emit(const SendMoneyState());
   }
 
@@ -71,6 +79,7 @@ class SendMoneyCubit extends Cubit<SendMoneyState> {
   Future<void> close() {
     amountController.dispose();
     receiverIdController.dispose();
+    passwordController.dispose();
     return super.close();
   }
 }

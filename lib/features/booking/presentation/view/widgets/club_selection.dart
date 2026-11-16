@@ -24,7 +24,7 @@ class ClubSelection extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             StepTitle(
-              title: "إدارة الملاعب",
+              title: "اختر الملعب",
               description: "اختر الملعب المناسب للحجز الذي تريده",
             ),
             if (state is ClubSuccess)
@@ -42,6 +42,10 @@ class ClubSelection extends StatelessWidget {
                     )
                   : Expanded(
                       child: ListView.builder(
+                        // Without this the list added the status-bar height
+                        // again under the page header — an empty band above
+                        // the first venue.
+                        padding: EdgeInsets.only(bottom: 16.h),
                         itemCount: state.clubs.length,
                         itemBuilder: (context, index) {
                           final club = state.clubs[index];
@@ -101,6 +105,7 @@ class ClubSelection extends StatelessWidget {
                                           width: double.infinity,
                                           height: 150,
                                           fit: BoxFit.cover,
+                                          memCacheWidth: 1080,
                                           placeholder: (context, url) =>
                                               Container(
                                             width: double.infinity,

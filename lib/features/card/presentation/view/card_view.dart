@@ -301,7 +301,7 @@ class _CardViewState extends State<CardView> {
                                     ),
                                   );
                                 }
-                                return Center(child: Text("No Data"));
+                                return const SizedBox.shrink();
                               },
                             ),
                             HeightSpace(8.h),

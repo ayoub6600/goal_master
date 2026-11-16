@@ -67,12 +67,16 @@ class BuildHeaderHome extends StatelessWidget {
               SizedBox(height: 2.h),
               Row(
                 children: [
-                  Text(
-                    name.isEmpty ? "أهلاً بك" : name,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: AppTextStyles.font16Bold.copyWith(
-                      color: AppColors.primary,
+                  // Flexible, so a long name is cut with "…" instead of
+                  // pushing the row past the screen once the balance shows.
+                  Flexible(
+                    child: Text(
+                      name.isEmpty ? "أهلاً بك" : name,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: AppTextStyles.font16Bold.copyWith(
+                        color: AppColors.primary,
+                      ),
                     ),
                   ),
                   SizedBox(width: 4.w),
@@ -168,7 +172,7 @@ class BuildHeaderHome extends StatelessWidget {
                                   .copyWith(color: Colors.black)),
                         );
                       }
-                      return Center(child: Text("No Data"));
+                      return Text('...', style: AppTextStyles.font16SemiBold);
                     },
                   ),
                 ),

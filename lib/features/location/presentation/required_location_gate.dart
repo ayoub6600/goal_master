@@ -95,7 +95,21 @@ class _RequiredLocationGateState extends State<RequiredLocationGate>
 
   @override
   Widget build(BuildContext context) {
-    if (!_loggedIn) return widget.child;
+    if (!_loggedIn) {
+      // Forget whose location was read, so signing back in — even to the
+      // same account — reads it again. Otherwise the same customer logging
+      // out and in was asked "where are you?" for a location their account
+      // already holds: sign-out had emptied the cubit, and the gate thought
+      // it had already loaded this account.
+      _bootstrappedFor = null;
+      return widget.child;
+    }
+
+    // The sign-in itself rebuilds this gate (the router's builder runs on
+    // every navigation), and nothing else would tell it to read the account.
+    if (_bootstrappedFor != _userId) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => _maybeBootstrap());
+    }
 
     return BlocBuilder<ActiveLocationCubit, ActiveLocationState>(
       builder: (context, state) {

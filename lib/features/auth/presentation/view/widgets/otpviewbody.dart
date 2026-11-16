@@ -1,3 +1,4 @@
+import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_otp_text_field/flutter_otp_text_field.dart';
@@ -42,7 +43,7 @@ class Otpviewbody extends StatelessWidget {
               ),
               HeightSpace(16.h),
               Text(
-                "ادخل الرمز المرسل الي الواتس اب الخاص بك",
+                "أدخل الرمز المرسل إلى واتساب الخاص بك",
                 style: AppTextStyles.font14SemiBold.copyWith(
                   color: AppColors.inactiveText1,
                 ),
@@ -59,6 +60,14 @@ class Otpviewbody extends StatelessWidget {
                   borderRadius: BorderRadius.circular(20.r),
                   borderColor: Color(0xFF512DA8),
                   showFieldAsBox: true,
+                  // Digits only: the code is numeric, and a letter typed by
+                  // mistake used to be sent and refused as a wrong code.
+                  keyboardType: TextInputType.number,
+                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                  textStyle: AppTextStyles.font20Bold.copyWith(
+                    color: AppColors.black,
+                    fontFeatures: const [FontFeature.tabularFigures()],
+                  ),
                   onSubmit: (String verificationCode) {
                     cubit.setOTP(verificationCode);
                   }, // end onSubmit
@@ -76,7 +85,7 @@ class Otpviewbody extends StatelessWidget {
                   WidthSpace(8.w),
                   GestureDetector(
                     onTap: cubit.resend,
-                    child: Text('اعادة ارسال',
+                    child: Text('إعادة الإرسال',
                         style: AppTextStyles.font16Bold.copyWith(
                           color: cubitWatch.allowResend
                               ? AppColors.primary
@@ -88,7 +97,6 @@ class Otpviewbody extends StatelessWidget {
               HeightSpace(30.h),
               BlocConsumer<VerifyEmailCubit, VerifyEmailState>(
                 listener: (context, state) {
-                  print("---->state $state");
                   if (state is VerifyEmailSuccess) {
                     final forget = context.read<VerifyEmailCubit>().forget;
 
@@ -105,9 +113,7 @@ class Otpviewbody extends StatelessWidget {
 
                     showCustomSuccessToast(state.model.message);
                   } else if (state is VerifyEmailError) {
-                    print(state.errMessage);
                     showCustomFailureToast(state.errMessage);
-                    print(state..errMessage);
                   } else if (state is VerifyEmailSuccessRegister) {
                     if (state.model.data?.token != null) {
                       // A moment of arrival before the login screen. The

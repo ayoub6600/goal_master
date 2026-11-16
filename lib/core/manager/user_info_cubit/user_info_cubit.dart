@@ -43,7 +43,6 @@ class UserInfoCubit extends Cubit<UserInfoState> {
   Future<void> setUser(User? user, String? token) async {
     emit(state.copyWith(loading: true));
     print("------------> $user");
-    print("------------> $token");
     await AuthManager.saveUser(user, token);
 
     this.user = user ?? this.user;

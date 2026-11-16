@@ -7007,3 +7007,24 @@ deployed; dev DB not migrated.
 ## 2026-11-16 — Server-signed card top-ups
 
 - Wallet top-up no longer holds the Moamalat merchant key or builds the hash: `user/wallet/topup/start` returns a server-signed checkout; after the Lightbox, `transaction-store {reference}` makes the server confirm with the bank. Shows "being confirmed" (pending) instead of a false «تم الدفع بنجاح», and an error when nothing was credited (previously success was shown even if saving failed). Removed the unused `checkout_cubit/payment_cubit` that also embedded the key.
+
+## 2026-11-16 — Customer QA fixes (UI)
+
+- Home header overflowed ("RIGHT OVERFLOWED BY 17 PIXELS") once the balance showed — name is now Flexible/ellipsized. English "No Data" placeholders removed.
+- Checkout time read "PM – 8:00 PM 7:00" (Latin AM/PM reordered in RTL) — now "7:00 م – 8:00 م".
+- After a free cancellation the app opened «مراجعة الإلغاء — ما فيش طلب مراجعة»; the appeal sheet now opens only when there is something to appeal.
+- Booking success note said reward coins arrive after completion; wallet bookings are credited immediately (and reversed on cancel) — text corrected.
+- Spelling: إلغاء الحجز، بانتظار، غير خالص، إعادة الإرسال، إعدادات عامة، «اختر الملعب» instead of manager wording «إدارة الملاعب».
+- Removed `print()` of JWTs (auth manager, profile, reset password).
+
+## 2026-11-16 — Customer app follow-up: smoother booking, wallet, sessions
+
+- Booking: a single category is chosen automatically (and skipped on back); the date step has «عرض الأوقات المتاحة» for the pre-selected day; «رجوع» from checkout no longer throws (PageController with no clients) and returns to the right step; a pitch with no base price no longer shows «0 دينار».
+- Captain Ayoub bubble: hidden while a sheet/dialog is open (`PopupRouteTracker`), on booking/payment/form screens, and after sign-out; smaller, docked above the bottom bar, snaps to the nearest edge after a drag. It used to cover «احجز الآن» and the checkout total. Top route read from the match list (go_router doesn't put push() in `uri`).
+- Home: removed the 3-second timer that rebuilt the whole screen to cycle ⚽🏀🎾🏐; booking/pitch/venue images cached and decoded at display size.
+- Wallet: transfer asks for the account password with an "irreversible" note; refunds read «استرجاع», booking payments «دفع حجز», transfers name the other person; dates Arabic and local («16 نوفمبر 2026 • 7:24 مساءً»).
+- Monthly booking paid in full showed «غير مدفوع»: the API's numeric payment_status (1/2/3) is now read.
+- Login: session saved BEFORE LoginSuccess (home's first requests went out with no token); OTP signup stores the user id. Same-account logout→login no longer asks for the location again (gate re-reads the account after sign-in). A `session_revoked` 401 signs out and opens login.
+- Signup tells the customer when the code could not be sent; OTP boxes accept digits only; onboarding «تخطى» skips to the end; network errors in Arabic; cancelled cards no longer say «(مدفوع)»; account rows tappable across their width; «إلغاء» spelling.
+- Live socket registers with a signed pass from `socket-token`; iOS ATS limited to local networking.
+- Tests: `customer_followup_ux_test.dart` (6).

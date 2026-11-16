@@ -4,6 +4,10 @@ class LoginModel {
   String? status;
   Data? data;
 
+  /// Set when the account was created but the code could not be sent —
+  /// shown on the code screen so the customer knows to press resend.
+  String? notice;
+
   LoginModel({this.status, this.data});
 
   @override

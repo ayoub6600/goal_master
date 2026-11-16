@@ -50,7 +50,7 @@ class ProfileView extends StatelessWidget {
                         ),
                         WidthSpace(16.w),
                         Text(
-                          "اعدادات عامة",
+                          "إعدادات عامة",
                           style: AppTextStyles.font16Bold.copyWith(
                             color: AppColors.fontColor,
                           ),
@@ -184,7 +184,7 @@ class ProfileView extends StatelessWidget {
                                         child: ButtonApp(
                                             textColor: Colors.white,
                                             backGround: Colors.red,
-                                            text: "الغاء",
+                                            text: "إلغاء",
                                             onTap: () {
                                               Navigator.pop(
                                                   context); // Close the sheet

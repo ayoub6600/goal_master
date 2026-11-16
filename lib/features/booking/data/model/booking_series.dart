@@ -121,9 +121,7 @@ class BookingSeries {
           ? _asDouble(json['remaining_amount'])
           : (_asDouble(json['total_amount']) - _asDouble(json['paid_amount']))
               .clamp(0, double.infinity),
-      paymentStatus: _asString(json['payment_status']).isEmpty
-          ? 'unpaid'
-          : _asString(json['payment_status']),
+      paymentStatus: seriesPaymentStatus(json['payment_status']),
       canCancelAll: json['can_cancel_all'] == true,
       occurrences: ((json['occurrences'] as List?) ?? const [])
           .map((e) => SeriesOccurrence.fromJson(e as Map<String, dynamic>))
@@ -663,4 +661,24 @@ class ReplacementChoice {
         'start_time': slot.startTime,
         'end_time': slot.endTime,
       };
+}
+
+/// The series' payment state as one of 'paid' / 'partial' / 'unpaid'.
+///
+/// The API sends the backend's ServicePaymentStatus number (1 paid, 2 unpaid,
+/// 3 partial). The app compared it with words, so a monthly booking paid in
+/// full from the wallet read «غير مدفوع». Words are still accepted.
+String seriesPaymentStatus(dynamic raw) {
+  final value = raw?.toString().trim().toLowerCase() ?? '';
+  switch (value) {
+    case '1':
+    case 'paid':
+      return 'paid';
+    case '3':
+    case 'partial':
+    case 'partially_paid':
+      return 'partial';
+    default:
+      return 'unpaid';
+  }
 }

@@ -224,6 +224,7 @@ class _ServiceCardState extends State<_ServiceCard> {
                             width: double.infinity,
                             height: 180.h,
                             fit: BoxFit.cover,
+                            memCacheWidth: 1080,
                             placeholder: (context, url) {
                               return const _ImagePlaceholder(
                                 showLoader: true,
@@ -317,28 +318,32 @@ class _ServiceCardState extends State<_ServiceCard> {
                         overflow: TextOverflow.ellipsis,
                       ),
                       HeightSpace(10.h),
-                      Wrap(
-                        crossAxisAlignment: WrapCrossAlignment.center,
-                        spacing: 8.w,
-                        runSpacing: 3.h,
-                        children: [
-                          Text("سعر الحجز الأساسي:",
-                              style: AppTextStyles.font14Medium),
-                          Text("${widget.price} دينار",
-                              style: AppTextStyles.font16Bold.copyWith(
-                                color: AppColors.primary,
-                                decoration: widget.showOffer
-                                    ? TextDecoration.lineThrough
-                                    : null,
-                              )),
-                          if (widget.showOffer && widget.discountValue != null)
-                            Text(
-                              ' ${advertisedPrice.toStringAsFixed(2)} دينار',
-                              style: AppTextStyles.font16Bold
-                                  .copyWith(color: AppColors.primary),
-                            ),
-                        ],
-                      ),
+                      // A pitch with no base price set is priced per time
+                      // slot; "0 دينار" here read as free.
+                      if ((double.tryParse(widget.price) ?? 0) > 0)
+                        Wrap(
+                          crossAxisAlignment: WrapCrossAlignment.center,
+                          spacing: 8.w,
+                          runSpacing: 3.h,
+                          children: [
+                            Text("سعر الحجز الأساسي:",
+                                style: AppTextStyles.font14Medium),
+                            Text("${widget.price} دينار",
+                                style: AppTextStyles.font16Bold.copyWith(
+                                  color: AppColors.primary,
+                                  decoration: widget.showOffer
+                                      ? TextDecoration.lineThrough
+                                      : null,
+                                )),
+                            if (widget.showOffer &&
+                                widget.discountValue != null)
+                              Text(
+                                ' ${advertisedPrice.toStringAsFixed(2)} دينار',
+                                style: AppTextStyles.font16Bold
+                                    .copyWith(color: AppColors.primary),
+                              ),
+                          ],
+                        ),
                       if (widget.showOffer && widget.offerHeadline != null) ...[
                         SizedBox(height: 5.h),
                         Row(

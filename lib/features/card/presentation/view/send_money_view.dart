@@ -207,6 +207,25 @@ class SendMoneyView extends StatelessWidget {
 
                 HeightSpace(16.h),
 
+                // كلمة المرور — التحويل نهائي، فلا يكفي أن يكون الهاتف مفتوحًا
+                Text("كلمة المرور",
+                    style:
+                        AppTextStyles.font16Bold.copyWith(color: Colors.black)),
+                HeightSpace(8.h),
+                CustomTextField(
+                  controller: cubit.passwordController,
+                  hint: "أدخل كلمة مرور حسابك للتأكيد",
+                  password: true,
+                ),
+                HeightSpace(8.h),
+                Text(
+                  "التحويل نهائي ولا يمكن استرجاعه. تأكد من رقم المستلم قبل التأكيد.",
+                  style: AppTextStyles.font12Medium
+                      .copyWith(color: Colors.grey.shade700),
+                ),
+
+                HeightSpace(16.h),
+
                 isLoading
                     ? const Center(child: CircularProgressIndicator())
                     : ButtonApp(

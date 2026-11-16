@@ -91,6 +91,7 @@ class ServicesInfoView extends StatelessWidget {
                               width: double.infinity,
                               height: 68.h,
                               fit: BoxFit.cover,
+                              memCacheWidth: 600,
                               placeholder: (context, url) => Container(
                                 width: double.infinity,
                                 height: 68.h,

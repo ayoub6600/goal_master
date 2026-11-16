@@ -77,7 +77,7 @@ class RegisterCubit extends Cubit<RegisterState> {
 
     result.fold(
       (error) => emit(RegisterError(error.errMessage)),
-      (_) => emit(RegisterSuccess()),
+      (model) => emit(RegisterSuccess(notice: model.notice)),
     );
   }
 

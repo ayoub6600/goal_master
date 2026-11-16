@@ -3,13 +3,19 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:goal_master/core/components/keys_values.dart';
 import 'package:goal_master/core/components/preference_utility.dart';
 import 'package:goal_master/core/routing/app_router.dart';
+import 'package:goal_master/core/routing/popup_route_tracker.dart';
 import 'package:goal_master/core/routing/routes_keys.dart';
 import 'package:goal_master/core/styles/app_colors.dart';
 import 'package:goal_master/features/assistant/presentation/manager/assistant_chat_cubit/assistant_chat_cubit.dart';
 import 'package:goal_master/features/assistant/presentation/view/widgets/assistant_avatar_image.dart';
 import 'package:goal_master/features/location/presentation/manager/active_location_cubit.dart';
 
-const double _kBubbleSize = 68;
+/// Smaller than it was (68): it floats over every screen, so every point of
+/// it covers something.
+const double _kBubbleSize = 58;
+
+/// Gap kept between the bubble and the screen edge it docks to.
+const double _kEdgeGap = 8;
 const String _kPosXKey = 'captain_ayoub_pos_x';
 const String _kPosYKey = 'captain_ayoub_pos_y';
 
@@ -29,10 +35,23 @@ class CaptainAyoubBubble extends StatefulWidget {
   State<CaptainAyoubBubble> createState() => _CaptainAyoubBubbleState();
 }
 
+/// Screens the bubble stays off: booking and payment steps, and forms with
+/// a keyboard and a submit button at the bottom.
+const Set<String> _hiddenOn = {
+  RoutesKeys.kBookingDetails,
+  RoutesKeys.kAddNewBooking,
+  RoutesKeys.kPaymentWebViewPage,
+  RoutesKeys.kListPaymentView,
+  RoutesKeys.kCard,
+  RoutesKeys.kUpdateProfile,
+  RoutesKeys.kChangePassword,
+};
+
 class _CaptainAyoubBubbleState extends State<CaptainAyoubBubble>
     with WidgetsBindingObserver {
   bool _showHint = false;
   Offset? _position;
+  bool _dragging = false;
 
   @override
   void initState() {
@@ -87,10 +106,24 @@ class _CaptainAyoubBubbleState extends State<CaptainAyoubBubble>
     }
   }
 
-  Offset _defaultPosition(Size screenSize) {
-    // Above the bottom nav bar by default, not overlapping/behind it — the
-    // user can still drag it anywhere, including lower, if they want.
-    return Offset(16, screenSize.height - 220);
+  Offset _defaultPosition(Size screenSize, EdgeInsets safe) {
+    // Docked to the left edge just above the bottom bar (~80pt tall), where
+    // it covers the least: it used to sit 220pt up, right over the home
+    // screen's «احجز الآن» button. Still draggable anywhere.
+    return Offset(
+      _kEdgeGap,
+      screenSize.height - safe.bottom - 80 - _kBubbleSize - 6,
+    );
+  }
+
+  /// After a drag, slide to the nearer side edge — left in the middle of the
+  /// screen it always covers something.
+  Offset _snapToEdge(Offset offset, Size screenSize) {
+    final centreX = offset.dx + _kBubbleSize / 2;
+    final x = centreX < screenSize.width / 2
+        ? _kEdgeGap
+        : screenSize.width - _kBubbleSize - _kEdgeGap;
+    return _clamp(Offset(x, offset.dy), screenSize);
   }
 
   Offset _clamp(Offset offset, Size screenSize) {
@@ -149,14 +182,35 @@ class _CaptainAyoubBubbleState extends State<CaptainAyoubBubble>
       // restart. routerDelegate.currentConfiguration is the live matched route
       // stack and updates immediately on both push and pop.
       child: ListenableBuilder(
-        listenable: Listenable.merge(
-            [AppRouter.router.routerDelegate, CaptainAyoubBubble.suppressed]),
+        listenable: Listenable.merge([
+          AppRouter.router.routerDelegate,
+          CaptainAyoubBubble.suppressed,
+          PopupRouteTracker.instance.openPopups,
+        ]),
         builder: (context, _) {
-          final location = AppRouter
-              .router.routerDelegate.currentConfiguration.uri
-              .toString();
-          if (location == RoutesKeys.kAssistantChat ||
-              CaptainAyoubBubble.suppressed.value > 0) {
+          // The screen actually on top. `uri` alone stays on the base
+          // location when a screen is pushed (go_router does not reflect
+          // push() in the URL by default), so the pushed screen is read from
+          // the last match.
+          final config = AppRouter.router.routerDelegate.currentConfiguration;
+          final location = config.isNotEmpty
+              ? config.last.matchedLocation
+              : config.uri.path;
+          // Also hidden while a sheet or dialog is open: drawn above the
+          // navigator, it otherwise sat on top of their buttons. And on the
+          // screens where the customer is entering details or paying — it
+          // covered the booking total, and a mis-tap there costs money.
+          // Re-read on every navigation, not only when this widget first
+          // builds: after signing out (or a session ended elsewhere) the app
+          // goes to the login screen without rebuilding the outer widget, and
+          // the bubble used to stay on the login screen.
+          final stillLoggedIn =
+              SharedPreferenceUtil.getString(PrefKey.login) == 'true';
+          if (!stillLoggedIn ||
+              location == RoutesKeys.kAssistantChat ||
+              _hiddenOn.contains(location) ||
+              CaptainAyoubBubble.suppressed.value > 0 ||
+              PopupRouteTracker.instance.openPopups.value > 0) {
             return const SizedBox.shrink();
           }
           return _buildBubble(context);
@@ -212,11 +266,14 @@ class _CaptainAyoubBubbleState extends State<CaptainAyoubBubble>
       final savedX = SharedPreferenceUtil.getDouble(_kPosXKey, defValue: -1);
       final savedY = SharedPreferenceUtil.getDouble(_kPosYKey, defValue: -1);
       _position = savedX >= 0 && savedY >= 0
-          ? _clamp(Offset(savedX, savedY), screenSize)
-          : _defaultPosition(screenSize);
+          ? _snapToEdge(Offset(savedX, savedY), screenSize)
+          : _defaultPosition(screenSize, MediaQuery.of(context).padding);
     }
 
-    return Positioned(
+    return AnimatedPositioned(
+      // Follows the finger exactly while dragging; glides to the edge after.
+      duration: _dragging ? Duration.zero : const Duration(milliseconds: 220),
+      curve: Curves.easeOutCubic,
       left: _position!.dx,
       top: _position!.dy,
       child: GestureDetector(
@@ -230,13 +287,20 @@ class _CaptainAyoubBubbleState extends State<CaptainAyoubBubble>
           // notification-tap handler for the same reason).
           AppRouter.router.push(RoutesKeys.kAssistantChat);
         },
+        onPanStart: (_) => setState(() => _dragging = true),
         onPanUpdate: (details) {
           setState(() {
             _showHint = false;
             _position = _clamp(_position! + details.delta, screenSize);
           });
         },
-        onPanEnd: (_) => _savePosition(_position!),
+        onPanEnd: (_) {
+          setState(() {
+            _dragging = false;
+            _position = _snapToEdge(_position!, screenSize);
+          });
+          _savePosition(_position!);
+        },
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -280,13 +344,13 @@ class _CaptainAyoubBubbleState extends State<CaptainAyoubBubble>
                               fallback: const Icon(
                                 Icons.support_agent,
                                 color: Colors.white,
-                                size: 36,
+                                size: 30,
                               ),
                             )
                           : const Icon(
                               Icons.support_agent,
                               color: Colors.white,
-                              size: 36,
+                              size: 30,
                             ),
                     ),
                   ),

@@ -102,6 +102,9 @@ class VerifyEmailCubit extends Cubit<VerifyEmailState> {
     if (token == null || token.isEmpty) return;
 
     final user = model.data?.user;
+    // The account id keys the location read (RequiredLocationGate) — without
+    // it a fresh signup was treated as "account 0".
+    await SharedPreferenceUtil.putInt(PrefKey.userId, user?.id ?? 0);
     await SharedPreferenceUtil.putString(PrefKey.refreshToken, token);
     await SharedPreferenceUtil.putString(PrefKey.fcmToken, token);
     await SharedPreferenceUtil.putString(PrefKey.fullName, user?.name ?? '');

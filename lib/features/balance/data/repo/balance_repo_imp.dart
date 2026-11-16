@@ -25,11 +25,14 @@ class BalanceRepoImp implements BalanceRepo {
 
   @override
   Future<Either<Failure, String>> sendMoney(
-      {required String amount, required String receiverId}) {
+      {required String amount,
+      required String receiverId,
+      required String password}) {
     return consumer.handleRequest(
       () => consumer.post(EndPoints.sendMoney, data: {
         'amount': amount,
         'receiver_phone_number': receiverId,
+        'password': password,
       }),
       (data) {
         return data["message"];

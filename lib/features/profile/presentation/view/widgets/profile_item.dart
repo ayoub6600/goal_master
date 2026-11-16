@@ -23,6 +23,9 @@ class ProfileItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
+      // The whole row, not just the icon and the words: the empty middle of a
+      // row used to swallow taps.
+      behavior: HitTestBehavior.opaque,
       onTap: onTap,
       child: Padding(
         padding: EdgeInsets.symmetric(vertical: 8.h),

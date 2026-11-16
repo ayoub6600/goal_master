@@ -366,11 +366,48 @@ class _BookingDetailsState extends State<BookingDetails> {
                                   backGround: AppColors.grey,
                                   text: "رجوع",
                                   onTap: () {
+                                    var target =
+                                        pageViewCubit.state.currentPage - 1;
                                     pageViewCubit.previousPage();
-                                    _controller.previousPage(
-                                      duration: Duration(milliseconds: 300),
-                                      curve: Curves.ease,
-                                    );
+                                    // A single category is chosen
+                                    // automatically, so going back passes
+                                    // over it to the club list too.
+                                    final categories =
+                                        context.read<CategoryCubit>().state;
+                                    if (target == PageViewCubit.category &&
+                                        categories is CategorySuccess &&
+                                        categories.categories.length == 1) {
+                                      pageViewCubit.previousPage();
+                                      target = PageViewCubit.club;
+                                      if (_controller.hasClients) {
+                                        _controller.animateToPage(
+                                          target,
+                                          duration:
+                                              Duration(milliseconds: 300),
+                                          curve: Curves.ease,
+                                        );
+                                        return;
+                                      }
+                                    }
+                                    if (_controller.hasClients) {
+                                      _controller.previousPage(
+                                        duration: Duration(milliseconds: 300),
+                                        curve: Curves.ease,
+                                      );
+                                      return;
+                                    }
+                                    // Back from checkout: the step pages are
+                                    // not in the tree there, so the controller
+                                    // has nothing to move. Once they are
+                                    // rebuilt, open them on the right step —
+                                    // they would otherwise start again at the
+                                    // first one.
+                                    WidgetsBinding.instance
+                                        .addPostFrameCallback((_) {
+                                      if (_controller.hasClients) {
+                                        _controller.jumpToPage(target);
+                                      }
+                                    });
                                   },
                                 ),
                               ),
@@ -638,10 +675,13 @@ class _CheckoutBookingSummary extends StatelessWidget {
     final date = occurrence == null
         ? '—'
         : DateFormat('yyyy/MM/dd').format(occurrence!.startAt);
+    // Arabic periods, not "PM": Latin "AM/PM" inside a right-to-left line
+    // was reordered by the bidi algorithm into "PM – 8:00 PM 7:00".
+    String clock(DateTime t) =>
+        '${DateFormat('h:mm').format(t)} ${t.hour < 12 ? 'ص' : 'م'}';
     final time = occurrence == null
         ? '—'
-        : '${DateFormat('h:mm a').format(occurrence!.startAt)} – '
-            '${DateFormat('h:mm a').format(occurrence!.endAt)}';
+        : '${clock(occurrence!.startAt)} – ${clock(occurrence!.endAt)}';
     return Container(
       margin: EdgeInsets.fromLTRB(16.w, 8.h, 16.w, 4.h),
       padding: EdgeInsets.all(14.w),

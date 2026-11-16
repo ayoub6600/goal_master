@@ -71,7 +71,7 @@ void main() {
     await tester.pumpWidget(_host(_booking(status: 4)));
     await tester.pumpAndSettle();
 
-    expect(find.text('الغاء الحجز'), findsOneWidget);
+    expect(find.text('إلغاء الحجز'), findsOneWidget);
   });
 
   testWidgets('a manager-approved pay-on-arrival booking still shows a cancel button',
@@ -79,7 +79,7 @@ void main() {
     await tester.pumpWidget(_host(_booking(status: 2)));
     await tester.pumpAndSettle();
 
-    expect(find.text('الغاء الحجز'), findsOneWidget);
+    expect(find.text('إلغاء الحجز'), findsOneWidget);
   });
 
   testWidgets('an already-cancelled booking shows no cancel button',
@@ -87,6 +87,6 @@ void main() {
     await tester.pumpWidget(_host(_booking(status: 3)));
     await tester.pumpAndSettle();
 
-    expect(find.text('الغاء الحجز'), findsNothing);
+    expect(find.text('إلغاء الحجز'), findsNothing);
   });
 }

@@ -16,9 +16,38 @@ class CategorySelection extends StatelessWidget {
   const CategorySelection({Key? key, required this.controller})
       : super(key: key);
 
+  /// The same as tapping the category's card.
+  void _choose(BuildContext context, int id, String name) {
+    final pageView = context.read<PageViewCubit>();
+    final clubId = pageView.state.clubId;
+    if (clubId == null) return;
+
+    pageView.setCategoryId(id, name);
+    context.read<ServiceCubit>().listService(categoryId: id, branchId: clubId);
+    pageView.nextPage();
+    controller.nextPage(
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.ease,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<CategoryCubit, CategoryState>(
+    return BlocConsumer<CategoryCubit, CategoryState>(
+      // A venue with a single category (most of them: football pitches) has
+      // nothing to choose here, so the step chooses for the customer and
+      // moves on — one tap fewer on every booking.
+      listenWhen: (previous, current) =>
+          current is CategorySuccess && current.categories.length == 1,
+      listener: (context, state) {
+        if (state is! CategorySuccess) return;
+        if (context.read<PageViewCubit>().state.currentPage !=
+            PageViewCubit.category) {
+          return;
+        }
+        final only = state.categories.first;
+        _choose(context, only.id, only.name);
+      },
       builder: (context, state) {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -80,29 +109,7 @@ class CategorySelection extends StatelessWidget {
                       ),
                     ),
                   ),
-                  onTap: () {
-                    final clubId = context.read<PageViewCubit>().state.clubId;
-
-                    if (clubId != null) {
-                      context
-                          .read<PageViewCubit>()
-                          .setCategoryId(cat.id, cat.name);
-                      context.read<ServiceCubit>().listService(
-                            categoryId: cat.id,
-                            branchId: clubId,
-                          );
-
-                      context.read<PageViewCubit>().nextPage();
-
-                      controller.nextPage(
-                        duration: Duration(milliseconds: 300),
-                        curve: Curves.ease,
-                      );
-                    } else {
-                      // ممكن تعرض تنبيه للمستخدم إنه لازم يختار نادي الأول
-                      print("⚠️ No club selected yet.");
-                    }
-                  },
+                  onTap: () => _choose(context, cat.id, cat.name),
                 );
               }),
             if (state is CategoryLoading)

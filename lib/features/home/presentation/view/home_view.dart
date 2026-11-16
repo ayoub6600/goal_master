@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -33,10 +32,6 @@ class HomeView extends StatefulWidget {
 
 class _HomeViewState extends State<HomeView> {
   late LayoutCubit layoutCubit;
-  List<String> _emojis = ['⚽', '🏀', '🎾', '🏐'];
-  int _emojiIndex = 0;
-  late Timer _emojiTimer;
-  String get _currentEmoji => _emojis[_emojiIndex];
 
   @override
   void initState() {
@@ -47,17 +42,6 @@ class _HomeViewState extends State<HomeView> {
     layoutCubit.loadSavedLocation();
     layoutCubit.initUserLocation();
     context.read<CoinsCubit>().getBalance();
-    _emojiTimer = Timer.periodic(Duration(seconds: 3), (timer) {
-      setState(() {
-        _emojiIndex = (_emojiIndex + 1) % _emojis.length;
-      });
-    });
-  }
-
-  @override
-  void dispose() {
-    _emojiTimer.cancel();
-    super.dispose();
   }
 
   @override
@@ -216,7 +200,10 @@ class _HomeViewState extends State<HomeView> {
                                 ),
                               ),
                               ButtonApp(
-                                text: "احجز الآن $_currentEmoji",
+                                // A football app books pitches. The label used
+                                // to cycle ⚽🏀🎾🏐 on a timer that redrew the
+                                // whole home screen every three seconds.
+                                text: "احجز الآن ⚽",
                                 onTap: () {
                                   push(RoutesKeys.kBookingDetails, context);
                                 },
@@ -224,11 +211,6 @@ class _HomeViewState extends State<HomeView> {
                             ],
                           ),
                         );
-                      },
-                      onEnd: () {
-                        setState(() {
-                          _emojiIndex = (_emojiIndex + 1) % _emojis.length;
-                        });
                       },
                     ),
                     HeightSpace(24.h),

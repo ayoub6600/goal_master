@@ -97,8 +97,10 @@ class AuthRepoImpl implements AuthRepo {
       (res) async {
         var data = res['data'];
         var model = LoginModel.fromJson(data);
-        //await userInfoCubit.setUser(model.data?.user, model.data!.token);
-        // await userInfoCubit.setUser(model.user, model.token);
+        if (data is Map && data['otp_sent'] == false) {
+          model.notice = res['message']?.toString() ??
+              'تم إنشاء الحساب، لكن تعذر إرسال الرمز الآن. اضغط "إعادة الإرسال" بعد قليل.';
+        }
         return model;
       },
     );

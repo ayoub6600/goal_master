@@ -25,13 +25,16 @@ class OnboardingSkipPageButton extends StatelessWidget {
             state.index == OnboardingPages.getPages(context).length - 1;
         return ButtonWrapper(
             onTap: () {
-              bool done = cubit.increment(context);
-              if (!done) {
-                // The secondary door: whoever already has an account — someone
-                // reinstalling, most often — signs in from here instead.
-                pushReplacement(RoutesKeys.kLogin, context);
-                SharedPreferenceUtil.putString(PrefKey.login, "false");
+              if (!isLastPage) {
+                // «تخطى» skips the walkthrough — it used to just turn one
+                // page, the same as swiping.
+                cubit.skip(context);
+                return;
               }
+              // The secondary door: whoever already has an account — someone
+              // reinstalling, most often — signs in from here instead.
+              pushReplacement(RoutesKeys.kLogin, context);
+              SharedPreferenceUtil.putString(PrefKey.login, "false");
             },
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),

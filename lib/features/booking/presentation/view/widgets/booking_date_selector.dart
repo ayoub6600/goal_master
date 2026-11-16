@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:goal_master/core/components/button_app.dart';
 import 'package:goal_master/core/services/service_locator.dart';
 import 'package:goal_master/features/booking/data/model/operational_night_context.dart';
 import 'package:goal_master/features/booking/data/repo/booking_repo_imp.dart';
@@ -154,6 +155,16 @@ class _BookingDateSelectorState extends State<BookingDateSelector> {
             if (selected != null) ...[
               HeightSpace(12.h),
               _selectedBanner(selected),
+              // Today arrives already highlighted, so nothing told the
+              // customer they still had to tap it — the step just sat there.
+              // This is the obvious way on with the date shown above.
+              if (widget.onDatePicked != null) ...[
+                HeightSpace(16.h),
+                ButtonApp(
+                  text: "عرض الأوقات المتاحة",
+                  onTap: widget.onDatePicked,
+                ),
+              ],
             ],
           ],
         );

@@ -25,8 +25,8 @@ class LoginCubit extends Cubit<LoginState> {
     if (!isValid) return;
 
     var result = await _repo.login(phone: email, password: password);
-    result.fold(
-      (error) {
+    await result.fold(
+      (error) async {
         if (error is PhoneUnverifiedFailure) {
           emit(LoginNeedsVerification(
             error.phone.isEmpty ? email : error.phone,
@@ -36,11 +36,13 @@ class LoginCubit extends Cubit<LoginState> {
         }
         emit(LoginError(error.errMessage));
       },
-      (user) {
+      (user) async {
+        // Saved BEFORE announcing success: the login screen leaves for home
+        // the moment it hears it, and home's first requests went out with no
+        // token — a burst of 401s, and screens that stayed empty until a
+        // manual refresh.
+        await _saveUserData(user);
         emit(LoginSuccess());
-        //save user
-
-        _saveUserData(user);
       },
     );
   }

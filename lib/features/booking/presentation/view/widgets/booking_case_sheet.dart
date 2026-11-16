@@ -27,6 +27,25 @@ class BookingCaseSheet extends StatefulWidget {
     );
   }
 
+  /// Right after a cancellation: open the sheet only when there is
+  /// something the customer can actually do — an exception to request, a
+  /// no-show to dispute, a case to follow. A free cancellation with a full
+  /// refund used to open it just to say «ما فيش طلب مراجعة», which read like
+  /// something had gone wrong.
+  static Future<void> showIfActionable(BuildContext context, int bookingId) async {
+    final result = await getIt<BookingRepoImp>().caseStatus(bookingId);
+    final actionable = result.fold(
+      (_) => false,
+      (status) => status.hasCase ||
+          status.canRequestException ||
+          status.canDisputeNoShow ||
+          status.canEscalate,
+    );
+    if (actionable && context.mounted) {
+      await show(context, bookingId);
+    }
+  }
+
   @override
   State<BookingCaseSheet> createState() => _BookingCaseSheetState();
 }

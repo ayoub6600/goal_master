@@ -7,26 +7,27 @@ class ServerFailure extends Failure {
   factory ServerFailure.fromDioException(DioException dioException) {
     switch (dioException.type) {
       case DioExceptionType.connectionTimeout:
-        return ServerFailure(errMessage: 'Connection timeout with ApiServer');
+        return ServerFailure(errMessage: 'الاتصال بالخادم بطيء. تحقق من الإنترنت وحاول مرة أخرى.');
       case DioExceptionType.sendTimeout:
-        return ServerFailure(errMessage: 'Send timeout with ApiServer');
+        return ServerFailure(errMessage: 'انتهت مهلة الإرسال. تحقق من الإنترنت وحاول مرة أخرى.');
       case DioExceptionType.receiveTimeout:
-        return ServerFailure(errMessage: 'Receive timeout with ApiServer');
+        return ServerFailure(errMessage: 'الخادم تأخر في الرد. حاول مرة أخرى.');
       case DioExceptionType.badCertificate:
-        return ServerFailure(errMessage: 'Bad Certificate with ApiServer');
+        return ServerFailure(errMessage: 'تعذر التحقق من أمان الاتصال. حاول لاحقًا.');
       case DioExceptionType.badResponse:
         return ServerFailure.fromBadResponse(
-            dioException.response!.statusCode!, dioException.response!.data);
+            dioException.response?.statusCode ?? 0,
+            dioException.response?.data);
       case DioExceptionType.cancel:
-        return ServerFailure(errMessage: 'Request to ApiServer was canceled');
+        return ServerFailure(errMessage: 'تم إلغاء الطلب.');
       case DioExceptionType.connectionError:
-        return ServerFailure(errMessage: 'Connection error, Please try again!');
+        return ServerFailure(errMessage: 'لا يوجد اتصال بالإنترنت. تحقق من الشبكة وحاول مرة أخرى.');
       case DioExceptionType.unknown:
-        return ServerFailure(errMessage: 'Unexpected error, Please try again!');
+        return ServerFailure(errMessage: 'حدث خطأ غير متوقع. حاول مرة أخرى.');
       // default:
       //   return ServerFailure(
       //       errMessage: dioException.response?.data ??
-      //           'Unexpected error, Please try again!');
+      //           'حدث خطأ غير متوقع. حاول مرة أخرى.');
     }
   }
 

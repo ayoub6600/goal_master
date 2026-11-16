@@ -8,6 +8,7 @@ abstract class BalanceRepo {
   Future<Either<Failure, String>> sendMoney({
     required String amount,
     required String receiverId,
+    required String password,
   });
 
   Future<Either<Failure, PaginatedResponse<Transaction>>> transaction(int page);

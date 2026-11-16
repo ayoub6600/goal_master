@@ -167,6 +167,10 @@ class EndPoints {
       'user/notifications/read-all-notification';
   static String notification = 'user/notifications/get-notification';
 
+  /// Short-lived pass for the live notification socket. The socket only
+  /// joins the room the pass was signed for.
+  static String socketToken = 'socket-token';
+
   static String assistantHistory = 'user/assistant/history';
   static String assistantMessage = 'user/assistant/message';
   static String assistantUnread = 'user/assistant/unread';
