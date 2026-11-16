@@ -7003,3 +7003,7 @@ deployed; dev DB not migrated.
 
 - **Bug (user report, production):** games sometimes failed with "Too Many Attempts.". Every `throttle:N,1` route shared ONE counter per customer (Laravel's unprefixed throttle key), so a goalkeeper round (~14 calls) tripped the next round's 10/min start limit; when the JWT user wasn't resolved it even fell back to the IP, pooling customers on the same mobile carrier. Backend now uses named per-customer limiters (`games-start` 20/min, `games-play` 150/min, `games-finish` 30/min, `predict`, `coupon-check`) in `RouteServiceProvider`. HTTP-level regression test `GameRateLimitTest` (fails on the old routes with 429, passes now). App shows Arabic, actionable messages for server errors in games (`presentation/game_errors.dart`).
 - **Goalkeeper controls:** PlayStation-style 3×3 arrow pad (8 directions + stay). The right way: he goes along the ball's line as far as it is; the wrong way: a full committed dive that way. Tapping the goal still works for precise aim. Widget test for the pad.
+
+## 2026-11-16 — Server-signed card top-ups
+
+- Wallet top-up no longer holds the Moamalat merchant key or builds the hash: `user/wallet/topup/start` returns a server-signed checkout; after the Lightbox, `transaction-store {reference}` makes the server confirm with the bank. Shows "being confirmed" (pending) instead of a false «تم الدفع بنجاح», and an error when nothing was credited (previously success was shown even if saving failed). Removed the unused `checkout_cubit/payment_cubit` that also embedded the key.

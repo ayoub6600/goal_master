@@ -53,6 +53,8 @@ class EndPoints {
   static String login = 'login';
   // transaction-store
   static String transactionStore = 'user/wallet/transaction-store';
+  // Card top-up, opened and signed by the server.
+  static String startTopUp = 'user/wallet/topup/start';
   static String getServices = 'get-service-info';
   static String sendOTP = 'resend-otp';
 
