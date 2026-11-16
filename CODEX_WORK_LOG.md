@@ -7028,3 +7028,8 @@ deployed; dev DB not migrated.
 - Signup tells the customer when the code could not be sent; OTP boxes accept digits only; onboarding «تخطى» skips to the end; network errors in Arabic; cancelled cards no longer say «(مدفوع)»; account rows tappable across their width; «إلغاء» spelling.
 - Live socket registers with a signed pass from `socket-token`; iOS ATS limited to local networking.
 - Tests: `customer_followup_ux_test.dart` (6).
+
+## 2026-11-17 — Lighter app: welcome slides from the admin panel
+
+- Removed three unused onboarding SVGs (~12 MB) and converted the welcome/login pictures to WebP (1.4 MB → 180 KB); `assets/` 17 MB → 4 MB.
+- Welcome slides read picture/title/text from the admin panel (`intro_1..3`), falling back to the bundled pictures; fetched during the splash on first launch; decoded at 1080px. Slide 2 wording is about football pitches.

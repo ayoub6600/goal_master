@@ -1,3 +1,4 @@
+import 'package:goal_master/features/auth/data/services/onboarding_screens_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:goal_master/core/components/keys_values.dart';
@@ -17,6 +18,11 @@ class _SplashViewState extends State<SplashView> {
   @override
   void initState() {
     super.initState();
+    // A first launch goes to the welcome slides next: start fetching their
+    // admin-set pictures now, during the splash, so they are there on arrival.
+    if (SharedPreferenceUtil.getString(PrefKey.login).isEmpty) {
+      OnboardingScreensService.instance.ensureLoaded();
+    }
     Future.delayed(const Duration(seconds: 1)).then((_) {
       if (!mounted) return;
 

@@ -3,8 +3,8 @@ class Assets {
   Assets._();
 
   /// Assets for imagesPngImage1
-  /// assets/images/png_image/1.png
-  static const String imagesPngImage1 = "assets/images/png_image/1.png";
+  /// assets/images/png_image/1.webp
+  static const String imagesPngImage1 = "assets/images/png_image/1.webp";
 
   /// Assets for imagesPngImageActionOnProfessional
   /// assets/images/png_image/action_on_professional.png
@@ -46,9 +46,9 @@ class Assets {
       "assets/images/png_image/arrow-square-right.png";
 
   /// Assets for imagesPngImageBackgroundLogin
-  /// assets/images/png_image/BackgroundLogin.png
+  /// assets/images/png_image/BackgroundLogin.webp
   static const String imagesPngImageBackgroundLogin =
-      "assets/images/png_image/BackgroundLogin.png";
+      "assets/images/png_image/BackgroundLogin.webp";
 
   /// Assets for imagesPngImageCalendar
   /// assets/images/png_image/calendar.png
@@ -143,12 +143,12 @@ class Assets {
       "assets/images/png_image/notification-alert.png";
 
   /// Assets for imagesPngImageOn2
-  /// assets/images/png_image/on2.png
-  static const String imagesPngImageOn2 = "assets/images/png_image/on2.png";
+  /// assets/images/png_image/on2.webp
+  static const String imagesPngImageOn2 = "assets/images/png_image/on2.webp";
 
   /// Assets for imagesPngImageOn3
-  /// assets/images/png_image/on3.png
-  static const String imagesPngImageOn3 = "assets/images/png_image/on3.png";
+  /// assets/images/png_image/on3.webp
+  static const String imagesPngImageOn3 = "assets/images/png_image/on3.webp";
 
   /// Assets for imagesPngImagePaper
   /// assets/images/png_image/paper.png
@@ -212,20 +212,8 @@ class Assets {
   static const String imagesSvgImageEyeSlash =
       "assets/images/svg_image/eye-slash.svg";
 
-  /// Assets for imagesSvgImageOnbording1
-  /// assets/images/svg_image/onbording_1.svg
-  static const String imagesSvgImageOnbording1 =
-      "assets/images/svg_image/onbording_1.svg";
 
-  /// Assets for imagesSvgImageOnbording2
-  /// assets/images/svg_image/onbording_2.svg
-  static const String imagesSvgImageOnbording2 =
-      "assets/images/svg_image/onbording_2.svg";
 
-  /// Assets for imagesSvgImageOnbording3
-  /// assets/images/svg_image/onbording_3.svg
-  static const String imagesSvgImageOnbording3 =
-      "assets/images/svg_image/onbording_3.svg";
 
   /// Assets for imagesSvgImageSendotp
   /// assets/images/svg_image/sendotp.svg
