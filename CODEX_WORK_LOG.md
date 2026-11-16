@@ -7039,3 +7039,11 @@ deployed; dev DB not migrated.
 - **Bug (release build):** the «شحن بالكرت» form was a grey box. The top-up sheet is a modal route, so it couldn't see the wallet page's `CardCubit`; release builds draw the resulting error as grey. The cubit is now handed to the sheet (`BlocProvider.value`). Verified on the simulator: a 25 LYD card credited.
 - **Design:** gradient balance card with the amount large, rewards credit as a chip, and three actions (شحن / تحويل / بطاقاتي); «شحن سريع» with 20 / 30 / 50 / 100 straight to card payment; top-up sheet with two tabs (بطاقة مصرفية with the quick amounts + custom amount and a «ادفع X د.ل» button; كرت شحن with a short hint); transaction rows without the overlapping «i» badge — tapping a row opens its details; clearer titles (شحن بكرت، شحن بالبطاقة، تحويل).
 - Version 1.4.4+110.
+
+## 2026-11-17 — Wallet: saved cards, rewards, quick top-up placement
+
+- Quick top-up removed from the wallet page; it lives in «شحن» → بطاقة مصرفية, headed «شحن سريع».
+- «بطاقاتي» opens its own sheet. Saved cards drawn as cards (default first, green with «افتراضية»; others slate; masked number, holder, expiry, VISA/Mastercard), «⋯» menu (default / edit / delete), dashed-style «إضافة بطاقة جديدة», friendly empty state, privacy note.
+- Add/edit card form: live card preview, camera scan button, filled fields with icons, expiry and nickname side by side, inline error box.
+- Rewards («مكافآت») in their own amber card under the balance; tapping it explains: bookings only, not transferable or withdrawable, earned from games / signup gift / repeat bookings.
+- Version 1.4.5+111.

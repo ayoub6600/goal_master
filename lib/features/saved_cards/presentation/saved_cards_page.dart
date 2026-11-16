@@ -74,6 +74,11 @@ class _SavedCardsPageState extends State<SavedCardsPage> {
       context: context,
       isScrollControlled: true,
       useSafeArea: true,
+      backgroundColor: Colors.white,
+      showDragHandle: false,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
       builder: (_) => _CardFormPage(existing: existing, embedded: true),
     );
 
@@ -154,140 +159,413 @@ class _SavedCardsPageState extends State<SavedCardsPage> {
   Widget build(BuildContext context) {
     final content = _buildCards();
     if (widget.embedded) {
-      return Card(
-        margin: const EdgeInsets.only(top: 8),
-        clipBehavior: Clip.antiAlias,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            if (widget.ownerId.trim().isNotEmpty)
-              Align(
-                alignment: AlignmentDirectional.centerEnd,
-                child: Padding(
-                  padding: const EdgeInsetsDirectional.only(end: 12, top: 8),
-                  child: TextButton.icon(
-                    onPressed: () => _openForm(),
-                    icon: const Icon(Icons.add),
-                    label: const Text('إضافة بطاقة'),
-                  ),
-                ),
-              ),
-            content,
-          ],
-        ),
+      return Padding(
+        padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+        child: content,
       );
     }
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('بطاقاتي المحفوظة'),
+      appBar: AppBar(title: const Text('بطاقاتي المحفوظة')),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.fromLTRB(16, 12, 16, 32),
+        child: content,
       ),
-      floatingActionButton: widget.ownerId.trim().isEmpty
-          ? null
-          : FloatingActionButton.extended(
-              onPressed: () => _openForm(),
-              icon: const Icon(Icons.add),
-              label: const Text('إضافة بطاقة'),
-            ),
-      body: content,
     );
   }
 
   Widget _buildCards() {
-    return _loading
-        ? SizedBox(
-            height: widget.embedded ? 100 : null,
-            child: const Center(child: CircularProgressIndicator()),
-          )
-        : _error != null
-            ? SizedBox(
-                height: widget.embedded ? 80 : null,
-                child: Center(child: Text(_error!)),
-              )
-            : _cards.isEmpty
-                ? SizedBox(
-                    height: widget.embedded ? 100 : null,
-                    child: const Center(
-                      child: Padding(
-                        padding: EdgeInsets.all(24),
-                        child: Text(
-                          'ما عندكش بطاقات محفوظة.\n'
-                          'اضغط إضافة بطاقة للبدء.',
-                          textAlign: TextAlign.center,
-                        ),
-                      ),
+    if (_loading) {
+      return const SizedBox(
+        height: 140,
+        child: Center(child: CircularProgressIndicator()),
+      );
+    }
+    if (_error != null) {
+      return SizedBox(
+        height: 100,
+        child: Center(child: Text(_error!, textAlign: TextAlign.center)),
+      );
+    }
+
+    final canAdd = widget.ownerId.trim().isNotEmpty;
+
+    if (_cards.isEmpty) {
+      return _EmptyCards(onAdd: canAdd ? () => _openForm() : null);
+    }
+
+    // The default card first, then the rest in the order they were added.
+    final cards = [..._cards]
+      ..sort((a, b) => (b.isDefault ? 1 : 0) - (a.isDefault ? 1 : 0));
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        for (final card in cards)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 12),
+            child: _CardVisual(
+              holder: card.holderName,
+              masked: card.masked,
+              expiry: card.expiryText,
+              nickname: card.nickname,
+              brand: _brandOf(card.number),
+              isDefault: card.isDefault,
+              menu: PopupMenuButton<String>(
+                tooltip: 'خيارات',
+                icon: const Icon(Icons.more_horiz_rounded, color: Colors.white),
+                onSelected: (action) {
+                  switch (action) {
+                    case 'default':
+                      _makeDefault(card);
+                    case 'edit':
+                      _openForm(card);
+                    case 'delete':
+                      _delete(card);
+                  }
+                },
+                itemBuilder: (_) => [
+                  if (!card.isDefault)
+                    const PopupMenuItem(
+                      value: 'default',
+                      child: _MenuRow(
+                          Icons.star_outline_rounded, 'تعيين كبطاقة افتراضية'),
+                    ),
+                  const PopupMenuItem(
+                    value: 'edit',
+                    child: _MenuRow(Icons.edit_outlined, 'تعديل'),
+                  ),
+                  const PopupMenuItem(
+                    value: 'delete',
+                    child: _MenuRow(Icons.delete_outline_rounded, 'حذف',
+                        color: Colors.red),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        if (canAdd) _AddCardButton(onTap: () => _openForm()),
+        const SizedBox(height: 12),
+        const _PrivacyNote(),
+      ],
+    );
+  }
+}
+
+/// "VISA" / "Mastercard" from the number's first digit, or nothing.
+String? _brandOf(String number) {
+  final digits = CardRules.digitsOnly(number);
+  if (digits.isEmpty) return null;
+  if (digits.startsWith('4')) return 'VISA';
+  if (digits.startsWith('5') || digits.startsWith('2')) return 'Mastercard';
+  return null;
+}
+
+const Color _cardGreen = Color(0xFF418946);
+const Color _cardGreenDark = Color(0xFF24552A);
+
+/// A saved card drawn as a card: number, holder, expiry and brand, with the
+/// default one in the brand green and the others in slate.
+class _CardVisual extends StatelessWidget {
+  const _CardVisual({
+    required this.holder,
+    required this.masked,
+    required this.expiry,
+    this.nickname,
+    this.brand,
+    this.isDefault = false,
+    this.showBadge = true,
+    this.menu,
+  });
+
+  final String holder;
+  final String masked;
+  final String expiry;
+  final String? nickname;
+  final String? brand;
+  final bool isDefault;
+
+  /// Off for the live preview in the form: a card being typed is not
+  /// "افتراضية" yet.
+  final bool showBadge;
+  final Widget? menu;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = isDefault
+        ? const [_cardGreen, _cardGreenDark]
+        : const [Color(0xFF4A5868), Color(0xFF2C3642)];
+    final label =
+        (nickname?.trim().isNotEmpty ?? false) ? nickname!.trim() : null;
+
+    return AspectRatio(
+      aspectRatio: 1.75,
+      child: Container(
+        padding: const EdgeInsetsDirectional.fromSTEB(18, 10, 6, 16),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(20),
+          gradient: LinearGradient(
+            begin: Alignment.topRight,
+            end: Alignment.bottomLeft,
+            colors: colors,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: colors.last.withValues(alpha: 0.30),
+              blurRadius: 14,
+              offset: const Offset(0, 6),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                if (isDefault && showBadge)
+                  Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.20),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: const Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.star_rounded, color: Colors.white, size: 14),
+                        SizedBox(width: 4),
+                        Text('افتراضية',
+                            style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600)),
+                      ],
                     ),
                   )
-                : ListView(
-                    shrinkWrap: widget.embedded,
-                    physics: widget.embedded
-                        ? const NeverScrollableScrollPhysics()
-                        : null,
-                    padding: EdgeInsets.fromLTRB(
-                      16,
-                      16,
-                      16,
-                      widget.embedded ? 4 : 100,
-                    ),
-                    children: [
-                      const Padding(
-                        padding: EdgeInsets.only(bottom: 14),
-                        child: Text(
-                          'البطاقات محفوظة على هذا الجهاز فقط. '
-                          'رمز CVV لا يتم حفظه.',
-                          textAlign: TextAlign.center,
+                else if (label != null)
+                  Text(label,
+                      style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600)),
+                const Spacer(),
+                if (menu != null) menu! else const SizedBox(height: 40),
+              ],
+            ),
+            const Spacer(),
+            // The chip.
+            Container(
+              width: 34,
+              height: 25,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(5),
+                gradient: const LinearGradient(
+                  colors: [Color(0xFFE8D28B), Color(0xFFC9A94F)],
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+            Directionality(
+              textDirection: TextDirection.ltr,
+              child: Text(
+                masked.replaceAll('*', '•'),
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 19,
+                  letterSpacing: 2,
+                  fontWeight: FontWeight.w600,
+                  fontFeatures: [FontFeature.tabularFigures()],
+                ),
+              ),
+            ),
+            const SizedBox(height: 10),
+            Padding(
+              padding: const EdgeInsetsDirectional.only(end: 12),
+              child: Directionality(
+                textDirection: TextDirection.ltr,
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        holder.toUpperCase(),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.9),
+                          fontSize: 12,
+                          letterSpacing: 1,
                         ),
                       ),
-                      for (final card in _cards)
-                        Card(
-                          margin: const EdgeInsets.only(bottom: 12),
-                          child: ListTile(
-                            leading: const Icon(
-                              Icons.credit_card,
-                              size: 30,
-                            ),
-                            title: Text(
-                              card.nickname?.isNotEmpty == true
-                                  ? card.nickname!
-                                  : card.masked,
-                            ),
-                            subtitle: Text(
-                              '${card.masked}\n'
-                              '${card.holderName} • '
-                              '${card.expiryText}'
-                              '${card.isDefault ? "\nالبطاقة الافتراضية" : ""}',
-                            ),
-                            isThreeLine: true,
-                            trailing: PopupMenuButton<String>(
-                              onSelected: (action) {
-                                switch (action) {
-                                  case 'default':
-                                    _makeDefault(card);
-                                  case 'edit':
-                                    _openForm(card);
-                                  case 'delete':
-                                    _delete(card);
-                                }
-                              },
-                              itemBuilder: (_) => const [
-                                PopupMenuItem(
-                                  value: 'default',
-                                  child: Text('تعيين كافتراضية'),
-                                ),
-                                PopupMenuItem(
-                                  value: 'edit',
-                                  child: Text('تعديل'),
-                                ),
-                                PopupMenuItem(
-                                  value: 'delete',
-                                  child: Text('حذف'),
-                                ),
-                              ],
-                            ),
-                          ),
+                    ),
+                    Text(
+                      expiry,
+                      style: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.9),
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    if (brand != null) ...[
+                      const SizedBox(width: 12),
+                      Text(
+                        brand!,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w800,
+                          fontStyle: FontStyle.italic,
                         ),
+                      ),
                     ],
-                  );
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _MenuRow extends StatelessWidget {
+  const _MenuRow(this.icon, this.label, {this.color});
+
+  final IconData icon;
+  final String label;
+  final Color? color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Icon(icon, size: 20, color: color),
+        const SizedBox(width: 10),
+        Text(label, style: TextStyle(color: color)),
+      ],
+    );
+  }
+}
+
+class _AddCardButton extends StatelessWidget {
+  const _AddCardButton({required this.onTap});
+
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: const Color(0xFFF3F8F3),
+      borderRadius: BorderRadius.circular(16),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(16),
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 16),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: const Color(0xFFBFD9BF), width: 1.2),
+          ),
+          child: const Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.add_card_rounded, color: _cardGreen),
+              SizedBox(width: 8),
+              Text(
+                'إضافة بطاقة جديدة',
+                style: TextStyle(
+                  color: _cardGreen,
+                  fontSize: 15,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _EmptyCards extends StatelessWidget {
+  const _EmptyCards({this.onAdd});
+
+  final VoidCallback? onAdd;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 12),
+      child: Column(
+        children: [
+          Container(
+            width: 72,
+            height: 72,
+            decoration: const BoxDecoration(
+              color: Color(0xFFEAF5EA),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(Icons.credit_card_rounded,
+                color: _cardGreen, size: 34),
+          ),
+          const SizedBox(height: 14),
+          const Text(
+            'ما عندكش بطاقات محفوظة',
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+          ),
+          const SizedBox(height: 6),
+          const Text(
+            'احفظ بطاقتك مرة وحدة، وادفع أسرع في المرات الجاية.',
+            textAlign: TextAlign.center,
+            style: TextStyle(color: Color(0xFF6D7580)),
+          ),
+          if (onAdd != null) ...[
+            const SizedBox(height: 18),
+            SizedBox(
+              width: double.infinity,
+              child: FilledButton.icon(
+                style: FilledButton.styleFrom(
+                  backgroundColor: _cardGreen,
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14)),
+                ),
+                onPressed: onAdd,
+                icon: const Icon(Icons.add_card_rounded),
+                label: const Text('إضافة بطاقة',
+                    style:
+                        TextStyle(fontSize: 15, fontWeight: FontWeight.w700)),
+              ),
+            ),
+          ],
+          const SizedBox(height: 14),
+          const _PrivacyNote(),
+        ],
+      ),
+    );
+  }
+}
+
+class _PrivacyNote extends StatelessWidget {
+  const _PrivacyNote();
+
+  @override
+  Widget build(BuildContext context) {
+    return const Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Icon(Icons.lock_outline_rounded, size: 14, color: Color(0xFF6D7580)),
+        SizedBox(width: 4),
+        Flexible(
+          child: Text(
+            'محفوظة على هذا الجهاز فقط، ورمز CVV لا يُحفظ أبدًا.',
+            textAlign: TextAlign.center,
+            style: TextStyle(fontSize: 12, color: Color(0xFF6D7580)),
+          ),
+        ),
+      ],
+    );
   }
 }
 
@@ -342,6 +620,30 @@ class _CardFormPageState extends State<_CardFormPage> {
     _nickname = TextEditingController(
       text: widget.existing?.nickname ?? '',
     );
+
+    // The card preview at the top follows what is typed.
+    for (final c in [_holder, _number, _expiry, _nickname]) {
+      c.addListener(_onTyped);
+    }
+  }
+
+  void _onTyped() {
+    if (mounted) setState(() {});
+  }
+
+  /// The number as it would print on the card: typed digits, the rest dots.
+  String get _previewNumber {
+    final digits = CardRules.digitsOnly(_number.text);
+    if (digits.isEmpty) {
+      return widget.existing?.masked ?? '•••• •••• •••• ••••';
+    }
+    final padded = digits.padRight(16, '•');
+    final groups = <String>[];
+    for (var i = 0; i < padded.length; i += 4) {
+      groups.add(
+          padded.substring(i, i + 4 > padded.length ? padded.length : i + 4));
+    }
+    return groups.join(' ');
   }
 
   @override
@@ -420,9 +722,11 @@ class _CardFormPageState extends State<_CardFormPage> {
     TextInputType? keyboard,
     List<TextInputFormatter>? formatters,
     bool ltr = false,
+    IconData? icon,
+    String? hint,
   }) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.only(bottom: 14),
       child: TextField(
         controller: controller,
         keyboardType: keyboard,
@@ -433,7 +737,24 @@ class _CardFormPageState extends State<_CardFormPage> {
         autofillHints: const <String>[],
         decoration: InputDecoration(
           labelText: label,
-          border: const OutlineInputBorder(),
+          hintText: hint,
+          prefixIcon: icon == null
+              ? null
+              : Icon(icon, color: const Color(0xFF6D7580), size: 20),
+          filled: true,
+          fillColor: const Color(0xFFF7F9F7),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(14),
+            borderSide: const BorderSide(color: Color(0xFFE1E8E1)),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(14),
+            borderSide: const BorderSide(color: Color(0xFFE1E8E1)),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(14),
+            borderSide: const BorderSide(color: _cardGreen, width: 1.5),
+          ),
         ),
       ),
     );
@@ -442,73 +763,121 @@ class _CardFormPageState extends State<_CardFormPage> {
   @override
   Widget build(BuildContext context) {
     final editing = widget.existing != null;
+    final holder = _holder.text.trim();
+    final expiry = _expiry.text.trim();
 
     final form = SafeArea(
+      top: false,
       child: ListView(
         shrinkWrap: widget.embedded,
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
         children: [
-          const Icon(
-            Icons.credit_card,
-            size: 65,
-            color: Colors.green,
+          _CardVisual(
+            holder: holder.isEmpty ? 'اسم صاحب البطاقة' : holder,
+            masked: _previewNumber,
+            expiry: expiry.isEmpty ? 'MM/YY' : expiry,
+            nickname: _nickname.text,
+            brand: _brandOf(_number.text.isEmpty
+                ? (widget.existing?.number ?? '')
+                : _number.text),
+            isDefault: true,
+            showBadge: false,
           ),
           const SizedBox(height: 16),
           OutlinedButton.icon(
+            style: OutlinedButton.styleFrom(
+              foregroundColor: _cardGreen,
+              side: const BorderSide(color: Color(0xFFBFD9BF)),
+              padding: const EdgeInsets.symmetric(vertical: 13),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14)),
+            ),
             onPressed: _scan,
-            icon: const Icon(Icons.camera_alt_outlined),
-            label: const Text('تصوير البطاقة بالكاميرا'),
+            icon: const Icon(Icons.photo_camera_outlined),
+            label: const Text('صوّر البطاقة وتعبّى البيانات تلقائيًا',
+                style: TextStyle(fontWeight: FontWeight.w600)),
           ),
-          const SizedBox(height: 24),
-          _input(
-            'اسم صاحب البطاقة',
-            _holder,
-            keyboard: TextInputType.name,
-          ),
+          const SizedBox(height: 18),
           _input(
             editing ? 'رقم جديد للبطاقة (اختياري)' : 'رقم البطاقة',
             _number,
             keyboard: TextInputType.number,
             ltr: true,
+            icon: Icons.credit_card_rounded,
             formatters: [
               FilteringTextInputFormatter.allow(RegExp(r'[0-9 ]')),
               LengthLimitingTextInputFormatter(23),
             ],
           ),
           _input(
-            'تاريخ الانتهاء MM/YY',
-            _expiry,
-            keyboard: TextInputType.datetime,
-            ltr: true,
-            formatters: [
-              FilteringTextInputFormatter.allow(RegExp(r'[0-9/]')),
-              LengthLimitingTextInputFormatter(5),
+            'اسم صاحب البطاقة',
+            _holder,
+            keyboard: TextInputType.name,
+            icon: Icons.person_outline_rounded,
+          ),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: _input(
+                  'الانتهاء',
+                  _expiry,
+                  keyboard: TextInputType.datetime,
+                  ltr: true,
+                  hint: 'MM/YY',
+                  icon: Icons.event_outlined,
+                  formatters: [
+                    FilteringTextInputFormatter.allow(RegExp(r'[0-9/]')),
+                    LengthLimitingTextInputFormatter(5),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _input(
+                  'اسم للبطاقة',
+                  _nickname,
+                  hint: 'اختياري',
+                  icon: Icons.label_outline_rounded,
+                ),
+              ),
             ],
           ),
-          _input(
-            'اسم مختصر للبطاقة (اختياري)',
-            _nickname,
-          ),
-          const SizedBox(height: 4),
-          const Text(
-            'رمز CVV تكتبه في صفحة الدفع فقط. '
-            'ما نطلبوهش وما نحفظوهش هنا.',
-            textAlign: TextAlign.center,
-          ),
-          if (_error != null) ...[
-            const SizedBox(height: 14),
-            Text(
-              _error!,
-              textAlign: TextAlign.center,
-              style: const TextStyle(color: Colors.red),
+          if (_error != null)
+            Container(
+              margin: const EdgeInsets.only(bottom: 12),
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: const Color(0xFFFDECEC),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.error_outline_rounded,
+                      color: Colors.red, size: 20),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(_error!,
+                        style: const TextStyle(color: Colors.red)),
+                  ),
+                ],
+              ),
             ),
-          ],
-          const SizedBox(height: 24),
           FilledButton.icon(
+            style: FilledButton.styleFrom(
+              backgroundColor: _cardGreen,
+              padding: const EdgeInsets.symmetric(vertical: 15),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14)),
+            ),
             onPressed: _save,
-            icon: const Icon(Icons.check_circle_outline),
-            label: const Text('حفظ البطاقة'),
+            icon: const Icon(Icons.check_rounded),
+            label: Text(editing ? 'حفظ التعديلات' : 'حفظ البطاقة',
+                style:
+                    const TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
           ),
+          const SizedBox(height: 12),
+          const _PrivacyNote(),
         ],
       ),
     );
@@ -519,16 +888,30 @@ class _CardFormPageState extends State<_CardFormPage> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
+            const SizedBox(height: 10),
+            Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: Colors.black26,
+                borderRadius: BorderRadius.circular(4),
+              ),
+            ),
             Padding(
-              padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+              padding: const EdgeInsets.fromLTRB(20, 8, 8, 0),
               child: Row(
                 children: [
                   Expanded(
-                      child: Text(editing ? 'تعديل البطاقة' : 'إضافة بطاقة',
-                          style: Theme.of(context).textTheme.titleLarge)),
+                    child: Text(
+                      editing ? 'تعديل البطاقة' : 'إضافة بطاقة',
+                      style: const TextStyle(
+                          fontSize: 18, fontWeight: FontWeight.w700),
+                    ),
+                  ),
                   IconButton(
-                      onPressed: () => Navigator.pop(context),
-                      icon: const Icon(Icons.close)),
+                    onPressed: () => Navigator.pop(context),
+                    icon: const Icon(Icons.close_rounded),
+                  ),
                 ],
               ),
             ),

@@ -143,38 +143,6 @@ class WalletBalanceCard extends StatelessWidget {
                   );
                 },
               ),
-              BlocBuilder<PromotionalCreditCubit, PromotionalCreditState>(
-                builder: (context, state) {
-                  final promo = state.balance;
-                  if (promo == null || promo <= 0) {
-                    return const SizedBox.shrink();
-                  }
-                  return Padding(
-                    padding: EdgeInsets.only(top: 10.h),
-                    child: Container(
-                      padding: EdgeInsets.symmetric(
-                          horizontal: 10.w, vertical: 5.h),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.16),
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Icon(Icons.card_giftcard_rounded,
-                              color: Colors.white, size: 15),
-                          SizedBox(width: 6.w),
-                          Text(
-                            '+ ${_money(promo)} د.ل رصيد مكافآت للحجز',
-                            style: AppTextStyles.font12Bold
-                                .copyWith(color: Colors.white),
-                          ),
-                        ],
-                      ),
-                    ),
-                  );
-                },
-              ),
               SizedBox(height: 20.h),
               Row(
                 children: [
@@ -244,51 +212,10 @@ class _WalletAction extends StatelessWidget {
             children: [
               Icon(icon, color: fg, size: 24),
               SizedBox(height: 4.h),
-              Text(label,
-                  style: AppTextStyles.font14Bold.copyWith(color: fg)),
+              Text(label, style: AppTextStyles.font14Bold.copyWith(color: fg)),
             ],
           ),
         ),
-      ),
-    );
-  }
-}
-
-/// «شحن سريع»: one tap goes straight to card payment for that amount.
-class QuickTopUpSection extends StatelessWidget {
-  const QuickTopUpSection({super.key, required this.onAmount});
-
-  final ValueChanged<int> onAmount;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: EdgeInsets.all(14.w),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color(0xFFE6ECE6)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(Icons.bolt_rounded, color: AppColors.primary, size: 20),
-              SizedBox(width: 4.w),
-              Text('شحن سريع', style: AppTextStyles.font16Bold),
-              const Spacer(),
-              Text(
-                'بالبطاقة المصرفية',
-                style: AppTextStyles.font12Regular
-                    .copyWith(color: AppColors.fontColor),
-              ),
-            ],
-          ),
-          SizedBox(height: 12.h),
-          QuickAmountChips(onSelected: onAmount),
-        ],
       ),
     );
   }
@@ -392,6 +319,136 @@ class WalletSectionTitle extends StatelessWidget {
         const Spacer(),
         if (trailing != null) trailing!,
       ],
+    );
+  }
+}
+
+/// «مكافآت»: credit earned in games and offers. Spent on bookings only, so
+/// it sits under the wallet balance rather than inside it, with the rule one
+/// tap away on the «؟».
+class WalletRewardsCard extends StatelessWidget {
+  const WalletRewardsCard({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocBuilder<PromotionalCreditCubit, PromotionalCreditState>(
+      builder: (context, state) {
+        final amount = state.balance;
+        if (amount == null || amount <= 0) return const SizedBox.shrink();
+
+        return Padding(
+          padding: EdgeInsets.only(top: 12.h),
+          child: GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: () => _explainRewards(context, amount),
+            child: Container(
+              padding: EdgeInsets.fromLTRB(14.w, 12.h, 8.w, 12.h),
+              decoration: BoxDecoration(
+                color: const Color(0xFFFFF8E8),
+                borderRadius: BorderRadius.circular(18),
+                border: Border.all(color: const Color(0xFFF2DDA4)),
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    padding: EdgeInsets.all(8.w),
+                    decoration: const BoxDecoration(
+                      color: Color(0xFFFCE9B8),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(Icons.card_giftcard_rounded,
+                        color: Color(0xFFB7791F), size: 20),
+                  ),
+                  SizedBox(width: 10.w),
+                  Text('مكافآت',
+                      style: AppTextStyles.font16Bold
+                          .copyWith(color: const Color(0xFF7A5414))),
+                  Padding(
+                    padding: EdgeInsets.all(6.w),
+                    child: const Icon(Icons.help_outline_rounded,
+                        size: 18, color: Color(0xFFB7791F)),
+                  ),
+                  const Spacer(),
+                  Text(
+                    '${_money(amount)} د.ل',
+                    style: AppTextStyles.font18Bold
+                        .copyWith(color: const Color(0xFF7A5414)),
+                  ),
+                  SizedBox(width: 6.w),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  void _explainRewards(BuildContext context, num amount) {
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (_) => SafeArea(
+        child: Padding(
+          padding: EdgeInsets.fromLTRB(24.w, 24.h, 24.w, 16.h),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                padding: EdgeInsets.all(14.w),
+                decoration: const BoxDecoration(
+                  color: Color(0xFFFCE9B8),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(Icons.card_giftcard_rounded,
+                    color: Color(0xFFB7791F), size: 30),
+              ),
+              SizedBox(height: 12.h),
+              Text('مكافآتك: ${_money(amount)} د.ل',
+                  style: AppTextStyles.font18Bold),
+              SizedBox(height: 14.h),
+              for (final line in const [
+                (
+                  Icons.sports_soccer_rounded,
+                  'للحجز فقط: تُخصم تلقائيًا عند دفع حجز.'
+                ),
+                (Icons.block_rounded, 'ما تتحولش لشخص آخر وما تنسحبش كفلوس.'),
+                (Icons.emoji_events_outlined, 'تكسبها من الألعاب وهدية التسجيل وتكرار الحجز.'),
+              ])
+                Padding(
+                  padding: EdgeInsets.only(bottom: 10.h),
+                  child: Row(
+                    children: [
+                      Icon(line.$1, size: 20, color: AppColors.primary),
+                      SizedBox(width: 10.w),
+                      Expanded(
+                        child:
+                            Text(line.$2, style: AppTextStyles.font14Regular),
+                      ),
+                    ],
+                  ),
+                ),
+              SizedBox(height: 6.h),
+              SizedBox(
+                width: double.infinity,
+                child: FilledButton(
+                  style: FilledButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    padding: EdgeInsets.symmetric(vertical: 14.h),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14)),
+                  ),
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('تمام'),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

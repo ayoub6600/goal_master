@@ -85,7 +85,13 @@ class _TopUpSheetVisaState extends State<TopUpSheetVisa> {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Text('اختر المبلغ', style: AppTextStyles.font16Bold),
+          Row(
+            children: [
+              Icon(Icons.bolt_rounded, color: AppColors.primary, size: 20),
+              SizedBox(width: 4.w),
+              Text('شحن سريع', style: AppTextStyles.font16Bold),
+            ],
+          ),
           SizedBox(height: 10.h),
           QuickAmountChips(
             selected: kQuickTopUpAmounts.contains(amount) ? amount : null,

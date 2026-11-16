@@ -1,7 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
-import 'package:goal_master/core/components/custom_success_toast.dart';
-import 'package:goal_master/core/routing/routes_keys.dart';
 import 'package:goal_master/features/card/presentation/manager/card_cubit/card_cubit.dart';
 import 'package:goal_master/features/card/presentation/view/widgets/wallet_widgets.dart';
 import 'package:goal_master/core/components/keys_values.dart';
@@ -33,7 +30,6 @@ class CardView extends StatefulWidget {
 }
 
 class _CardViewState extends State<CardView> {
-  bool _showSavedCards = false;
   bool _promoBalanceRequested = false;
 
   @override
@@ -123,17 +119,16 @@ class _CardViewState extends State<CardView> {
     );
   }
 
-  /// «شحن سريع»: straight to card payment for that amount.
-  Future<void> _quickTopUp(int amount) async {
-    final res = await context.push(
-      RoutesKeys.kPaymentWebViewPage,
-      extra: {'amount': amount.toString()},
+  /// «بطاقاتي»: the saved cards in their own sheet.
+  void _openSavedCards() {
+    final userId = SharedPreferenceUtil.getInt(PrefKey.userId);
+    _showWalletSheet(
+      title: 'بطاقاتي المحفوظة',
+      child: SavedCardsPage(
+        ownerId: userId > 0 ? 'customer:$userId' : '',
+        embedded: true,
+      ),
     );
-    if (!mounted) return;
-    if (res == true) {
-      showCustomSuccessToast('تم شحن $amount د.ل بنجاح');
-      _refreshWallet();
-    }
   }
 
   void _openTransfer() {
@@ -185,58 +180,9 @@ class _CardViewState extends State<CardView> {
                       WalletBalanceCard(
                         onTopUp: () => _openTopUp(),
                         onTransfer: _openTransfer,
-                        onCards: () => setState(
-                            () => _showSavedCards = !_showSavedCards),
+                        onCards: _openSavedCards,
                       ),
-                      AnimatedSize(
-                        duration: const Duration(milliseconds: 220),
-                        curve: Curves.easeInOut,
-                        child: _showSavedCards
-                            ? Padding(
-                                padding: EdgeInsets.only(top: 14.h),
-                                child: Container(
-                                  width: double.infinity,
-                                  padding: EdgeInsets.all(12.w),
-                                  decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    borderRadius: BorderRadius.circular(20),
-                                    border: Border.all(
-                                        color: const Color(0xFFE6ECE6)),
-                                  ),
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      WalletSectionTitle(
-                                        'بطاقاتي المحفوظة',
-                                        trailing: IconButton(
-                                          tooltip: 'إخفاء',
-                                          visualDensity: VisualDensity.compact,
-                                          onPressed: () => setState(
-                                              () => _showSavedCards = false),
-                                          icon: const Icon(
-                                              Icons.expand_less_rounded),
-                                        ),
-                                      ),
-                                      Builder(builder: (context) {
-                                        final userId =
-                                            SharedPreferenceUtil.getInt(
-                                                PrefKey.userId);
-                                        return SavedCardsPage(
-                                          ownerId: userId > 0
-                                              ? 'customer:$userId'
-                                              : '',
-                                          embedded: true,
-                                        );
-                                      }),
-                                    ],
-                                  ),
-                                ),
-                              )
-                            : const SizedBox(width: double.infinity),
-                      ),
-                      HeightSpace(14.h),
-                      QuickTopUpSection(onAmount: _quickTopUp),
+                      const WalletRewardsCard(),
                       HeightSpace(20.h),
                       const WalletSectionTitle('آخر المعاملات'),
                       HeightSpace(4.h),
