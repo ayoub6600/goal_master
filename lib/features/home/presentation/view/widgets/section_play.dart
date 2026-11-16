@@ -14,46 +14,82 @@ class SectionPlay extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Wrap(
-      spacing: 8.w,
-      runSpacing: 8.h,
-      children: [
-        CornerStatCard(
-          title: "غير خالص",
-          value: analysis.pending,
-          icon: Icons.schedule,
-          bgColor: AppColors.grey.withOpacity(0.2),
-          iconColor: AppColors.grey,
-        ),
-        CornerStatCard(
-          title: "بانتظار قبول الطلب",
-          value: analysis.processing,
-          icon: Icons.sync,
-          bgColor: Colors.yellow.withOpacity(0.2),
-          iconColor: Colors.orange,
-        ),
-        CornerStatCard(
-          title: "حجوزات مقبوله",
-          value: analysis.approved,
-          icon: Icons.check_circle,
-          bgColor: Colors.green.withOpacity(0.2),
-          iconColor: Colors.green,
-        ),
-        CornerStatCard(
-          title: 'ملغي',
-          value: analysis.cancel,
-          icon: Icons.cancel,
-          bgColor: Colors.red.withOpacity(0.2),
-          iconColor: Colors.red,
-        ),
-        CornerStatCard(
-          title: "الحجوزات المدفوعه",
-          value: analysis.done,
-          icon: Icons.done_all,
-          bgColor: Colors.blue.withOpacity(0.2),
-          iconColor: Colors.blue,
-        ),
-      ],
+    // Three to a row, the same size, with the count first: it reads as a
+    // summary at a glance instead of five big tiles of different weight.
+    final items = [
+      _Stat('بانتظار القبول', analysis.processing, Icons.hourglass_top_rounded,
+          const Color(0xFFE08A1E)),
+      _Stat('مقبولة', analysis.approved, Icons.check_circle_rounded,
+          const Color(0xFF418946)),
+      _Stat('مدفوعة', analysis.done, Icons.done_all_rounded,
+          const Color(0xFF2F80ED)),
+      _Stat('غير خالصة', analysis.pending, Icons.schedule_rounded,
+          const Color(0xFF6D7580)),
+      _Stat('ملغية', analysis.cancel, Icons.cancel_rounded,
+          const Color(0xFFD64545)),
+    ];
+
+    return LayoutBuilder(builder: (context, constraints) {
+      const gap = 8.0;
+      final width = (constraints.maxWidth - gap * 2) / 3;
+      return Wrap(
+        spacing: gap,
+        runSpacing: gap,
+        children: [
+          for (final item in items)
+            SizedBox(width: width, child: _StatTile(item: item)),
+        ],
+      );
+    });
+  }
+}
+
+class _Stat {
+  const _Stat(this.label, this.value, this.icon, this.color);
+
+  final String label;
+  final int value;
+  final IconData icon;
+  final Color color;
+}
+
+class _StatTile extends StatelessWidget {
+  const _StatTile({required this.item});
+
+  final _Stat item;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 12.h),
+      decoration: BoxDecoration(
+        color: item.color.withValues(alpha: 0.07),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: item.color.withValues(alpha: 0.16)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Text(
+                '${item.value}',
+                style: AppTextStyles.font20Bold.copyWith(color: item.color),
+              ),
+              const Spacer(),
+              Icon(item.icon, size: 18, color: item.color),
+            ],
+          ),
+          SizedBox(height: 4.h),
+          Text(
+            item.label,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: AppTextStyles.font12Regular
+                .copyWith(color: const Color(0xFF3A3F45)),
+          ),
+        ],
+      ),
     );
   }
 }

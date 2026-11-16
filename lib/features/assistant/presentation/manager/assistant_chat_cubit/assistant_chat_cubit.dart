@@ -1,5 +1,6 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
+import 'package:goal_master/features/assistant/data/assistant_avatar_cache.dart';
 import 'package:goal_master/features/assistant/data/assistant_history_cache.dart';
 import 'package:goal_master/features/assistant/data/model/assistant_message.dart';
 import 'package:goal_master/features/assistant/data/repo/assistant_repo.dart';
@@ -8,7 +9,27 @@ import 'package:goal_master/features/location/data/active_location_snapshot.dart
 part 'assistant_chat_state.dart';
 
 class AssistantChatCubit extends Cubit<AssistantChatState> {
-  AssistantChatCubit(this.assistantRepo) : super(const AssistantChatState());
+  AssistantChatCubit(this.assistantRepo) : super(_initialState());
+
+  /// Starts with the avatar URLs from the last session, so the captain's face
+  /// is drawn from the disk cache straight away instead of after a request.
+  static AssistantChatState _initialState() {
+    final saved = AssistantAvatarCache.read();
+    return AssistantChatState(
+      avatarUrl: saved.avatarUrl,
+      avatarStates: saved.states,
+    );
+  }
+
+  @override
+  void onChange(Change<AssistantChatState> change) {
+    super.onChange(change);
+    final next = change.nextState;
+    if (next.avatarUrl != change.currentState.avatarUrl ||
+        next.avatarStates != change.currentState.avatarStates) {
+      AssistantAvatarCache.remember(next.avatarUrl, next.avatarStates);
+    }
+  }
 
   final AssistantRepo assistantRepo;
   bool _historyLoaded = false;

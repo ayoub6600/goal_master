@@ -42,31 +42,88 @@ class _MovingTargetGameCardState extends State<MovingTargetGameCard> {
         builder: (context, snapshot) {
           final value = snapshot.data?.fold((_) => null, (data) => data) as MovingGameStatus?;
           final chance = value != null && value.verified && value.cooldownSeconds == 0 && value.rewardSystemEnabled;
-          return InkWell(
-            borderRadius: BorderRadius.circular(22),
-            onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const GamesRewardsView())),
-            child: Container(
-              padding: const EdgeInsets.all(18),
-              decoration: BoxDecoration(
-                  gradient: const LinearGradient(colors: [Color(0xff123b24), Color(0xff2f7a43)]),
-                  borderRadius: BorderRadius.circular(22),
-                  boxShadow: const [BoxShadow(color: Color(0x303f8d4b), blurRadius: 16, offset: Offset(0, 8))]),
-              child: Row(children: [
-                const CircleAvatar(
-                    radius: 28,
-                    backgroundColor: Colors.white24,
-                    child: Icon(Icons.sports_soccer, size: 32, color: Colors.white)),
-                const SizedBox(width: 14),
-                Expanded(
+          // Distinct from the green «احجز ملعبك» card right above it: a
+          // light card with a warm accent, so the two read as two things.
+          return Material(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(20),
+            child: InkWell(
+              borderRadius: BorderRadius.circular(20),
+              onTap: () => Navigator.of(context)
+                  .push(MaterialPageRoute(builder: (_) => const GamesRewardsView())),
+              child: Container(
+                padding: const EdgeInsets.fromLTRB(14, 14, 14, 14),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: const Color(0xFFF0E2BE)),
+                  gradient: const LinearGradient(
+                    begin: Alignment.topRight,
+                    end: Alignment.bottomLeft,
+                    colors: [Color(0xFFFFFBF1), Colors.white],
+                  ),
+                ),
+                child: Row(children: [
+                  Container(
+                    width: 54,
+                    height: 54,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(16),
+                      gradient: const LinearGradient(
+                        begin: Alignment.topRight,
+                        end: Alignment.bottomLeft,
+                        colors: [Color(0xFFF6B93B), Color(0xFFE08A1E)],
+                      ),
+                    ),
+                    child: const Icon(Icons.sports_soccer, size: 30, color: Colors.white),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
                     child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  const Text('ألعاب كابتن أيوب',
-                      style: TextStyle(color: Colors.white, fontSize: 17, fontWeight: FontWeight.w800)),
-                  const SizedBox(height: 3),
-                  Text(chance ? 'عندك فرصة جائزة الآن 🎁 • 5 ألعاب كرة' : 'ركلات ترجيح • حارس • تنطيط • أكواب • توقعات',
-                      style: const TextStyle(color: Colors.white70, fontSize: 12)),
-                ])),
-                const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.white),
-              ]),
+                      Row(children: [
+                        const Flexible(
+                          child: Text('ألعاب كابتن أيوب',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                  color: Color(0xFF2A2A2A), fontSize: 16, fontWeight: FontWeight.w800)),
+                        ),
+                        if (chance) ...[
+                          const SizedBox(width: 6),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFFFE9C2),
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: const Text('🎁 جائزة',
+                                style: TextStyle(
+                                    color: Color(0xFFB0640B), fontSize: 11, fontWeight: FontWeight.w700)),
+                          ),
+                        ],
+                      ]),
+                      const SizedBox(height: 4),
+                      Text(
+                        chance
+                            ? 'عندك فرصة تربح الآن — العب واكسب مكافآت'
+                            : 'ركلات ترجيح • حارس • تنطيط • أكواب • توقعات',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(color: Color(0xFF6D7580), fontSize: 12),
+                      ),
+                    ]),
+                  ),
+                  const SizedBox(width: 10),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFE08A1E),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: const Text('العب',
+                        style: TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w800)),
+                  ),
+                ]),
+              ),
             ),
           );
         },

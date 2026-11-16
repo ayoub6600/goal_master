@@ -257,10 +257,11 @@ class _BannerCarouselScreenState extends State<BannerCarouselScreen> {
             );
           },
           options: CarouselOptions(
-            height: 220,
+            // Full width, lined up with the cards above and below it.
+            height: 180,
             autoPlay: true,
-            enlargeCenterPage: true,
-            viewportFraction: 0.92,
+            enlargeCenterPage: false,
+            viewportFraction: 1.0,
             aspectRatio: 16 / 9,
             autoPlayInterval: const Duration(seconds: 5),
             autoPlayAnimationDuration: const Duration(milliseconds: 800),
@@ -272,7 +273,7 @@ class _BannerCarouselScreenState extends State<BannerCarouselScreen> {
             },
           ),
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: 10),
         AnimatedSmoothIndicator(
           activeIndex: _currentIndex,
           count: slides.length,

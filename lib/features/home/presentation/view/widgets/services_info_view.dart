@@ -44,10 +44,11 @@ class ServicesInfoView extends StatelessWidget {
             return const Center(child: Text('لا توجد ملاعب متاحة'));
           }
           return ListView.separated(
-            separatorBuilder: (context, index) => WidthSpace(16.w),
+            separatorBuilder: (context, index) => WidthSpace(12.w),
             itemCount: branches.length,
             scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.all(16),
+            // Lined up with the section title above it.
+            padding: const EdgeInsets.symmetric(vertical: 10),
             itemBuilder: (context, index) {
               final branch = branches[index];
               return SizedBox(
@@ -55,10 +56,10 @@ class ServicesInfoView extends StatelessWidget {
                 child: Card(
                   margin: EdgeInsets.zero,
                   color: Colors.white,
-                  elevation: 4,
-                  shadowColor: Colors.grey,
+                  elevation: 2,
+                  shadowColor: Colors.black26,
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(16),
                     side: BorderSide(color: Colors.grey[200]!, width: 1),
                   ),
                   child: InkWell(
@@ -83,32 +84,35 @@ class ServicesInfoView extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          ClipRRect(
-                            borderRadius: BorderRadius.circular(12),
-                            child: CachedNetworkImage(
-                              imageUrl: branch.imageUrl ??
-                                  'https://via.placeholder.com/120',
-                              width: double.infinity,
-                              height: 68.h,
-                              fit: BoxFit.cover,
-                              memCacheWidth: 600,
-                              placeholder: (context, url) => Container(
+                          // The picture fills the card; the name and
+                          // notes sit under it (a small fixed picture left
+                          // half the card empty).
+                          Expanded(
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(12),
+                              child: CachedNetworkImage(
+                                imageUrl: branch.imageUrl ??
+                                    'https://via.placeholder.com/120',
                                 width: double.infinity,
-                                height: 68.h,
-                                color: Colors.grey[200],
-                                child: const Center(
-                                    child: CircularProgressIndicator()),
-                              ),
-                              errorWidget: (context, url, error) => Container(
-                                width: double.infinity,
-                                height: 68.h,
-                                color: Colors.grey[300],
-                                child: const Icon(Icons.broken_image,
-                                    size: 32, color: Colors.grey),
+                                height: double.infinity,
+                                fit: BoxFit.cover,
+                                memCacheWidth: 600,
+                                placeholder: (context, url) => Container(
+                                  width: double.infinity,
+                                  color: Colors.grey[200],
+                                  child: const Center(
+                                      child: CircularProgressIndicator()),
+                                ),
+                                errorWidget: (context, url, error) => Container(
+                                  width: double.infinity,
+                                  color: Colors.grey[300],
+                                  child: const Icon(Icons.sports_soccer,
+                                      size: 34, color: Colors.grey),
+                                ),
                               ),
                             ),
                           ),
-                          SizedBox(height: 2.h),
+                          SizedBox(height: 8.h),
                           Text(
                             branch.branchName,
                             maxLines: 1,

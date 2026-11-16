@@ -1,12 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:goal_master/core/components/button_app.dart';
 import 'package:goal_master/core/routing/route_utils.dart';
 import 'package:goal_master/core/routing/routes_keys.dart';
-import 'package:goal_master/core/styles/app_colors.dart';
-import 'package:goal_master/core/styles/app_text_styles.dart';
-import 'package:goal_master/core/styles/assets.dart';
 import 'package:goal_master/core/styles/spaces.dart';
 import 'package:goal_master/core/utils/should_execute.dart';
 import 'package:goal_master/features/coins/presentation/manager/coins_cubit/coins_cubit.dart';
@@ -22,6 +18,7 @@ import 'package:goal_master/features/location/presentation/manager/active_locati
 import 'package:goal_master/features/layout/presentation/manager/layout_state.dart';
 import 'package:goal_master/features/layout/presentation/view/widget/banner_carousel_view.dart';
 import 'package:goal_master/features/games/presentation/moving_target_game.dart';
+import 'package:goal_master/features/home/presentation/view/widgets/home_sections.dart';
 
 class HomeView extends StatefulWidget {
   const HomeView({super.key});
@@ -100,144 +97,41 @@ class _HomeViewState extends State<HomeView> {
                     const SizedBox(height: 10),
                     const BuildLocationRow(),
                     const SizedBox(height: 10),
-                    Row(
-                      children: [
-                        GestureDetector(
-                          onTap: () {
-                            shouldExecute(
-                              context: context,
-                              callback: () async {
-                                push(RoutesKeys.kFilter, context);
-                              },
-                            );
-                          },
-                          child: Container(
-                              width: 300.w,
-                              height: 40.h,
-                              padding: const EdgeInsets.all(8),
-                              decoration: BoxDecoration(
-                                  color: AppColors.white,
-                                  borderRadius: BorderRadius.circular(8.r),
-                                  border: Border.all(
-                                    width: 1,
-                                    color: Color(0xffDADEE3),
-                                  )),
-                              child: Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  children: [
-                                    Text(
-                                      "ابحث",
-                                      style: AppTextStyles.font14Medium
-                                          .copyWith(color: AppColors.fontColor),
-                                    ),
-                                    Image.asset(
-                                      Assets.imagesPngImageSearchNormal,
-                                    )
-                                  ])),
-                        ),
-                        WidthSpace(8.w),
-                        GestureDetector(
-                          onTap: () {
-                            shouldExecute(
-                              context: context,
-                              callback: () async {
-                                push(RoutesKeys.kFilter, context);
-                              },
-                            );
-                          },
-                          child: Image.asset(
-                            Assets.imagesPngImageFiltter,
-                            //   color: AppColors.primary,
-                          ),
-                        ),
-                      ],
+                    HomeSearchBar(
+                      onTap: () => shouldExecute(
+                        context: context,
+                        callback: () => push(RoutesKeys.kFilter, context),
+                      ),
                     ),
-                    const SizedBox(height: 10),
-                    BannerCarouselScreen(),
-                    const SizedBox(height: 12),
+                    HeightSpace(16.h),
+                    HomeBookingHero(
+                      onTap: () => push(RoutesKeys.kBookingDetails, context),
+                    ),
+                    HeightSpace(12.h),
                     const MovingTargetGameCard(),
+                    HeightSpace(16.h),
+                    BannerCarouselScreen(),
                     HeightSpace(20.h),
-                    TweenAnimationBuilder<double>(
-                      tween: Tween(begin: 1.0, end: 1.1),
-                      duration: Duration(milliseconds: 800),
-                      curve: Curves.easeInOut,
-                      builder: (context, scale, child) {
-                        return Container(
-                          width: MediaQuery.of(context).size.width * 0.3,
-                          decoration: BoxDecoration(
-                            boxShadow: [
-                              BoxShadow(
-                                color: const Color.fromARGB(255, 70, 189, 118)
-                                    .withOpacity(0.4),
-                                spreadRadius: 1,
-                                blurRadius: 12,
-                                offset: Offset(0, 4),
-                              ),
-                            ],
-                          ),
-                          child: Stack(
-                            alignment: Alignment.center,
-                            children: [
-                              AnimatedContainer(
-                                duration: Duration(seconds: 1),
-                                curve: Curves.easeInOut,
-                                width: MediaQuery.of(context).size.width * 0.3 +
-                                    20,
-                                height: 60,
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.rectangle,
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: const Color.fromARGB(
-                                              255, 92, 174, 132)
-                                          .withOpacity(0.3),
-                                      blurRadius: 30,
-                                      spreadRadius: 1,
-                                    )
-                                  ],
-                                ),
-                              ),
-                              ButtonApp(
-                                // A football app books pitches. The label used
-                                // to cycle ⚽🏀🎾🏐 on a timer that redrew the
-                                // whole home screen every three seconds.
-                                text: "احجز الآن ⚽",
-                                onTap: () {
-                                  push(RoutesKeys.kBookingDetails, context);
-                                },
-                              ),
-                            ],
-                          ),
-                        );
-                      },
-                    ),
-                    HeightSpace(24.h),
                     BlocBuilder<GetServicesInfoCubit, GetServicesInfoState>(
                       builder: (context, servicesState) {
                         final zoneName = servicesState is GetServicesInfoSuccess
                             ? servicesState.zoneName
                             : null;
-                        if (zoneName == null || zoneName.isEmpty) {
-                          return const SizedBox.shrink();
-                        }
-                        return Padding(
-                          padding: const EdgeInsets.only(bottom: 8),
-                          child: Text(
-                            "الملاعب المتاحة في منطقتك: $zoneName",
-                            style: AppTextStyles.font14Medium
-                                .copyWith(color: AppColors.primary),
-                          ),
+                        return HomeSectionTitle(
+                          'ملاعب قريبة منك',
+                          note: (zoneName == null || zoneName.isEmpty)
+                              ? null
+                              : zoneName,
                         );
                       },
                     ),
                     HeightSpace(8.h),
-                    SizedBox(height: 200.h, child: ServicesInfoView()),
-                    HeightSpace(8.h),
+                    SizedBox(height: 190.h, child: ServicesInfoView()),
+                    HeightSpace(12.h),
+                    const HomeSectionTitle('ملخص حجوزاتي'),
+                    HeightSpace(10.h),
                     ListSectionPlay(),
-                    HeightSpace(24.h),
-                    HeightSpace(100.h),
+                    HeightSpace(110.h),
                   ],
                 ),
               );
