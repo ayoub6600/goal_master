@@ -33,7 +33,7 @@
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>نحتاج الوصول إلى موقعك لتقديم تجربة أفضل</string>
 	<key>NSCameraUsageDescription</key>
-	<string>Goal Master needs camera access so you can take photos when booking or managing your activities.</string>
+	<string>يستخدم Goal Master الكاميرا لقراءة بيانات بطاقتك المصرفية تلقائيًا عند حفظها، وتتم القراءة على جهازك فقط.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Goal Master needs access to your photo library so you can attach photos when booking or managing your activities.</string>
 	<key>UIBackgroundModes</key>

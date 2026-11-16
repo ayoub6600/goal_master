@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:camera/camera.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
@@ -38,7 +37,10 @@ class _CardCameraScanPageState extends State<CardCameraScanPage> {
   @override
   void initState() {
     super.initState();
-    if (kDebugMode) unawaited(_initialize());
+    // Available in release builds too (it was Debug-only while it was being
+    // built). Everything stays on the phone: frames are read by on-device ML
+    // Kit, nothing is uploaded or logged, and the result only fills the form.
+    unawaited(_initialize());
   }
 
   Future<void> _initialize() async {
@@ -212,9 +214,6 @@ class _CardCameraScanPageState extends State<CardCameraScanPage> {
 
   @override
   Widget build(BuildContext context) {
-    if (!kDebugMode)
-      return const Scaffold(
-          body: Center(child: Text('ماسح البطاقة متاح للاختبار فقط')));
     final controller = _controller;
     return Scaffold(
       backgroundColor: const Color(0xff071d13),

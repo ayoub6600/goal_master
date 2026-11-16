@@ -7053,3 +7053,8 @@ deployed; dev DB not migrated.
 - Home: full-width search with a filter button; «احجز ملعبك الآن» as the main card right under it; «ألعاب كابتن أيوب» as a light card with a warm accent and an «العب» pill (a prize badge when a reward chance is open); banner full width; «ملاعب قريبة منك» section title with the zone; venue cards whose picture fills the card; «ملخص حجوزاتي» as equal three-per-row tiles.
 - Captain avatar: last known avatar URLs kept on the device (`AssistantAvatarCache`) and the cubit starts from them, so the bubble draws from the disk cache at launch; every state's image is prefetched in the background. Server now serves 512px WebP copies (~45 KB instead of ~1.8 MB). Test: `assistant_avatar_cache_test.dart`.
 - Version 1.4.6+112.
+
+## 2026-11-17 — Card scanner enabled in release builds
+
+- «صوّر البطاقة» showed «ماسح البطاقة متاح للاختبار فقط» on TestFlight: the scanner was gated by `kDebugMode` since it was added (ec631aa), so it only ever worked in Debug builds. Gate removed; reading is on-device ML Kit, nothing logged or uploaded, permission-denied and no-camera paths already show Arabic messages and a manual-entry fallback. iOS camera usage text now says what the camera is for. Android gets CAMERA from the camera plugin's manifest.
+- Version 1.4.7+113.
