@@ -1,14 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:goal_master/core/components/custom_success_toast.dart';
+import 'package:goal_master/core/routing/routes_keys.dart';
+import 'package:goal_master/features/card/presentation/manager/card_cubit/card_cubit.dart';
+import 'package:goal_master/features/card/presentation/view/widgets/wallet_widgets.dart';
 import 'package:goal_master/core/components/keys_values.dart';
 import 'package:goal_master/core/components/preference_utility.dart';
 import 'package:goal_master/features/saved_cards/presentation/saved_cards_page.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:goal_master/core/components/button_app.dart';
 import 'package:goal_master/core/components/page_wrapper.dart';
-import 'package:goal_master/core/styles/app_colors.dart';
 import 'package:goal_master/core/styles/app_text_styles.dart';
-import 'package:goal_master/core/styles/assets.dart';
 import 'package:goal_master/core/styles/spaces.dart';
 import 'package:goal_master/features/balance/data/model/transactions_response.dart';
 import 'package:goal_master/features/balance/presentation/balance_cubit/balance_cubit.dart';
@@ -103,14 +105,35 @@ class _CardViewState extends State<CardView> {
     );
   }
 
-  void _openTopUp() {
+  /// The top-up sheet. CardCubit lives on this page's route, not above the
+  /// sheet's own route — it has to be handed over, or the prepaid-card form
+  /// can't find it (a grey box in release builds).
+  void _openTopUp({int? amount}) {
+    final cardCubit = context.read<CardCubit>();
     _showWalletSheet(
       title: 'شحن المحفظة',
-      child: ListPaymentView(
-        embedded: true,
-        onUpdated: _refreshWallet,
+      child: BlocProvider<CardCubit>.value(
+        value: cardCubit,
+        child: ListPaymentView(
+          embedded: true,
+          initialAmount: amount,
+          onUpdated: _refreshWallet,
+        ),
       ),
     );
+  }
+
+  /// «شحن سريع»: straight to card payment for that amount.
+  Future<void> _quickTopUp(int amount) async {
+    final res = await context.push(
+      RoutesKeys.kPaymentWebViewPage,
+      extra: {'amount': amount.toString()},
+    );
+    if (!mounted) return;
+    if (res == true) {
+      showCustomSuccessToast('تم شحن $amount د.ل بنجاح');
+      _refreshWallet();
+    }
   }
 
   void _openTransfer() {
@@ -158,31 +181,44 @@ class _CardViewState extends State<CardView> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      HeightSpace(10.h),
-                      Card(
-                        margin: EdgeInsets.zero,
-                        child: Column(
-                          children: [
-                            ListTile(
-                              leading: const Icon(Icons.credit_card_outlined,
-                                  color: Colors.green),
-                              title: const Text('بطاقاتي المحفوظة'),
-                              trailing: Icon(_showSavedCards
-                                  ? Icons.expand_less
-                                  : Icons.chevron_left),
-                              onTap: () {
-                                setState(
-                                    () => _showSavedCards = !_showSavedCards);
-                              },
-                            ),
-                            AnimatedSize(
-                              duration: const Duration(milliseconds: 220),
-                              curve: Curves.easeInOut,
-                              child: _showSavedCards
-                                  ? Padding(
-                                      padding: const EdgeInsets.fromLTRB(
-                                          12, 0, 12, 12),
-                                      child: Builder(builder: (context) {
+                      HeightSpace(4.h),
+                      WalletBalanceCard(
+                        onTopUp: () => _openTopUp(),
+                        onTransfer: _openTransfer,
+                        onCards: () => setState(
+                            () => _showSavedCards = !_showSavedCards),
+                      ),
+                      AnimatedSize(
+                        duration: const Duration(milliseconds: 220),
+                        curve: Curves.easeInOut,
+                        child: _showSavedCards
+                            ? Padding(
+                                padding: EdgeInsets.only(top: 14.h),
+                                child: Container(
+                                  width: double.infinity,
+                                  padding: EdgeInsets.all(12.w),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(20),
+                                    border: Border.all(
+                                        color: const Color(0xFFE6ECE6)),
+                                  ),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      WalletSectionTitle(
+                                        'بطاقاتي المحفوظة',
+                                        trailing: IconButton(
+                                          tooltip: 'إخفاء',
+                                          visualDensity: VisualDensity.compact,
+                                          onPressed: () => setState(
+                                              () => _showSavedCards = false),
+                                          icon: const Icon(
+                                              Icons.expand_less_rounded),
+                                        ),
+                                      ),
+                                      Builder(builder: (context) {
                                         final userId =
                                             SharedPreferenceUtil.getInt(
                                                 PrefKey.userId);
@@ -193,145 +229,17 @@ class _CardViewState extends State<CardView> {
                                           embedded: true,
                                         );
                                       }),
-                                    )
-                                  : const SizedBox(width: double.infinity),
-                            ),
-                          ],
-                        ),
+                                    ],
+                                  ),
+                                ),
+                              )
+                            : const SizedBox(width: double.infinity),
                       ),
-                      HeightSpace(12.h),
-                      BlocBuilder<PromotionalCreditCubit,
-                          PromotionalCreditState>(
-                        builder: (context, state) {
-                          final amount = state.balance;
-                          if (amount == null || amount <= 0) {
-                            return const SizedBox.shrink();
-                          }
-                          return Container(
-                            width: double.infinity,
-                            margin: EdgeInsets.only(bottom: 12.h),
-                            padding: EdgeInsets.all(16.w),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFF1F7EF),
-                              borderRadius: BorderRadius.circular(16),
-                              border: Border.all(
-                                color: const Color(0xFFB8D8B1),
-                              ),
-                            ),
-                            child: Row(
-                              children: [
-                                const Icon(Icons.card_giftcard,
-                                    color: Color(0xFF43894B)),
-                                SizedBox(width: 10.w),
-                                Expanded(
-                                  child: Text(
-                                    'رصيد المكافآت للحجز فقط',
-                                    style: AppTextStyles.font14Bold,
-                                  ),
-                                ),
-                                Text(
-                                  '${amount.toStringAsFixed(2)} د.ل',
-                                  style: AppTextStyles.font16Bold.copyWith(
-                                    color: const Color(0xFF43894B),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          );
-                        },
-                      ),
-                      Container(
-                        padding: EdgeInsets.symmetric(
-                          horizontal: 16.w,
-                          vertical: 16.h,
-                        ),
-                        decoration: BoxDecoration(
-                          color: AppColors.primary,
-                          borderRadius: BorderRadius.circular(16),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.05),
-                              blurRadius: 8,
-                              offset: const Offset(0, 3),
-                            ),
-                          ],
-                        ),
-                        child: Column(
-                          children: [
-                            BlocBuilder<BalanceCubit, BalanceState>(
-                              builder: (context, state) {
-                                if (state is BalanceLoading) {
-                                  return Text(
-                                    "...",
-                                    style: AppTextStyles.font16SemiBold,
-                                  );
-                                } else if (state is BalanceLoaded) {
-                                  return Center(
-                                    child: Column(
-                                      children: [
-                                        Text(
-                                          "الرصيد الحالي",
-                                          style:
-                                              AppTextStyles.font16Bold.copyWith(
-                                            color: AppColors.white,
-                                          ),
-                                        ),
-                                        Text(
-                                          state.balance.toString(),
-                                          style:
-                                              AppTextStyles.font24Bold.copyWith(
-                                            color: AppColors.white,
-                                          ),
-                                        ),
-                                        HeightSpace(8.h),
-                                      ],
-                                    ),
-                                  );
-                                } else if (state is BalanceError) {
-                                  return Center(
-                                    child: SizedBox(
-                                      width: 50.w,
-                                      child: Text(
-                                        " ${state.errMessage}",
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                        style:
-                                            TextStyle(color: AppColors.black),
-                                      ),
-                                    ),
-                                  );
-                                }
-                                return const SizedBox.shrink();
-                              },
-                            ),
-                            HeightSpace(8.h),
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: ButtonApp(
-                                    assetIconPath: Assets.imagesPngImageWallet2,
-                                    text: "شحن",
-                                    backGround: AppColors.white,
-                                    textColor: AppColors.obsidianBlack,
-                                    onTap: _openTopUp,
-                                  ),
-                                ),
-                                WidthSpace(8.w),
-                                Expanded(
-                                  child: ButtonApp(
-                                    //  icon: Icons.transfer_within_a_station,
-                                    assetIconPath: Assets.sendMo,
-                                    text: "تحويل فلوس",
-                                    backGround: AppColors.white,
-                                    textColor: AppColors.obsidianBlack,
-                                    onTap: _openTransfer,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
+                      HeightSpace(14.h),
+                      QuickTopUpSection(onAmount: _quickTopUp),
+                      HeightSpace(20.h),
+                      const WalletSectionTitle('آخر المعاملات'),
+                      HeightSpace(4.h),
                     ],
                   ),
                 ),

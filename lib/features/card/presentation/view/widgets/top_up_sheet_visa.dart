@@ -1,26 +1,46 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_router/go_router.dart';
 import 'package:goal_master/core/components/button_app.dart';
-import 'package:goal_master/core/components/custom_text_field/custom_app_form_text_field.dart';
+import 'package:goal_master/core/components/custom_failure_toast.dart';
+import 'package:goal_master/core/components/custom_success_toast.dart';
 import 'package:goal_master/core/routing/routes_keys.dart';
 import 'package:goal_master/core/styles/app_colors.dart';
 import 'package:goal_master/core/styles/app_text_styles.dart';
-import 'package:goal_master/core/styles/spaces.dart';
-import 'package:go_router/go_router.dart';
+import 'package:goal_master/features/card/presentation/view/widgets/wallet_widgets.dart';
 
+/// Top-up by bank card: pick a quick amount or type one, then pay on the
+/// Moamalat page. The server signs the checkout and confirms the payment.
 class TopUpSheetVisa extends StatefulWidget {
-  const TopUpSheetVisa({super.key, this.embedded = false, this.onCompleted});
+  const TopUpSheetVisa({
+    super.key,
+    this.embedded = false,
+    this.onCompleted,
+    this.initialAmount,
+  });
 
   final bool embedded;
   final VoidCallback? onCompleted;
+  final int? initialAmount;
 
   @override
   State<TopUpSheetVisa> createState() => _TopUpSheetVisaState();
 }
 
 class _TopUpSheetVisaState extends State<TopUpSheetVisa> {
-  final TextEditingController amountController = TextEditingController();
+  late final TextEditingController amountController = TextEditingController(
+    text: widget.initialAmount?.toString() ?? '',
+  );
   bool _submitting = false;
+
+  int get _amount => int.tryParse(amountController.text.trim()) ?? 0;
+
+  @override
+  void initState() {
+    super.initState();
+    amountController.addListener(() => setState(() {}));
+  }
 
   @override
   void dispose() {
@@ -28,69 +48,107 @@ class _TopUpSheetVisaState extends State<TopUpSheetVisa> {
     super.dispose();
   }
 
+  Future<void> _pay() async {
+    final amount = _amount;
+    if (amount <= 0) {
+      showCustomFailureToast('اختر مبلغًا أو اكتبه');
+      return;
+    }
+
+    setState(() => _submitting = true);
+    final res = await context.push(
+      RoutesKeys.kPaymentWebViewPage,
+      extra: {'amount': amount.toString()},
+    );
+    if (!mounted) return;
+    setState(() => _submitting = false);
+
+    if (res == true) {
+      showCustomSuccessToast('تم شحن $amount د.ل بنجاح');
+      if (widget.embedded) {
+        widget.onCompleted?.call();
+      } else {
+        Navigator.pop(context, true);
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final amount = _amount;
+
     return Padding(
       padding: EdgeInsets.only(
-        left: 16.w,
-        right: 16.w,
-        top: 12.h,
-        bottom: MediaQuery.of(context).viewInsets.bottom + 16.h,
+        bottom: MediaQuery.of(context).viewInsets.bottom + 8.h,
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Text(
-            "ادخل المبلغ",
-            style: AppTextStyles.font16Bold.copyWith(color: Colors.black),
+          Text('اختر المبلغ', style: AppTextStyles.font16Bold),
+          SizedBox(height: 10.h),
+          QuickAmountChips(
+            selected: kQuickTopUpAmounts.contains(amount) ? amount : null,
+            onSelected: (v) => amountController.text = '$v',
           ),
-          HeightSpace(8.h),
-          CustomTextField(
-            hint: "ادخل المبلغ",
+          SizedBox(height: 14.h),
+          TextField(
             controller: amountController,
-            inputType: TextInputType.number,
+            keyboardType: TextInputType.number,
+            inputFormatters: [
+              FilteringTextInputFormatter.digitsOnly,
+              LengthLimitingTextInputFormatter(4),
+            ],
+            textAlign: TextAlign.center,
+            style: AppTextStyles.font18Bold,
+            decoration: InputDecoration(
+              hintText: 'أو اكتب مبلغًا آخر',
+              hintStyle: AppTextStyles.font14Regular
+                  .copyWith(color: AppColors.fontColor),
+              suffixText: 'د.ل',
+              filled: true,
+              fillColor: const Color(0xFFF7F9F7),
+              contentPadding: EdgeInsets.symmetric(vertical: 14.h),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(14),
+                borderSide: const BorderSide(color: Color(0xFFE1E8E1)),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(14),
+                borderSide: const BorderSide(color: Color(0xFFE1E8E1)),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(14),
+                borderSide: BorderSide(color: AppColors.primary, width: 1.5),
+              ),
+            ),
           ),
-          HeightSpace(16.h),
+          SizedBox(height: 16.h),
           ButtonApp(
-            text: _submitting ? 'جارٍ المتابعة...' : "تأكيد الشحن",
+            text: _submitting
+                ? 'جارٍ فتح صفحة الدفع...'
+                : amount > 0
+                    ? 'ادفع $amount د.ل'
+                    : 'متابعة للدفع',
             backGround: AppColors.primary,
             textColor: Colors.white,
-            onTap: _submitting
-                ? null
-                : () async {
-                    final amount =
-                        double.tryParse(amountController.text.trim()) ?? 0;
-                    if (amount <= 0) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text("من فضلك أدخل مبلغ صحيح")),
-                      );
-                      return;
-                    }
-
-                    final amountInMilli = (amount).round();
-
-                    setState(() => _submitting = true);
-                    final res = await context.push(
-                      RoutesKeys.kPaymentWebViewPage,
-                      extra: {
-                        'amount': amountInMilli.toString(),
-                      },
-                    );
-                    if (!context.mounted) return;
-                    setState(() => _submitting = false);
-                    if (res == true) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text("تم الشحن بنجاح")),
-                      );
-                      if (!context.mounted) return;
-                      if (widget.embedded) {
-                        widget.onCompleted?.call();
-                      } else {
-                        Navigator.pop(context, true);
-                      }
-                    }
-                  },
+            isLoading: _submitting,
+            enabled: amount > 0,
+            onTap: _pay,
+          ),
+          SizedBox(height: 10.h),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.lock_outline_rounded,
+                  size: 14, color: AppColors.fontColor),
+              SizedBox(width: 4.w),
+              Text(
+                'دفع آمن عبر معاملات — يُضاف الرصيد بعد تأكيد البنك',
+                style: AppTextStyles.font12Regular
+                    .copyWith(color: AppColors.fontColor),
+              ),
+            ],
           ),
         ],
       ),

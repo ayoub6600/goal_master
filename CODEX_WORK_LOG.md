@@ -7033,3 +7033,9 @@ deployed; dev DB not migrated.
 
 - Removed three unused onboarding SVGs (~12 MB) and converted the welcome/login pictures to WebP (1.4 MB → 180 KB); `assets/` 17 MB → 4 MB.
 - Welcome slides read picture/title/text from the admin panel (`intro_1..3`), falling back to the bundled pictures; fetched during the splash on first launch; decoded at 1080px. Slide 2 wording is about football pitches.
+
+## 2026-11-16 — Wallet redesign; prepaid-card top-up fixed
+
+- **Bug (release build):** the «شحن بالكرت» form was a grey box. The top-up sheet is a modal route, so it couldn't see the wallet page's `CardCubit`; release builds draw the resulting error as grey. The cubit is now handed to the sheet (`BlocProvider.value`). Verified on the simulator: a 25 LYD card credited.
+- **Design:** gradient balance card with the amount large, rewards credit as a chip, and three actions (شحن / تحويل / بطاقاتي); «شحن سريع» with 20 / 30 / 50 / 100 straight to card payment; top-up sheet with two tabs (بطاقة مصرفية with the quick amounts + custom amount and a «ادفع X د.ل» button; كرت شحن with a short hint); transaction rows without the overlapping «i» badge — tapping a row opens its details; clearer titles (شحن بكرت، شحن بالبطاقة، تحويل).
+- Version 1.4.4+110.

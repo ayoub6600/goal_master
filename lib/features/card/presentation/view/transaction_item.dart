@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:goal_master/core/styles/app_colors.dart';
 import 'package:goal_master/core/styles/app_text_styles.dart';
 import 'package:goal_master/core/utils/arabic_dates.dart';
 import 'package:goal_master/features/balance/data/model/transactions_response.dart';
@@ -65,9 +64,25 @@ class TransactionItem extends StatelessWidget {
     }
   }
 
+  /// What the row is, in the customer's words.
+  String _title(bool isCredit) {
+    if (_isBookingRefund) return 'استرجاع';
+    if (_isBookingPayment) return 'دفع حجز';
+    if (_isOnlineTopUp) return 'شحن بالبطاقة';
+    switch (transaction.type) {
+      case 'recharge':
+        return 'شحن بكرت';
+      case 'transfer':
+        return 'تحويل';
+    }
+    if (_isAdminCredit) return 'إيداع من الإدارة';
+    return isCredit ? 'إيداع' : 'سحب';
+  }
+
   String get _descriptionText {
     final description = transaction.description?.trim();
     if (description == null || description.isEmpty) {
+      if (transaction.type == 'recharge') return 'كرت شحن مسبق الدفع';
       // A transfer between customers carries no description of its own;
       // who it went to (or came from) is the useful part.
       final other = transaction.referenceUser;
@@ -106,48 +121,96 @@ class TransactionItem extends StatelessWidget {
     final user = transaction.user;
     final referenceUser = transaction.referenceUser;
 
-    return Stack(
-      children: [
-        Container(
-          margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 12),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.05),
-                blurRadius: 8,
-                offset: const Offset(0, 3),
+    void showDetails() {
+      showDialog(
+        context: context,
+        builder: (_) => AlertDialog(
+          title: const Text('تفاصيل العملية'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _infoRow('نوع العملية:', _transactionTypeLabel),
+              _infoRow(
+                'المبلغ:',
+                '${isCredit ? '+' : '-'} ${transaction.amount.toStringAsFixed(2)} د.ل',
               ),
+              _infoRow('الوصف:', _descriptionText),
+              _infoRow('التاريخ:', formattedDate),
+              _infoRow(
+                'الحالة:',
+                transaction.status == 1 ? 'مكتملة' : 'غير مكتملة',
+              ),
+              if (user != null) ...[
+                const Divider(height: 24),
+                const Text(
+                  'صاحب المحفظة',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                _infoRow('الاسم الكامل:', user.name),
+                _infoRow('اسم الدخول:', user.username),
+                _infoRow('رقم الجوال:', user.phoneNumber),
+              ],
+              if (referenceUser != null) ...[
+                const Divider(height: 24),
+                const Text(
+                  'المرسل إليه',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                if (referenceUser.branchName != null)
+                  _infoRow('اسم الملعب:', referenceUser.branchName!),
+                _infoRow('الاسم الكامل:', referenceUser.name),
+                _infoRow('رقم الجوال:', referenceUser.phoneNumber),
+              ],
             ],
           ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('إغلاق النافذة'),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 5, horizontal: 8),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFEDF1ED)),
+      ),
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(16),
+        child: InkWell(
+          // The whole row opens the details; the big «i» badge that used to
+          // sit over the corner of every row is gone.
+          borderRadius: BorderRadius.circular(16),
+          onTap: showDetails,
           child: ListTile(
             contentPadding:
                 const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
             leading: Container(
-              width: 48,
-              height: 48,
+              width: 44,
+              height: 44,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                gradient: LinearGradient(
-                  colors: [
-                    amountColor.withValues(alpha: 0.8),
-                    amountColor.withValues(alpha: 0.4),
-                  ],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
+                color: amountColor.withValues(alpha: 0.12),
               ),
-              child: Icon(icon, color: Colors.white, size: 24),
+              child: Icon(icon, color: amountColor, size: 22),
             ),
             title: Text(
-              _isBookingRefund
-                  ? 'استرجاع'
-                  : _isBookingPayment
-                      ? 'دفع حجز'
-                      : _isAdminCredit
-                          ? 'إيداع من الإدارة'
-                          : (isCredit ? 'إيداع' : 'سحب'),
+              _title(isCredit),
               style: AppTextStyles.font16Bold,
             ),
             subtitle: Text(
@@ -186,78 +249,7 @@ class TransactionItem extends StatelessWidget {
             ),
           ),
         ),
-        Positioned(
-          top: 0,
-          left: 0,
-          child: GestureDetector(
-            onTap: () {
-              showDialog(
-                context: context,
-                builder: (_) => AlertDialog(
-                  title: const Text('تفاصيل العملية'),
-                  content: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _infoRow('نوع العملية:', _transactionTypeLabel),
-                      _infoRow(
-                        'المبلغ:',
-                        '${isCredit ? '+' : '-'} ${transaction.amount.toStringAsFixed(2)} د.ل',
-                      ),
-                      _infoRow('الوصف:', _descriptionText),
-                      _infoRow('التاريخ:', formattedDate),
-                      _infoRow(
-                        'الحالة:',
-                        transaction.status == 1 ? 'مكتملة' : 'غير مكتملة',
-                      ),
-                      if (user != null) ...[
-                        const Divider(height: 24),
-                        const Text(
-                          'صاحب المحفظة',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        _infoRow('الاسم الكامل:', user.name),
-                        _infoRow('اسم الدخول:', user.username),
-                        _infoRow('رقم الجوال:', user.phoneNumber),
-                      ],
-                      if (referenceUser != null) ...[
-                        const Divider(height: 24),
-                        const Text(
-                          'المرسل إليه',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        if (referenceUser.branchName != null)
-                          _infoRow('اسم الملعب:', referenceUser.branchName!),
-                        _infoRow('الاسم الكامل:', referenceUser.name),
-                        _infoRow('رقم الجوال:', referenceUser.phoneNumber),
-                      ],
-                    ],
-                  ),
-                  actions: [
-                    TextButton(
-                      onPressed: () => Navigator.pop(context),
-                      child: const Text('إغلاق النافذة'),
-                    ),
-                  ],
-                ),
-              );
-            },
-            child: Icon(
-              Icons.info_rounded,
-              size: 36,
-              color: AppColors.primary,
-            ),
-          ),
-        ),
-      ],
+      ),
     );
   }
 

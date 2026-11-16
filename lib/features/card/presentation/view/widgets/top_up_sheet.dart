@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:goal_master/core/components/button_app.dart';
 import 'package:goal_master/core/components/custom_failure_toast.dart';
 import 'package:goal_master/core/components/custom_success_toast.dart';
-import 'package:goal_master/core/components/custom_text_field/custom_app_form_text_field.dart';
 import 'package:goal_master/core/styles/app_colors.dart';
 import 'package:goal_master/core/styles/app_text_styles.dart';
-import 'package:goal_master/core/styles/spaces.dart';
 import 'package:goal_master/features/card/presentation/manager/card_cubit/card_cubit.dart';
 
 class TopUpSheet extends StatefulWidget {
@@ -48,43 +47,81 @@ class _TopUpSheetState extends State<TopUpSheet> {
           absorbing: isLoading,
           child: Padding(
             padding: EdgeInsets.only(
-              left: 16.w,
-              right: 16.w,
-              top: 12.h,
-              bottom: MediaQuery.of(context).viewInsets.bottom + 16.h,
+              bottom: MediaQuery.of(context).viewInsets.bottom + 8.h,
             ),
             child: Form(
               key: _formKey,
               child: Column(
-                mainAxisSize:
-                    MainAxisSize.min, // عشان الـ sheet ياخد ارتفاع المحتوى
-                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Text(
-                    "ادخل رقم الكارت",
-                    style: AppTextStyles.font16Bold.copyWith(
-                      color: Colors.black,
+                  Container(
+                    padding: EdgeInsets.all(12.w),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFEAF5EA),
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(Icons.confirmation_number_outlined,
+                            color: AppColors.primary),
+                        SizedBox(width: 10.w),
+                        Expanded(
+                          child: Text(
+                            'اكشط الكرت وأدخل الرقم المكتوب عليه — يُضاف الرصيد فورًا.',
+                            style: AppTextStyles.font12Regular
+                                .copyWith(color: Colors.black87),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                  HeightSpace(8.h),
-                  CustomTextField(
-                    hint: "ادخل الرقم",
+                  SizedBox(height: 14.h),
+                  TextFormField(
                     controller: cubit.codeController,
-                    inputType: TextInputType.phone,
+                    keyboardType: TextInputType.number,
+                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                    textAlign: TextAlign.center,
+                    style: AppTextStyles.font18Bold.copyWith(letterSpacing: 2),
+                    validator: (v) => (v == null || v.trim().isEmpty)
+                        ? 'أدخل رقم الكرت'
+                        : null,
+                    decoration: InputDecoration(
+                      hintText: 'رقم الكرت',
+                      hintStyle: AppTextStyles.font14Regular.copyWith(
+                          color: AppColors.fontColor, letterSpacing: 0),
+                      filled: true,
+                      fillColor: const Color(0xFFF7F9F7),
+                      contentPadding: EdgeInsets.symmetric(vertical: 14.h),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(14),
+                        borderSide:
+                            const BorderSide(color: Color(0xFFE1E8E1)),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(14),
+                        borderSide:
+                            const BorderSide(color: Color(0xFFE1E8E1)),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(14),
+                        borderSide:
+                            BorderSide(color: AppColors.primary, width: 1.5),
+                      ),
+                    ),
                   ),
-                  HeightSpace(16.h),
-                  isLoading
-                      ? const Center(child: CircularProgressIndicator())
-                      : ButtonApp(
-                          text: "تأكيد الشحن",
-                          backGround: AppColors.primary,
-                          textColor: Colors.white,
-                          onTap: () {
-                            if (_formKey.currentState?.validate() ?? false) {
-                              cubit.addCard();
-                            }
-                          },
-                        ),
+                  SizedBox(height: 16.h),
+                  ButtonApp(
+                    text: 'تأكيد الشحن',
+                    backGround: AppColors.primary,
+                    textColor: Colors.white,
+                    isLoading: isLoading,
+                    onTap: () {
+                      if (_formKey.currentState?.validate() ?? false) {
+                        cubit.addCard();
+                      }
+                    },
+                  ),
                 ],
               ),
             ),
