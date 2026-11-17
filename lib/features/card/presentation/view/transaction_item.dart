@@ -69,6 +69,7 @@ class TransactionItem extends StatelessWidget {
     if (_isBookingRefund) return 'استرجاع';
     if (_isBookingPayment) return 'دفع حجز';
     if (_isOnlineTopUp) return 'شحن بالبطاقة';
+    if (_description.startsWith('lypay:')) return 'شحن عبر LYPay';
     switch (transaction.type) {
       case 'recharge':
         return 'شحن بكرت';
@@ -93,6 +94,9 @@ class TransactionItem extends StatelessWidget {
         return transaction.balanceType == 1 ? 'من $who' : 'إلى $who';
       }
       return 'لا يوجد وصف';
+    }
+    if (description.startsWith('lypay:')) {
+      return 'تحويل مصرفي • ${description.substring(6)}';
     }
     if (description.startsWith('online_topup:')) {
       return 'شحن أونلاين';

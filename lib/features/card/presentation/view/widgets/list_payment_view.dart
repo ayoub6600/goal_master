@@ -5,6 +5,7 @@ import 'package:goal_master/core/styles/app_colors.dart';
 import 'package:goal_master/core/styles/app_text_styles.dart';
 import 'package:goal_master/features/card/presentation/view/widgets/top_up_sheet.dart';
 import 'package:goal_master/features/card/presentation/view/widgets/top_up_sheet_visa.dart';
+import 'package:goal_master/features/lypay/lypay_topup_view.dart';
 
 /// Topping up the wallet: by bank card (online, with quick amounts) or with a
 /// prepaid scratch card. One screen, two tabs — it used to be a list of two
@@ -28,7 +29,7 @@ class ListPaymentView extends StatefulWidget {
 }
 
 class _ListPaymentViewState extends State<ListPaymentView> {
-  int _tab = 0; // 0 bank card, 1 prepaid card
+  int _tab = 0; // 0 bank card, 1 LYPay transfer, 2 prepaid card
 
   void _completed() {
     widget.onUpdated?.call();
@@ -52,18 +53,23 @@ class _ListPaymentViewState extends State<ListPaymentView> {
           SizedBox(height: 16.h),
           AnimatedSwitcher(
             duration: const Duration(milliseconds: 180),
-            child: _tab == 0
-                ? TopUpSheetVisa(
-                    key: const ValueKey('bank'),
-                    embedded: true,
-                    initialAmount: widget.initialAmount,
-                    onCompleted: _completed,
-                  )
-                : TopUpSheet(
-                    key: const ValueKey('prepaid'),
-                    embedded: true,
-                    onCompleted: _completed,
-                  ),
+            child: switch (_tab) {
+              0 => TopUpSheetVisa(
+                  key: const ValueKey('bank'),
+                  embedded: true,
+                  initialAmount: widget.initialAmount,
+                  onCompleted: _completed,
+                ),
+              1 => LypayTopUpView(
+                  key: const ValueKey('lypay'),
+                  onApproved: widget.onUpdated,
+                ),
+              _ => TopUpSheet(
+                  key: const ValueKey('prepaid'),
+                  embedded: true,
+                  onCompleted: _completed,
+                ),
+            },
           ),
         ],
       ),
@@ -136,8 +142,9 @@ class _MethodSwitch extends StatelessWidget {
       ),
       child: Row(
         children: [
-          tab(0, Icons.credit_card_rounded, 'بطاقة مصرفية'),
-          tab(1, Icons.confirmation_number_outlined, 'كرت شحن'),
+          tab(0, Icons.credit_card_rounded, 'بطاقة'),
+          tab(1, Icons.account_balance_rounded, 'LYPay'),
+          tab(2, Icons.confirmation_number_outlined, 'كرت شحن'),
         ],
       ),
     );

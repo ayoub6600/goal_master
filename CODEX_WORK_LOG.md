@@ -7058,3 +7058,9 @@ deployed; dev DB not migrated.
 
 - «صوّر البطاقة» showed «ماسح البطاقة متاح للاختبار فقط» on TestFlight: the scanner was gated by `kDebugMode` since it was added (ec631aa), so it only ever worked in Debug builds. Gate removed; reading is on-device ML Kit, nothing logged or uploaded, permission-denied and no-camera paths already show Arabic messages and a manual-entry fallback. iOS camera usage text now says what the camera is for. Android gets CAMERA from the camera plugin's manifest.
 - Version 1.4.7+113.
+
+## 2026-11-17 — LYPay transfer top-up in the wallet
+
+- «شحن» sheet has three tabs: بطاقة / LYPay / كرت شحن. LYPay (`lib/features/lypay/`): account card with copy buttons (bank, name, IBAN on one line, account number), admin note, amount within the admin's min/max, receipt picker, «إرسال للمراجعة»; then a status card (قيد المراجعة / جاري التحقق / تم الشحن / مرفوض + reason) with «تحديث الحالة» and «تحويل جديد». The wallet refreshes when an approval is seen. Messages use the floating toast (a SnackBar sits under the sheet).
+- Banner: no sliver of the next slide.
+- Version 1.4.8+114.

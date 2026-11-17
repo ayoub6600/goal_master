@@ -119,6 +119,9 @@ class _BannerCarouselScreenState extends State<BannerCarouselScreen> {
           itemBuilder: (context, index, realIndex) {
             final slide = slides[index];
             return Container(
+              // A small gap between slides, so the next one doesn't show as
+              // a sliver at the edge while it's resting.
+              margin: const EdgeInsets.symmetric(horizontal: 2),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: [
@@ -262,6 +265,7 @@ class _BannerCarouselScreenState extends State<BannerCarouselScreen> {
             autoPlay: true,
             enlargeCenterPage: false,
             viewportFraction: 1.0,
+            padEnds: false,
             aspectRatio: 16 / 9,
             autoPlayInterval: const Duration(seconds: 5),
             autoPlayAnimationDuration: const Duration(milliseconds: 800),
