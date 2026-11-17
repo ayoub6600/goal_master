@@ -92,6 +92,12 @@ class _AssistantChatViewState extends State<AssistantChatView> {
       context.push(RoutesKeys.kCard);
       return;
     }
+    if (reply.action == 'open_support_chat') {
+      // Captain Ayoub handed the customer to a person; the thread already
+      // holds what they asked.
+      context.push(RoutesKeys.kSupportChat);
+      return;
+    }
     context.read<AssistantChatCubit>().sendAction(reply.action, reply.payload);
     _scrollToBottom();
   }

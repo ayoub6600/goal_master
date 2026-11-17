@@ -72,6 +72,7 @@ import 'package:goal_master/features/profile/presentation/view/contact_view.dart
 import 'package:goal_master/features/profile/presentation/view/profile_view.dart';
 import 'package:goal_master/features/profile/presentation/view/update_profile_view.dart';
 import 'package:goal_master/features/splash/presentation/view/splash_view.dart';
+import 'package:goal_master/features/support/support_chat_view.dart';
 
 import 'app_router.dart';
 
@@ -450,6 +451,16 @@ List<RouteBase> appRoutes = [
       context: context,
       state: state,
       child: const AssistantChatView(),
+    ),
+  ),
+  //SupportChatView — customer service chat with the Goal Master team.
+  GoRoute(
+    parentNavigatorKey: parentKey,
+    path: RoutesKeys.kSupportChat,
+    pageBuilder: (context, state) => buildPageWithDefaultTransition<void>(
+      context: context,
+      state: state,
+      child: const SupportChatView(),
     ),
   ),
   //CoinsView — CoinsCubit is provided app-wide in main.dart, no

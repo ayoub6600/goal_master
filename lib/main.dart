@@ -17,6 +17,8 @@ import 'package:goal_master/core/app_update/app_update_gate.dart';
 import 'package:goal_master/features/attendance/presentation/mandatory_action_gate.dart';
 import 'package:goal_master/core/services/notification_navigation_service.dart';
 import 'package:goal_master/core/services/in_app_banner.dart';
+import 'package:goal_master/features/support/support_chat_view.dart';
+import 'package:goal_master/features/support/support_repo.dart';
 import 'package:goal_master/core/services/push_notification_service.dart';
 import 'package:goal_master/core/services/service_locator.dart';
 import 'package:goal_master/features/location/data/repo/location_repo.dart';
@@ -80,6 +82,22 @@ void main() async {
   // App opened by tapping a notification while backgrounded (not terminated).
   FirebaseMessaging.onMessageOpenedApp
       .listen(NotificationNavigationService.handleMessageTap);
+
+  // A customer-service reply while the app is open: the open thread just
+  // fetches it; anywhere else a banner leads to it.
+  FirebaseMessaging.onMessage.listen((message) {
+    if (message.data['type']?.toString() !=
+        NotificationNavigationService.supportChat) {
+      return;
+    }
+    if (SupportChatView.refreshIfOpen()) return;
+    SupportRepo.unread.value = SupportRepo.unread.value + 1;
+    InAppBanner.show(
+      title: 'خدمة عملاء Goal Master',
+      body: message.notification?.body ?? 'لديك رد جديد',
+      onTap: () => AppRouter.router.push(RoutesKeys.kSupportChat),
+    );
+  });
 
   runApp(const GoalMaster());
 

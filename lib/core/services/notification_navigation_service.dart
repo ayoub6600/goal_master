@@ -13,12 +13,19 @@ class NotificationNavigationService {
   /// booking — the point of the notification is the solution waiting there.
   static const captainOffer = 'captain_rejection_offer';
 
+  /// A reply from customer service.
+  static const supportChat = 'support_chat';
+
   static Future<void> handleMessageTap(RemoteMessage message) async {
     // Routed by type first: a booking id is attached to the assistant's
     // offer too, and opening the booking would bury the very message the
     // notification exists to surface.
     if (message.data['type']?.toString() == captainOffer) {
       AppRouter.router.push(RoutesKeys.kAssistantChat);
+      return;
+    }
+    if (message.data['type']?.toString() == supportChat) {
+      AppRouter.router.push(RoutesKeys.kSupportChat);
       return;
     }
 

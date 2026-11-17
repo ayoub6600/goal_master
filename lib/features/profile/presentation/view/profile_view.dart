@@ -19,6 +19,7 @@ import 'package:goal_master/features/profile/data/repo/profile_repo_imp.dart';
 import 'package:goal_master/features/profile/presentation/manager/profile_cubit/profile_cubit.dart';
 import 'package:goal_master/features/profile/presentation/view/widgets/profile_header.dart';
 import 'package:goal_master/features/profile/presentation/view/widgets/profile_item.dart';
+import 'package:goal_master/features/support/support_repo.dart';
 
 class ProfileView extends StatelessWidget {
   const ProfileView({super.key});
@@ -26,9 +27,11 @@ class ProfileView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (context) => ProfileCubit(
-        getIt.get<ProfileRepoImp>(),
-      )..getProfile(),
+      create: (context) {
+        // Once per visit, for the «خدمة العملاء» badge.
+        SupportRepo().refreshUnread();
+        return ProfileCubit(getIt.get<ProfileRepoImp>())..getProfile();
+      },
       child: PageWrapper(
         title: "حسابي",
         allowBack: false,
@@ -99,6 +102,21 @@ class ProfileView extends StatelessWidget {
                       onTap: () {
                         push(RoutesKeys.kChangePassword, context);
                       },
+                    ),
+                    Container(
+                      width: double.infinity,
+                      color: Color(0xffDADEE3),
+                      height: 1.h,
+                    ),
+                    HeightSpace(8.h),
+                    ValueListenableBuilder<int>(
+                      valueListenable: SupportRepo.unread,
+                      builder: (context, unread, _) => ProfileItem(
+                        title: "خدمة العملاء",
+                        icon: Assets.imagesPngImageSms,
+                        badge: unread,
+                        onTap: () => push(RoutesKeys.kSupportChat, context),
+                      ),
                     ),
                     Container(
                       width: double.infinity,

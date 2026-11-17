@@ -45,6 +45,8 @@ const Set<String> _hiddenOn = {
   RoutesKeys.kCard,
   RoutesKeys.kUpdateProfile,
   RoutesKeys.kChangePassword,
+  // A chat with a person: the bubble would cover the newest messages.
+  RoutesKeys.kSupportChat,
 };
 
 class _CaptainAyoubBubbleState extends State<CaptainAyoubBubble>
