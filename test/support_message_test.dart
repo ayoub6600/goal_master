@@ -43,4 +43,44 @@ void main() {
           isTrue);
     }
   });
+
+  test('reads a voice message, an edit, an automatic reply and reactions', () {
+    final m = SupportMessage.fromJson({
+      'id': 9,
+      'type': 'voice',
+      'from_admin': true,
+      'is_auto_reply': true,
+      'edited': true,
+      'audio_url': 'https://example.test/v?signature=x',
+      'audio_duration_ms': 3800,
+      'audio_expired': false,
+      'reactions': [
+        {'emoji': '❤️', 'from_admin': false},
+        {'emoji': '👍', 'from_admin': true},
+      ],
+      'created_at': '2026-11-17T10:00:00+02:00',
+    });
+    expect(m.isVoice, isTrue);
+    expect(m.audioDurationMs, 3800);
+    expect(m.isAutoReply, isTrue);
+    expect(m.edited, isTrue);
+    expect(m.reactions.length, 2);
+    expect(m.myReaction, '❤️');
+  });
+
+  test('a deleted copy drops its content and reactions', () {
+    final m = SupportMessage.fromJson({
+      'id': 3,
+      'type': 'voice',
+      'audio_url': 'https://example.test/v',
+      'reactions': [
+        {'emoji': '👍', 'from_admin': true}
+      ],
+    }).copyWith(deleted: true);
+    expect(m.deleted, isTrue);
+    expect(m.isVoice, isFalse);
+    expect(m.audioUrl, isNull);
+    expect(m.reactions, isEmpty);
+  });
 }
+

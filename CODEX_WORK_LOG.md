@@ -7064,3 +7064,11 @@ deployed; dev DB not migrated.
 - «شحن» sheet has three tabs: بطاقة / LYPay / كرت شحن. LYPay (`lib/features/lypay/`): account card with copy buttons (bank, name, IBAN on one line, account number), admin note, amount within the admin's min/max, receipt picker, «إرسال للمراجعة»; then a status card (قيد المراجعة / جاري التحقق / تم الشحن / مرفوض + reason) with «تحديث الحالة» and «تحويل جديد». The wallet refreshes when an approval is seen. Messages use the floating toast (a SnackBar sits under the sheet).
 - Banner: no sliver of the next slide.
 - Version 1.4.8+114.
+
+## 2026-11-17 — Customer service chat; Admin Goal (admins' phone app)
+
+- **Support chat** (`lib/features/support/`, same in the manager app with `manager/support`): «خدمة العملاء» in the account screen with an unread badge; text, photos, voice messages (record → listen → send; AAC .m4a via `record`, played with `audioplayers`, one at a time, 1x/1.5x/2x), reply (long-press or swipe), six emoji reactions (sheet, or double-tap ❤️ on a support message), edit own text for 24 h («معدّلة»), delete own message, ✓/✓✓, automatic replies labelled «🤖 رد آلي», polling every 4 s, push `type: support_chat` opens the thread, in-app banner when the app is open. Captain Ayoub's «فتح محادثة خدمة العملاء» button opens it after a handoff; his floating bubble is hidden on this screen.
+- Voice player loads its source once and ignores taps while busy: loading twice at once crashed the native player on a quick double tap (found on the simulator).
+- Microphone: iOS `NSMicrophoneUsageDescription`, Android `RECORD_AUDIO`; permission is asked by the recorder itself (no Podfile macros).
+- **Backend / Admin Goal** (`goal-master-web`): `/admin-app` PWA for platform admins with Web Push; support inbox with voice, reactions, edits, quick replies and rule-based automatic replies (first message / keywords / outside hours / fallback, per audience, cooldown, optional escalation; quiet while an admin talks or a person was asked for); plus bookings, customers, card top-up review, disputes, push center, venues/subscriptions/holds, LYPay settings, Captain Ayoub unanswered questions, finance.
+- Versions: customer 1.4.8+114, manager 1.7.2+13.

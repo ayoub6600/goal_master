@@ -7,11 +7,13 @@ import 'package:flutter/services.dart';
 import 'package:goal_master/core/components/custom_failure_toast.dart';
 import 'package:goal_master/core/styles/app_colors.dart';
 import 'package:goal_master/features/support/support_repo.dart';
+import 'package:goal_master/features/support/support_voice.dart';
 import 'package:image_picker/image_picker.dart';
 
-/// Customer service chat with the Goal Master team: text, photos, reply to a
-/// message, take back your own message. Polls every few seconds while open
-/// (a push brings the person here when the screen is closed).
+/// Customer service chat with the Goal Master team: text, photos, voice
+/// messages, reply to a message, emoji reactions, correct or take back your
+/// own message. Polls every few seconds while open (a push brings the person
+/// here when the screen is closed).
 class SupportChatView extends StatefulWidget {
   const SupportChatView({super.key, SupportRepo? repo})
       : _repo = repo;
@@ -34,10 +36,13 @@ class SupportChatView extends StatefulWidget {
 }
 
 class _Pending {
-  _Pending(this.uuid, this.body, this.image, this.replyToId, this.replyPreview);
+  _Pending(this.uuid, this.body, this.image, this.replyToId, this.replyPreview,
+      {this.audio, this.audioMs});
   final String uuid;
   final String? body;
   final File? image;
+  final File? audio;
+  final int? audioMs;
   final int? replyToId;
   final String? replyPreview;
   bool failed = false;
@@ -59,7 +64,10 @@ class _SupportChatViewState extends State<SupportChatView>
   bool _fetching = false;
   String? _error;
   SupportMessage? _replyTo;
+  SupportMessage? _editing;
   File? _image;
+  List<String> _reactions = SupportThread.defaultReactions;
+  int _voiceMax = 120;
 
   static const _pollEvery = Duration(seconds: 4);
 
@@ -136,13 +144,15 @@ class _SupportChatViewState extends State<SupportChatView>
         }
       },
       (r) {
-        final (list, handoff) = r;
+        final list = r.messages;
         setState(() {
           for (final m in list) {
             _byId[m.id] = m;
           }
           if (first) _hasOlder = list.length >= 60;
-          _handoff = handoff;
+          _handoff = r.handoff;
+          _reactions = r.reactions;
+          _voiceMax = r.voiceMaxSeconds;
           _loading = false;
           _error = null;
         });
@@ -170,10 +180,10 @@ class _SupportChatViewState extends State<SupportChatView>
       (_) => setState(() => _loadingOlder = false),
       (r) {
         setState(() {
-          for (final m in r.$1) {
+          for (final m in r.messages) {
             _byId[m.id] = m;
           }
-          _hasOlder = r.$1.length >= 60;
+          _hasOlder = r.messages.length >= 60;
           _loadingOlder = false;
         });
         // Keep the reader where they were.
@@ -197,6 +207,10 @@ class _SupportChatViewState extends State<SupportChatView>
 
   void _send() {
     final text = _controller.text.trim();
+    if (_editing != null) {
+      _saveEdit(_editing!, text);
+      return;
+    }
     if (text.isEmpty && _image == null) return;
     final p = _Pending(
       SupportRepo.newClientUuid(),
@@ -215,11 +229,92 @@ class _SupportChatViewState extends State<SupportChatView>
     _deliver(p);
   }
 
+  Future<void> _recordVoice() async {
+    FocusScope.of(context).unfocus();
+    final rec = await VoiceRecorderSheet.show(context, maxSeconds: _voiceMax);
+    if (rec == null || !mounted) return;
+    final p = _Pending(
+      SupportRepo.newClientUuid(),
+      null,
+      null,
+      _replyTo?.id,
+      _replyTo == null ? null : _previewOf(_replyTo!),
+      audio: rec.file,
+      audioMs: rec.durationMs,
+    );
+    setState(() {
+      _pending.add(p);
+      _replyTo = null;
+    });
+    _toBottom();
+    _deliver(p);
+  }
+
+  void _startEdit(SupportMessage m) {
+    setState(() {
+      _editing = m;
+      _replyTo = null;
+      _image = null;
+      final text = m.body ?? '';
+      // The cursor at the end, ready to continue the sentence.
+      _controller.value = TextEditingValue(
+        text: text,
+        selection: TextSelection.collapsed(offset: text.length),
+      );
+    });
+  }
+
+  void _cancelEdit() => setState(() {
+        _editing = null;
+        _controller.clear();
+      });
+
+  Future<void> _saveEdit(SupportMessage m, String text) async {
+    if (text.isEmpty) return;
+    _cancelEdit();
+    if (text == m.body) return;
+    final result = await _repo.edit(m.id, text);
+    if (!mounted) return;
+    result.fold(
+      (f) => showCustomFailureToast(f.errMessage),
+      (updated) => setState(() => _byId[updated.id] = updated),
+    );
+  }
+
+  Future<void> _react(SupportMessage m, String? emoji) async {
+    HapticFeedback.selectionClick();
+    final result = await _repo.react(m.id, emoji);
+    if (!mounted) return;
+    result.fold(
+      (f) => showCustomFailureToast(f.errMessage),
+      (list) => setState(() {
+        final current = _byId[m.id] ?? m;
+        _byId[m.id] = current.copyWith(reactions: list);
+      }),
+    );
+  }
+
+  /// A double tap on a support message: ❤️ (again: take it back).
+  void _quickHeart(SupportMessage m) {
+    if (m.mine || m.deleted || m.isSystem) return;
+    _react(m, m.myReaction == '❤️' ? null : '❤️');
+  }
+
+  /// A person may correct their own text for a day.
+  bool _canEdit(SupportMessage m) =>
+      m.mine &&
+      !m.deleted &&
+      !m.isVoice &&
+      (m.body ?? '').isNotEmpty &&
+      DateTime.now().difference(m.createdAt) < const Duration(hours: 24);
+
   Future<void> _deliver(_Pending p) async {
     if (p.failed) setState(() => p.failed = false);
     final result = await _repo.send(
       body: p.body,
       image: p.image,
+      audio: p.audio,
+      audioMs: p.audioMs,
       replyToId: p.replyToId,
       clientUuid: p.uuid,
     );
@@ -239,8 +334,9 @@ class _SupportChatViewState extends State<SupportChatView>
     );
   }
 
-  String _previewOf(SupportMessage m) =>
-      m.body ?? (m.imageUrl != null ? '📷 صورة' : '');
+  String _previewOf(SupportMessage m) => m.isVoice
+      ? '🎤 رسالة صوتية'
+      : (m.body ?? (m.imageUrl != null ? '📷 صورة' : ''));
 
   Future<void> _actions(SupportMessage m) async {
     if (m.isSystem || m.deleted) return;
@@ -252,6 +348,29 @@ class _SupportChatViewState extends State<SupportChatView>
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+              child: Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF1F4F0),
+                  borderRadius: BorderRadius.circular(999),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [
+                    for (final e in _reactions)
+                      _EmojiButton(
+                        emoji: e,
+                        selected: e == m.myReaction,
+                        onTap: () => Navigator.pop(
+                            ctx, 'react:${e == m.myReaction ? '' : e}'),
+                      ),
+                  ],
+                ),
+              ),
+            ),
             ListTile(
               leading: const Icon(Icons.reply_rounded),
               title: const Text('رد على الرسالة'),
@@ -262,6 +381,12 @@ class _SupportChatViewState extends State<SupportChatView>
                 leading: const Icon(Icons.copy_rounded),
                 title: const Text('نسخ النص'),
                 onTap: () => Navigator.pop(ctx, 'copy'),
+              ),
+            if (_canEdit(m))
+              ListTile(
+                leading: const Icon(Icons.edit_outlined),
+                title: const Text('تعديل الرسالة'),
+                onTap: () => Navigator.pop(ctx, 'edit'),
               ),
             if (m.mine)
               ListTile(
@@ -276,9 +401,19 @@ class _SupportChatViewState extends State<SupportChatView>
       ),
     );
     if (!mounted || choice == null) return;
+    if (choice.startsWith('react:')) {
+      final e = choice.substring(6);
+      await _react(m, e.isEmpty ? null : e);
+      return;
+    }
     switch (choice) {
+      case 'edit':
+        _startEdit(m);
       case 'reply':
-        setState(() => _replyTo = m);
+        setState(() {
+          _editing = null;
+          _replyTo = m;
+        });
       case 'copy':
         await Clipboard.setData(ClipboardData(text: m.body ?? ''));
       case 'delete':
@@ -408,6 +543,8 @@ class _SupportChatViewState extends State<SupportChatView>
               key: ValueKey('m${m.id}'),
               message: m,
               onLongPress: () => _actions(m),
+              onDoubleTap: () => _quickHeart(m),
+              onReactionsTap: () => _actions(m),
               onSwipeReply: m.deleted ? null : () => setState(() => _replyTo = m),
             ));
     }
@@ -425,6 +562,12 @@ class _SupportChatViewState extends State<SupportChatView>
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
+            if (_editing != null)
+              _ComposerBanner(
+                icon: Icons.edit_outlined,
+                text: 'تعديل الرسالة',
+                onClose: _cancelEdit,
+              ),
             if (_replyTo != null)
               _ComposerBanner(
                 icon: Icons.reply_rounded,
@@ -455,11 +598,22 @@ class _SupportChatViewState extends State<SupportChatView>
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  IconButton(
-                    onPressed: _pickImage,
-                    tooltip: 'إرفاق صورة',
-                    icon: Icon(Icons.image_outlined, color: AppColors.primary),
-                  ),
+                  if (_editing == null) ...[
+                    IconButton(
+                      onPressed: _pickImage,
+                      tooltip: 'إرفاق صورة',
+                      visualDensity: VisualDensity.compact,
+                      icon:
+                          Icon(Icons.image_outlined, color: AppColors.primary),
+                    ),
+                    IconButton(
+                      onPressed: _recordVoice,
+                      tooltip: 'رسالة صوتية',
+                      visualDensity: VisualDensity.compact,
+                      icon: Icon(Icons.mic_none_rounded,
+                          color: AppColors.primary),
+                    ),
+                  ],
                   Expanded(
                     child: TextField(
                       controller: _controller,
@@ -489,11 +643,15 @@ class _SupportChatViewState extends State<SupportChatView>
                     child: InkWell(
                       customBorder: const CircleBorder(),
                       onTap: _send,
-                      child: const Padding(
-                        padding: EdgeInsets.all(10),
+                      child: Padding(
+                        padding: const EdgeInsets.all(10),
                         // RTL: the arrow points the way the text goes.
-                        child: Icon(Icons.send_rounded,
-                            color: Colors.white, size: 22),
+                        child: Icon(
+                            _editing != null
+                                ? Icons.check_rounded
+                                : Icons.send_rounded,
+                            color: Colors.white,
+                            size: 22),
                       ),
                     ),
                   ),
@@ -528,11 +686,15 @@ class _Bubble extends StatelessWidget {
     super.key,
     required this.message,
     required this.onLongPress,
+    this.onDoubleTap,
+    this.onReactionsTap,
     this.onSwipeReply,
   });
 
   final SupportMessage message;
   final VoidCallback onLongPress;
+  final VoidCallback? onDoubleTap;
+  final VoidCallback? onReactionsTap;
   final VoidCallback? onSwipeReply;
 
   @override
@@ -545,6 +707,7 @@ class _Bubble extends StatelessWidget {
 
     final bubble = GestureDetector(
       onLongPress: onLongPress,
+      onDoubleTap: onDoubleTap,
       child: Container(
         constraints: BoxConstraints(
             maxWidth: MediaQuery.of(context).size.width * 0.78),
@@ -567,7 +730,7 @@ class _Bubble extends StatelessWidget {
             if (!mine)
               Padding(
                 padding: const EdgeInsets.only(bottom: 2),
-                child: Text('خدمة العملاء',
+                child: Text(m.isAutoReply ? '🤖 رد آلي • خدمة العملاء' : 'خدمة العملاء',
                     style: TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.w700,
@@ -595,6 +758,13 @@ class _Bubble extends StatelessWidget {
                   style: TextStyle(
                       color: sub, fontStyle: FontStyle.italic, fontSize: 14))
             else ...[
+              if (m.isVoice)
+                VoiceBubble(
+                  url: m.audioUrl,
+                  durationMs: m.audioDurationMs,
+                  onDark: mine,
+                  expired: m.audioExpired,
+                ),
               if (m.imageUrl != null)
                 Padding(
                   padding: EdgeInsets.only(bottom: m.body != null ? 6 : 0),
@@ -637,6 +807,14 @@ class _Bubble extends StatelessWidget {
             Row(
               mainAxisSize: MainAxisSize.min,
               children: [
+                if (m.edited && !m.deleted) ...[
+                  Text('معدّلة',
+                      style: TextStyle(
+                          fontSize: 11,
+                          color: sub,
+                          fontStyle: FontStyle.italic)),
+                  const SizedBox(width: 4),
+                ],
                 Text(_time(m.createdAt),
                     style: TextStyle(fontSize: 11, color: sub)),
                 if (mine && !m.deleted) ...[
@@ -652,10 +830,47 @@ class _Bubble extends StatelessWidget {
       ),
     );
 
+    final withReactions = m.reactions.isEmpty || m.deleted
+        ? bubble
+        : Column(
+            crossAxisAlignment:
+                mine ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              bubble,
+              Transform.translate(
+                offset: const Offset(0, -8),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 10),
+                  child: GestureDetector(
+                    onTap: onReactionsTap,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 7, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(999),
+                        border: Border.all(color: const Color(0xFFE2E9E1)),
+                        boxShadow: [
+                          BoxShadow(
+                              color: Colors.black.withValues(alpha: .08),
+                              blurRadius: 6)
+                        ],
+                      ),
+                      child: Text(
+                          m.reactions.map((r) => r.emoji).join(' '),
+                          style: const TextStyle(fontSize: 14)),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          );
+
     final aligned = Align(
       alignment:
           mine ? AlignmentDirectional.centerEnd : AlignmentDirectional.centerStart,
-      child: bubble,
+      child: withReactions,
     );
     if (onSwipeReply == null) return aligned;
     return Dismissible(
@@ -714,6 +929,9 @@ class _PendingBubble extends StatelessWidget {
                         width: 220, height: 220, fit: BoxFit.cover),
                   ),
                 ),
+              if (p.audio != null)
+                const Text('🎤 رسالة صوتية',
+                    style: TextStyle(color: Colors.white, fontSize: 15)),
               if (p.body != null)
                 Text(p.body!,
                     style: const TextStyle(color: Colors.white, fontSize: 15)),
@@ -890,4 +1108,32 @@ class _ImageViewer extends StatelessWidget {
       ),
     );
   }
+}
+
+class _EmojiButton extends StatelessWidget {
+  const _EmojiButton(
+      {required this.emoji, required this.selected, required this.onTap});
+  final String emoji;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) => Semantics(
+        button: true,
+        label: 'تفاعل $emoji',
+        child: InkWell(
+          customBorder: const CircleBorder(),
+          onTap: onTap,
+          child: Container(
+            width: 44,
+            height: 44,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: selected ? const Color(0xFFDFF5E1) : Colors.transparent,
+            ),
+            child: Text(emoji, style: const TextStyle(fontSize: 26)),
+          ),
+        ),
+      );
 }
