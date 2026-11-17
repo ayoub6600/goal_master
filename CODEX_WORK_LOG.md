@@ -7072,3 +7072,13 @@ deployed; dev DB not migrated.
 - Microphone: iOS `NSMicrophoneUsageDescription`, Android `RECORD_AUDIO`; permission is asked by the recorder itself (no Podfile macros).
 - **Backend / Admin Goal** (`goal-master-web`): `/admin-app` PWA for platform admins with Web Push; support inbox with voice, reactions, edits, quick replies and rule-based automatic replies (first message / keywords / outside hours / fallback, per audience, cooldown, optional escalation; quiet while an admin talks or a person was asked for); plus bookings, customers, card top-up review, disputes, push center, venues/subscriptions/holds, LYPay settings, Captain Ayoub unanswered questions, finance.
 - Versions: customer 1.4.8+114, manager 1.7.2+13.
+
+## 2026-11-17 — Notifications fixed, skeleton loading, chat typing and badges; monitoring center
+
+- **Push never reached the phone (backend):** `app/Helper/helper.php` imported `illuminate\Support\Facades\Log` (lowercase). On the Linux server that class could not be loaded, so logging the first failed (stale) device token crashed `SendPushNotification` and the phone in use was never tried. Fixed; each token is independent, dead tokens are removed, every attempt is recorded in the monitoring center.
+- **Burst of old notifications on opening the app:** on every return to the foreground the notification cubit announced everything newer than its watermark (things the system had already shown as pushes). Now a banner is shown only for something created after the app came to the foreground; catch-up is silent.
+- **Notifications screen:** no auto «mark all read» on open; «تعليم الكل كمقروء» button; tapping one marks it read; the home bell updates; the screen no longer gets stuck loading on re-entry (mark-all used to swap the list for a spinner nobody reloaded); the screen no longer disposes the app-wide socket.
+- **Skeleton loading** (`lib/core/components/skeletons.dart`) instead of full-screen circles across both apps.
+- **Support chat:** «يكتب الآن…» both ways; red unread count on «حسابك» and «خدمة العملاء», refreshed at start, on resume and every minute (`SupportUnreadWatcher`).
+- Admin Goal: monitoring center, chat search/assignment/notes, push-enable banner, no zoom on the reply box.
+- Versions: customer 1.4.9+115, manager 1.7.3+14.

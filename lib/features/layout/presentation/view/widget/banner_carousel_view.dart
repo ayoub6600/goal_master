@@ -15,6 +15,7 @@ import 'package:goal_master/core/styles/app_colors.dart';
 import 'package:goal_master/features/home/data/model/banner_model.dart';
 import 'package:goal_master/features/home/presentation/manager/banner_cubit/banner_cubit_cubit.dart';
 import 'package:android_intent_plus/android_intent.dart' as android_intent;
+import 'package:goal_master/core/components/skeletons.dart';
 
 class BannerCarouselScreen extends StatefulWidget {
   const BannerCarouselScreen({super.key});
@@ -73,12 +74,8 @@ class _BannerCarouselScreenState extends State<BannerCarouselScreen> {
         color: Colors.grey[200],
         borderRadius: BorderRadius.circular(12),
       ),
-      child: const Center(
-        child: CircularProgressIndicator(
-          strokeWidth: 2,
-          valueColor: AlwaysStoppedAnimation<Color>(Colors.blue),
-        ),
-      ),
+      clipBehavior: Clip.antiAlias,
+      child: const SkeletonFill(radius: 12),
     );
   }
 
@@ -142,14 +139,8 @@ class _BannerCarouselScreenState extends State<BannerCarouselScreen> {
                       fit: BoxFit.contain,
                       memCacheWidth: 1200,
                       maxWidthDiskCache: 1600,
-                      placeholder: (context, url) => Container(
-                        color: Colors.grey[200],
-                        child: Center(
-                          child: CircularProgressIndicator(
-                            color: AppColors.primary,
-                          ),
-                        ),
-                      ),
+                      placeholder: (context, url) =>
+                          const SizedBox.expand(child: SkeletonFill()),
                       errorWidget: (context, url, error) {
                         return Container(
                           color: Colors.grey[200],

@@ -13,6 +13,7 @@ import 'package:goal_master/features/booking/data/model/booking_series.dart';
 import 'package:goal_master/features/booking/data/repo/booking_repo.dart';
 import 'package:goal_master/features/booking/data/repo/booking_repo_imp.dart';
 import 'package:goal_master/features/booking/presentation/view/widgets/booking_items.dart';
+import 'package:goal_master/core/components/skeletons.dart';
 
 /// One recurring booking, as one card — where the list used to show it as
 /// four (one per session, each headlined by that session's own id, none of
@@ -92,8 +93,18 @@ class _MonthlySeriesCardState extends State<MonthlySeriesCard> {
         color: AppColors.lightWhite3,
         borderRadius: BorderRadius.circular(12.r),
       ),
-      alignment: Alignment.center,
-      child: const CircularProgressIndicator(),
+      child: const Skeleton(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            SkeletonBox(width: 160, height: 16),
+            SizedBox(height: 12),
+            SkeletonBox(height: 12, width: double.infinity),
+            SizedBox(height: 8),
+            SkeletonBox(width: 120, height: 12),
+          ],
+        ),
+      ),
     );
   }
 

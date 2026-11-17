@@ -11,6 +11,7 @@ import 'package:goal_master/core/styles/app_colors.dart';
 import 'package:goal_master/core/styles/app_text_styles.dart';
 import 'package:goal_master/core/styles/spaces.dart';
 import 'package:goal_master/features/balance/presentation/send_money_cubit/send_money_cubit.dart';
+import 'package:goal_master/core/components/skeletons.dart';
 
 class SendMoneyView extends StatelessWidget {
   const SendMoneyView({super.key});
@@ -227,7 +228,7 @@ class SendMoneyView extends StatelessWidget {
                 HeightSpace(16.h),
 
                 isLoading
-                    ? const Center(child: CircularProgressIndicator())
+                    ? const Center(child: SoftSpinner(size: 28))
                     : ButtonApp(
                         text: "تأكيد التحويل",
                         backGround: state.isFormValid

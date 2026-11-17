@@ -5,6 +5,7 @@ import '../data/card_vault.dart';
 import '../data/saved_card.dart';
 import 'card_camera_scan_page.dart';
 import 'card_scan_review_page.dart';
+import 'package:goal_master/core/components/skeletons.dart';
 
 class SavedCardsPage extends StatefulWidget {
   const SavedCardsPage({
@@ -176,9 +177,8 @@ class _SavedCardsPageState extends State<SavedCardsPage> {
 
   Widget _buildCards() {
     if (_loading) {
-      return const SizedBox(
-        height: 140,
-        child: Center(child: CircularProgressIndicator()),
+      return const Skeleton(
+        child: SkeletonBox(height: 170, width: double.infinity, radius: 20),
       );
     }
     if (_error != null) {

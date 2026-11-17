@@ -10,6 +10,7 @@ import 'package:goal_master/features/home/data/model/booking_slots_response.dart
 import 'package:goal_master/features/home/presentation/manager/filter_cubit/filter_cubit.dart';
 import 'package:goal_master/features/home/presentation/view/widgets/booking_item.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
+import 'package:goal_master/core/components/skeletons.dart';
 
 class ShowAllResulatFiltter extends StatelessWidget {
   const ShowAllResulatFiltter({super.key});
@@ -43,9 +44,9 @@ class ShowAllResulatFiltter extends StatelessWidget {
                 );
               },
               firstPageProgressIndicatorBuilder: (context) =>
-                  const CustomLoadingWidget(),
+                  const SkeletonCardList(count: 3, padding: EdgeInsets.zero, shrinkWrap: true),
               newPageProgressIndicatorBuilder: (context) =>
-                  const CustomLoadingWidget(),
+                  const SkeletonList(count: 1, padding: EdgeInsets.symmetric(vertical: 8), shrinkWrap: true),
               noItemsFoundIndicatorBuilder: (context) => EmptyLoading(
                 image: Assets.imagesPngImagePaper,
                 title: "لا يوجد حجوزات",
@@ -62,7 +63,7 @@ class ShowAllResulatFiltter extends StatelessWidget {
           );
         }
 
-        return const CustomLoadingWidget();
+        return const SkeletonCardList(count: 3);
       },
     );
   }

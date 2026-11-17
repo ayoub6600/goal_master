@@ -4,6 +4,7 @@ import 'package:goal_master/core/services/service_locator.dart';
 import 'package:goal_master/core/styles/app_colors.dart';
 import 'package:goal_master/features/booking/data/model/cancellation_quote.dart';
 import 'package:goal_master/features/booking/data/repo/booking_repo_imp.dart';
+import 'package:goal_master/core/components/skeletons.dart';
 
 /// What cancelling costs, shown before anything is cancelled.
 ///
@@ -85,7 +86,7 @@ class _CancellationPreviewSheetState extends State<CancellationPreviewSheet> {
       child: _loading
           ? SizedBox(
               height: 160.h,
-              child: const Center(child: CircularProgressIndicator()))
+              child: const SkeletonList(count: 3, shrinkWrap: true, padding: EdgeInsets.zero))
           : (_error != null ? _errorBody() : _quoteBody()),
     );
   }

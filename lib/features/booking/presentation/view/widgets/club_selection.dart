@@ -10,6 +10,7 @@ import 'package:goal_master/features/booking/presentation/manager/page_view_cubi
 import 'package:goal_master/features/booking/presentation/view/widgets/step_title.dart';
 import 'package:goal_master/features/promotional_credit/presentation/marketing_offer_badge.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:goal_master/core/components/skeletons.dart';
 
 class ClubSelection extends StatelessWidget {
   final PageController controller;
@@ -107,13 +108,10 @@ class ClubSelection extends StatelessWidget {
                                           fit: BoxFit.cover,
                                           memCacheWidth: 1080,
                                           placeholder: (context, url) =>
-                                              Container(
+                                              const SizedBox(
                                             width: double.infinity,
                                             height: 150,
-                                            color: Colors.grey[200],
-                                            child: Center(
-                                                child:
-                                                    CircularProgressIndicator()),
+                                            child: SkeletonFill(),
                                           ),
                                           errorWidget: (context, url, error) =>
                                               Container(
@@ -235,7 +233,10 @@ class ClubSelection extends StatelessWidget {
                       ),
                     ),
             if (state is ClubLoading)
-              Center(child: CircularProgressIndicator()),
+              const Expanded(
+                child: SkeletonCardList(
+                    count: 3, imageHeight: 150, padding: EdgeInsets.zero),
+              ),
             if (state is ClubError)
               Center(
                 child: Text(

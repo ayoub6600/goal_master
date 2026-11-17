@@ -133,6 +133,7 @@ class SupportThread {
     required this.handoff,
     this.reactions = defaultReactions,
     this.voiceMaxSeconds = 120,
+    this.adminTyping = false,
   });
 
   static const defaultReactions = ['👍', '❤️', '😂', '😮', '😢', '🙏'];
@@ -141,6 +142,9 @@ class SupportThread {
   final bool handoff;
   final List<String> reactions;
   final int voiceMaxSeconds;
+
+  /// An admin is writing an answer right now.
+  final bool adminTyping;
 }
 
 String? _str(dynamic v) {
@@ -187,6 +191,7 @@ class SupportRepo {
               ? SupportThread.defaultReactions
               : allowed,
           voiceMaxSeconds: (data['voice_max_seconds'] as num?)?.toInt() ?? 120,
+          adminTyping: data['admin_typing'] == true,
         );
       },
     );
@@ -251,6 +256,16 @@ class SupportRepo {
       () => _api.delete('$basePath/chat/messages/$id'),
       (_) => true,
     );
+  }
+
+  /// «I am writing» — sent every few seconds while the person types.
+  /// Returns whether an admin is writing too (false on failure).
+  Future<bool> typing() async {
+    final result = await _api.handleRequest(
+      () => _api.post('$basePath/chat/typing'),
+      (json) => (json['data'] as Map?)?['admin_typing'] == true,
+    );
+    return result.fold((_) => false, (v) => v);
   }
 
   /// Refreshes [unread]; failures leave it as it was.

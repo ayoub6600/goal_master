@@ -7,6 +7,7 @@ import 'package:goal_master/core/styles/spaces.dart';
 import 'package:goal_master/features/booking/data/model/timeslot.dart';
 import 'package:goal_master/features/booking/presentation/manager/calendar_cubit/calendar_cubit.dart';
 import 'package:goal_master/features/booking/presentation/manager/calendar_cubit/calendar_state.dart';
+import 'package:goal_master/core/components/skeletons.dart';
 
 /// Picking a different hour without leaving the checkout.
 ///
@@ -93,7 +94,7 @@ class _ChangeTimeContent extends StatelessWidget {
         if (state is TimeLoading) {
           return Padding(
             padding: EdgeInsets.symmetric(vertical: 32.h),
-            child: const Center(child: CircularProgressIndicator()),
+            child: const SkeletonList(count: 3, shrinkWrap: true, padding: EdgeInsets.zero),
           );
         }
 

@@ -21,6 +21,7 @@ import 'package:goal_master/features/card/presentation/view/transaction_item.dar
 import 'package:goal_master/features/promotional_credit/presentation/promotional_credit_cubit.dart';
 
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
+import 'package:goal_master/core/components/skeletons.dart';
 
 class CardView extends StatefulWidget {
   const CardView({super.key});
@@ -206,9 +207,9 @@ class _CardViewState extends State<CardView> {
                           );
                         },
                         firstPageProgressIndicatorBuilder: (_) =>
-                            const Center(child: CircularProgressIndicator()),
+                            const SkeletonList(count: 5, shrinkWrap: true),
                         newPageProgressIndicatorBuilder: (_) =>
-                            const Center(child: CircularProgressIndicator()),
+                            const SkeletonList(count: 1, shrinkWrap: true),
                         noItemsFoundIndicatorBuilder: (_) => Padding(
                           padding: const EdgeInsets.only(top: 24, bottom: 32),
                           child: Center(
@@ -238,9 +239,8 @@ class _CardViewState extends State<CardView> {
                     );
                   }
 
-                  return const SliverFillRemaining(
-                    hasScrollBody: false,
-                    child: Center(child: CircularProgressIndicator()),
+                  return const SliverToBoxAdapter(
+                    child: SkeletonList(count: 5, shrinkWrap: true),
                   );
                 },
               ),

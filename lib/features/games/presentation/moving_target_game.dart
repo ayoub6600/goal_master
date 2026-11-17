@@ -11,6 +11,7 @@ import 'package:goal_master/features/games/presentation/keeper/goalkeeper_page.d
 import 'package:goal_master/features/games/presentation/keepy/keepy_uppy_page.dart';
 import 'package:goal_master/features/games/presentation/penalty/penalty_shootout_page.dart';
 import 'package:goal_master/features/games/presentation/prediction/prediction_page.dart';
+import 'package:goal_master/core/components/skeletons.dart';
 
 const _bg = Color(0xff07110b);
 const _card = Color(0xff10201a);
@@ -493,7 +494,7 @@ class RewardHistoryPage extends StatelessWidget {
           future: getIt<MovingTargetGameRepo>().rewardHistory(),
           builder: (context, snapshot) {
             if (!snapshot.hasData) {
-              return const Center(child: CircularProgressIndicator());
+              return const SkeletonList(count: 4, shrinkWrap: true);
             }
             final entries = snapshot.data!.fold((_) => null, (items) => items) as List<Map<String, dynamic>>?;
             if (entries == null) {

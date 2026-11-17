@@ -8,6 +8,7 @@ import 'package:goal_master/features/assistant/presentation/manager/assistant_ch
 import 'package:goal_master/features/assistant/presentation/view/widgets/assistant_avatar_popup.dart';
 import 'package:goal_master/features/assistant/presentation/view/widgets/assistant_message_bubble.dart';
 import 'package:goal_master/features/assistant/presentation/view/widgets/assistant_typing_indicator.dart';
+import 'package:goal_master/core/components/skeletons.dart';
 
 class AssistantChatView extends StatefulWidget {
   const AssistantChatView({super.key});
@@ -179,7 +180,7 @@ class _AssistantChatViewState extends State<AssistantChatView> {
           children: [
             Expanded(
               child: state.loading && state.messages.isEmpty
-                  ? const Center(child: CircularProgressIndicator())
+                  ? const SkeletonList(count: 5, trailing: false)
                   : ListView.builder(
                       controller: _scrollController,
                       padding: const EdgeInsets.all(16),

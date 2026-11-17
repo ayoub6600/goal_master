@@ -7,6 +7,7 @@ import 'package:goal_master/core/components/custom_failure_toast.dart';
 import 'package:goal_master/core/components/custom_success_toast.dart';
 
 import 'lypay_repo.dart';
+import 'package:goal_master/core/components/skeletons.dart';
 
 const Color _green = Color(0xFF418946);
 const Color _greenDark = Color(0xFF24552A);
@@ -155,7 +156,7 @@ class _LypayTopUpViewState extends State<LypayTopUpView> {
   Widget build(BuildContext context) {
     if (_loading) {
       return const SizedBox(
-          height: 160, child: Center(child: CircularProgressIndicator()));
+          height: 220, child: SkeletonList(count: 4, shrinkWrap: true));
     }
     if (_error != null) {
       return _Message(

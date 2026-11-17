@@ -9,6 +9,7 @@ import 'package:intl/intl.dart' show DateFormat;
 
 import '../keepy/captain_rig.dart';
 import '../game_errors.dart';
+import 'package:goal_master/core/components/skeletons.dart';
 
 const _bg = Color(0xff07110b);
 const _card = Color(0xff112019);
@@ -124,7 +125,7 @@ class _PredictionPageState extends State<PredictionPage> {
         body: _error != null
             ? _Message(text: _error!, onRetry: _load)
             : b == null
-                ? const Center(child: CircularProgressIndicator(color: _gold))
+                ? const SkeletonCardList(count: 3, imageHeight: 90)
                 : TabBarView(children: [
                     _MatchesTab(board: b, onPredict: _predict, onRefresh: _load),
                     _ResultsTab(board: b, onRefresh: _load),

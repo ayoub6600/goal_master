@@ -7,6 +7,7 @@ import 'package:goal_master/core/styles/spaces.dart';
 import 'package:goal_master/features/booking/presentation/manager/employee_cubit/employee_cubit.dart';
 import 'package:goal_master/features/booking/presentation/manager/page_view_cubit/page_view_cubit_cubit.dart';
 import 'package:goal_master/features/booking/presentation/view/widgets/step_title.dart';
+import 'package:goal_master/core/components/skeletons.dart';
 
 class EmployeeSelection extends StatelessWidget {
   final PageController controller;
@@ -71,7 +72,7 @@ class EmployeeSelection extends StatelessWidget {
                     },
                   )),
             if (state is EmployeeLoading)
-              Center(child: CircularProgressIndicator()),
+              const Skeleton(child: Wrap(spacing: 10, runSpacing: 10, children: [SkeletonBox(width: 90, height: 38, radius: 19), SkeletonBox(width: 110, height: 38, radius: 19), SkeletonBox(width: 80, height: 38, radius: 19), SkeletonBox(width: 100, height: 38, radius: 19)])),
             if (state is EmployeeFailure) Text('خطأ: ${state.message}'),
           ],
         );

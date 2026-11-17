@@ -8,6 +8,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:goal_master/features/notification/data/model/notification_response.dart';
 import 'package:goal_master/features/notification/data/repo/notifaction_repo.dart';
+import 'package:goal_master/features/notification/manager/notification_cubit/notification_announce.dart';
 import 'package:goal_master/utils/notification_socket_service.dart';
 
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
@@ -26,6 +27,10 @@ class NotificationCubit extends Cubit<NotificationState>
   StreamSubscription<RemoteMessage>? _fcmForegroundSubscription;
 
   bool _isDisposed = false;
+
+  /// When the app last came to the foreground: only notifications created
+  /// after this are announced (see [notificationsToAnnounce]).
+  DateTime _visibleSince = DateTime.now();
 
   /// The newest notification already shown to this customer.
   ///
@@ -128,14 +133,17 @@ class NotificationCubit extends Cubit<NotificationState>
     if (_isDisposed) return;
 
     if (state == AppLifecycleState.resumed) {
-      _checkForNewNotification();
+      _visibleSince = DateTime.now();
+      // Catch up silently: what arrived in the background was already shown
+      // by the system as push notifications.
+      _checkForNewNotification(announce: false);
       _startPolling();
     } else {
       _stopPolling();
     }
   }
 
-  Future<void> _checkForNewNotification() async {
+  Future<void> _checkForNewNotification({bool announce = true}) async {
     if (_isDisposed) return;
 
     final result = await notificationRepo.getNotifications(1);
@@ -169,17 +177,17 @@ class NotificationCubit extends Cubit<NotificationState>
         // launch is noise, not news.
         if (isFirstEverCheck) return;
 
-        final hasCaptainOffer = unseen.any(
-          (notification) => notification.data.type == 'captain_rejection_offer',
-        );
-
-        // Restore chronological order for the notification list. When an
-        // offer is present, it is the only foreground visual: the normal
-        // cancellation record remains in the list without masking Captain.
+        // At most one banner, and only for something that arrived while the
+        // app was on screen — never a backlog. Everything still goes into
+        // the list (and the badge) in chronological order.
+        final announced = announce
+            ? notificationsToAnnounce(unseen, visibleSince: _visibleSince)
+                .map((n) => n.id)
+                .toSet()
+            : const <String>{};
         for (final notification in unseen.reversed) {
-          final showVisual = !hasCaptainOffer ||
-              notification.data.type == 'captain_rejection_offer';
-          _onNotificationReceived(notification, showVisual: showVisual);
+          _onNotificationReceived(notification,
+              showVisual: announced.contains(notification.id));
         }
       },
     );
@@ -297,6 +305,22 @@ class NotificationCubit extends Cubit<NotificationState>
           emit(NotificationMarkAllAsReadFailure(message: failure.errMessage)),
       (message) => emit(NotificationMarkAllAsReadSuccess(message: message)),
     );
+  }
+
+  /// The notifications screen marked everything read (it has its own list):
+  /// drop the badge here too, without asking the server again.
+  void syncAllRead() {
+    if (_isDisposed) return;
+    final items = _pagingController.itemList;
+    if (items != null) {
+      final now = DateTime.now().toIso8601String();
+      _pagingController.itemList = items
+          .map((i) => (i.readAt == null || i.readAt!.isEmpty)
+              ? i.copyWith(readAt: now)
+              : i)
+          .toList();
+    }
+    emit(NotificationUnreadUpdated(unreadCount));
   }
 
   int get unreadCount {

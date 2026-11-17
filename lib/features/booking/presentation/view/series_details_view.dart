@@ -18,6 +18,7 @@ import 'package:goal_master/core/components/custom_success_toast.dart';
 import 'package:goal_master/features/booking/presentation/view/widgets/renewal_card.dart';
 import 'package:goal_master/features/booking/presentation/view/widgets/renewal_price_changed_sheet.dart';
 import 'package:goal_master/features/booking/presentation/view/widgets/series_cancel_options_sheet.dart';
+import 'package:goal_master/core/components/skeletons.dart';
 
 /// One recurring booking: where, when, how it stands, and each of its four
 /// dates with what has happened to it.
@@ -119,7 +120,7 @@ class _SeriesDetailsViewState extends State<SeriesDetailsView> {
         },
         builder: (context, state) {
           if (state is SeriesDetailsLoading || state is SeriesDetailsInitial) {
-            return const Center(child: CircularProgressIndicator());
+            return const SkeletonDetails(headerHeight: 140);
           }
 
           // The transient renewal outcomes are handled in the listener; the
@@ -127,7 +128,7 @@ class _SeriesDetailsViewState extends State<SeriesDetailsView> {
           if (state is SeriesRenewed ||
               state is SeriesRenewalPriceChanged ||
               state is SeriesRenewalPlanChanged) {
-            return const Center(child: CircularProgressIndicator());
+            return const SkeletonDetails(headerHeight: 140);
           }
 
           if (state is SeriesDetailsFailure) {
@@ -181,7 +182,7 @@ class _SeriesDetailsViewState extends State<SeriesDetailsView> {
               if (loaded.isBusy)
                 Container(
                   color: Colors.black.withOpacity(0.3),
-                  child: const Center(child: CircularProgressIndicator()),
+                  child: const Center(child: SoftSpinner(size: 34, color: Colors.white)),
                 ),
             ],
           );

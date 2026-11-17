@@ -8,6 +8,7 @@ import 'package:goal_master/core/utils/arabic_dates.dart';
 import 'package:goal_master/features/booking/data/model/booking_series.dart';
 import 'package:goal_master/features/booking/presentation/manager/monthly_booking_cubit/monthly_booking_cubit.dart';
 import 'package:goal_master/features/booking/presentation/view/widgets/replace_occurrence_sheet.dart';
+import 'package:goal_master/core/components/skeletons.dart';
 
 /// The four dates a recurring booking would take, each marked available or
 /// taken — shown before the customer confirms anything, so a clash is never a
@@ -22,7 +23,7 @@ class MonthlyDatesPreview extends StatelessWidget {
         if (state.isLoadingPreview) {
           return Padding(
             padding: EdgeInsets.symmetric(vertical: 16.h),
-            child: const Center(child: CircularProgressIndicator()),
+            child: const SkeletonList(count: 4, shrinkWrap: true, padding: EdgeInsets.zero, trailing: false),
           );
         }
 

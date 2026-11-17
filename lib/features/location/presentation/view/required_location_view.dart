@@ -7,6 +7,7 @@ import 'package:goal_master/features/layout/presentation/manager/layout_cubit.da
 import 'package:goal_master/features/location/data/model/active_location.dart';
 import 'package:goal_master/features/location/presentation/manager/active_location_cubit.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:goal_master/core/components/skeletons.dart';
 
 /// The one place a customer chooses where they are shopping from.
 ///
@@ -148,7 +149,7 @@ class _RequiredLocationViewState extends State<RequiredLocationView> {
                   if (state.isSubmitting)
                     const Padding(
                       padding: EdgeInsets.only(bottom: 24),
-                      child: Center(child: CircularProgressIndicator()),
+                      child: Center(child: SoftSpinner()),
                     ),
                 ],
               ),

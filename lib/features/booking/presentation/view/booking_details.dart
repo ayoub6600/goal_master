@@ -41,6 +41,7 @@ import 'package:goal_master/features/location/presentation/view/required_locatio
 import 'package:goal_master/features/booking/presentation/view/widgets/service_selection.dart';
 import 'package:goal_master/features/booking/presentation/view/widgets/time_slot_section.dart';
 import 'package:intl/intl.dart';
+import 'package:goal_master/core/components/skeletons.dart';
 
 class BookingDetails extends StatefulWidget {
   const BookingDetails({super.key, this.initialBranch});
@@ -560,8 +561,8 @@ class _BookingDetailsState extends State<BookingDetails> {
             if (state is AddBookingLoading) {
               return Container(
                 color: Colors.black.withValues(alpha: 0.5),
-                child: Center(
-                  child: CircularProgressIndicator(),
+                child: const Center(
+                  child: SoftSpinner(size: 34, color: Colors.white),
                 ),
               );
             }

@@ -12,6 +12,7 @@ import 'package:goal_master/features/booking/presentation/manager/booking_cubit/
 import 'package:goal_master/features/booking/presentation/view/widgets/booking_items.dart';
 import 'package:goal_master/features/booking/presentation/view/widgets/monthly_series_card.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
+import 'package:goal_master/core/components/skeletons.dart';
 
 class BookingList extends StatelessWidget {
   const BookingList({super.key, this.seriesRepo});
@@ -80,10 +81,10 @@ class BookingList extends StatelessWidget {
                 );
               },
               firstPageProgressIndicatorBuilder: (context) {
-                return const CustomLoadingWidget();
+                return const SkeletonCardList(count: 3, padding: EdgeInsets.zero, shrinkWrap: true);
               },
               newPageProgressIndicatorBuilder: (context) {
-                return const CustomLoadingWidget();
+                return const SkeletonList(count: 1, padding: EdgeInsets.symmetric(vertical: 8), shrinkWrap: true);
               },
               noItemsFoundIndicatorBuilder: (context) {
                 return EmptyLoading(
@@ -101,7 +102,7 @@ class BookingList extends StatelessWidget {
             },
           );
         }
-        return const CustomLoadingWidget();
+        return const SkeletonCardList(count: 3);
       },
     );
   }

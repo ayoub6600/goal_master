@@ -16,6 +16,7 @@ import 'package:goal_master/features/booking/presentation/manager/club_cubit/clu
 import 'package:goal_master/features/booking/presentation/manager/zone_cubit/zone_cubit.dart';
 import 'package:goal_master/features/home/presentation/manager/filter_cubit/filter_cubit.dart';
 import 'package:goal_master/features/home/presentation/view/widgets/show_all_resulat_filtter.dart';
+import 'package:goal_master/core/components/skeletons.dart';
 
 class FilterView extends StatefulWidget {
   const FilterView({super.key});
@@ -295,7 +296,7 @@ class _FilterViewState extends State<FilterView> {
                 },
                 builder: (context, state) {
                   if (state is FilterLoading) {
-                    return const Center(child: CircularProgressIndicator());
+                    return const SkeletonList(count: 4, shrinkWrap: true);
                   } else if (state is FilterLoaded) {
                     final bookings = state.filter.data;
                     return state.filter.data.isNotEmpty

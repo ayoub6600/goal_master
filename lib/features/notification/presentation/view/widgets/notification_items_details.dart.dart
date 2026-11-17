@@ -8,6 +8,7 @@ import 'package:goal_master/features/booking/presentation/manager/%20booking_det
 import 'package:goal_master/features/booking/presentation/view/widgets/build_details_section.dart';
 import 'package:goal_master/features/booking/presentation/view/widgets/build_header_image.dart';
 import 'package:intl/intl.dart';
+import 'package:goal_master/core/components/skeletons.dart';
 
 class NotificationItemsDetails extends StatelessWidget {
   const NotificationItemsDetails({
@@ -28,7 +29,7 @@ class NotificationItemsDetails extends StatelessWidget {
         child: BlocBuilder<BookingDetailsCubit, BookingDetailsState>(
           builder: (context, state) {
             if (state is BookingDetailsLoading) {
-              return const Center(child: CircularProgressIndicator());
+              return const SkeletonDetails(headerHeight: 160);
             }
 
             if (state is BookingDetailsError) {

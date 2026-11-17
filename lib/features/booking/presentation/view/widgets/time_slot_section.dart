@@ -10,6 +10,7 @@ import 'package:goal_master/features/booking/presentation/manager/calendar_cubit
 import 'package:goal_master/features/booking/presentation/manager/page_view_cubit/page_view_cubit_cubit.dart';
 import 'package:goal_master/features/booking/presentation/view/widgets/step_title.dart';
 import 'package:goal_master/features/home/data/model/service_model.dart';
+import 'package:goal_master/core/components/skeletons.dart';
 
 class TimeSlotSection extends StatelessWidget {
   final PageController controller;
@@ -24,8 +25,15 @@ class TimeSlotSection extends StatelessWidget {
     return BlocBuilder<CalendarCubit, CalendarState>(
       builder: (context, state) {
         if (state is TimeLoading) {
-          return const Center(
-            child: CircularProgressIndicator(),
+          return const Skeleton(
+            child: Wrap(spacing: 10, runSpacing: 10, children: [
+              SkeletonBox(width: 96, height: 44, radius: 12),
+              SkeletonBox(width: 96, height: 44, radius: 12),
+              SkeletonBox(width: 96, height: 44, radius: 12),
+              SkeletonBox(width: 96, height: 44, radius: 12),
+              SkeletonBox(width: 96, height: 44, radius: 12),
+              SkeletonBox(width: 96, height: 44, radius: 12),
+            ]),
           );
         }
 

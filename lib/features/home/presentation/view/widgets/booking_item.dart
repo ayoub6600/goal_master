@@ -30,6 +30,7 @@ import 'package:goal_master/features/booking/presentation/view/widgets/change_ti
 import 'package:goal_master/core/errors/failure.dart';
 import 'package:goal_master/core/components/preference_utility.dart';
 import 'package:goal_master/core/components/keys_values.dart';
+import 'package:goal_master/core/components/skeletons.dart';
 
 class BookingItem extends StatelessWidget {
   const BookingItem({super.key, required this.booking});
@@ -520,8 +521,8 @@ class _AddNewBookingState extends State<AddNewBooking> {
             if (state is AddBookingLoading) {
               return Container(
                 color: Colors.black.withValues(alpha: 0.5),
-                child: Center(
-                  child: CircularProgressIndicator(),
+                child: const Center(
+                  child: SoftSpinner(size: 34, color: Colors.white),
                 ),
               );
             }

@@ -9,6 +9,7 @@ import 'package:goal_master/features/booking/presentation/manager/employee_cubit
 import 'package:goal_master/features/booking/presentation/manager/page_view_cubit/page_view_cubit_cubit.dart';
 import 'package:goal_master/features/booking/presentation/manager/service_cubit/service_cubit.dart';
 import 'package:goal_master/features/booking/presentation/view/widgets/step_title.dart';
+import 'package:goal_master/core/components/skeletons.dart';
 
 class ServiceSelection extends StatelessWidget {
   final PageController controller;
@@ -23,9 +24,7 @@ class ServiceSelection extends StatelessWidget {
     return BlocBuilder<ServiceCubit, ServiceState>(
       builder: (context, state) {
         if (state is ServiceLoading) {
-          return const Center(
-            child: CircularProgressIndicator(),
-          );
+          return const SkeletonList(count: 3, shrinkWrap: true, padding: EdgeInsets.zero);
         }
 
         if (state is ServiceError) {

@@ -5,6 +5,7 @@ import 'package:goal_master/features/coins/data/model/coin_model.dart';
 import 'package:goal_master/features/coins/presentation/manager/coins_cubit/coins_cubit.dart';
 import 'package:goal_master/features/coins/presentation/view/widgets/coin_burst_popup.dart';
 import 'package:goal_master/features/coins/presentation/view/widgets/redeem_coins_sheet.dart';
+import 'package:goal_master/core/components/skeletons.dart';
 
 /// Gold/amber palette — deliberately distinct from the app's green
 /// AppColors.primary so a coin genuinely reads as "a coin" at a glance.
@@ -106,7 +107,7 @@ class _CoinsViewState extends State<CoinsView> {
                 if (state.loadingHistory)
                   const Padding(
                     padding: EdgeInsets.symmetric(vertical: 16),
-                    child: Center(child: CircularProgressIndicator(color: _CoinColors.gold)),
+                    child: SkeletonList(count: 3, shrinkWrap: true, padding: EdgeInsets.zero),
                   ),
                 const SizedBox(height: 40),
               ],

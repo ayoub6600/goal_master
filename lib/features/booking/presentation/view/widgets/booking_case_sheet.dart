@@ -4,6 +4,7 @@ import 'package:goal_master/core/services/service_locator.dart';
 import 'package:goal_master/core/styles/app_colors.dart';
 import 'package:goal_master/features/booking/data/model/cancellation_quote.dart';
 import 'package:goal_master/features/booking/data/repo/booking_repo_imp.dart';
+import 'package:goal_master/core/components/skeletons.dart';
 
 /// The customer's side of an appeal.
 ///
@@ -151,7 +152,7 @@ class _BookingCaseSheetState extends State<BookingCaseSheet> {
       child: _loading
           ? SizedBox(
               height: 140.h,
-              child: const Center(child: CircularProgressIndicator()))
+              child: const SkeletonList(count: 3, shrinkWrap: true, padding: EdgeInsets.zero))
           : (_error != null
               ? Text(_error!, textAlign: TextAlign.center)
               : _body(_status!)),

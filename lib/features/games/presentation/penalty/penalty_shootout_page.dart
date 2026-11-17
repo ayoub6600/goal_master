@@ -16,6 +16,7 @@ import 'penalty_reward_card.dart';
 import 'penalty_sounds.dart';
 import 'penalty_world.dart';
 import '../game_errors.dart';
+import 'package:goal_master/core/components/skeletons.dart';
 
 const _gold = Color(0xffffc928);
 const _night = Color(0xff07110b);
@@ -174,10 +175,7 @@ class _PenaltyShootoutPageState extends State<PenaltyShootoutPage> {
             if (_error != null)
               _ErrorBox(message: _error!, onRetry: _load)
             else if (status == null)
-              const Padding(
-                padding: EdgeInsets.all(40),
-                child: Center(child: CircularProgressIndicator(color: _gold)),
-              )
+              const Padding(padding: EdgeInsets.symmetric(vertical: 16), child: SkeletonList(count: 3, shrinkWrap: true, padding: EdgeInsets.zero))
             else if (status.tiers.isEmpty)
               const _ErrorBox(message: 'لا توجد مستويات متاحة حاليًا.')
             else

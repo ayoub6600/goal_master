@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:goal_master/features/notification/manager/notification_logic/notification_logic_cubit.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:goal_master/core/routing/route_utils.dart';
 import 'package:goal_master/core/routing/routes_keys.dart';
@@ -27,6 +28,17 @@ class ItemsNotification extends StatelessWidget {
     final dateTime = DateTime.tryParse(isoDate);
     if (dateTime == null) return '';
     return DateFormat('yyyy-MM-dd – HH:mm').format(dateTime);
+  }
+
+  /// The server (and the bell badge) through the app-wide cubit; the
+  /// notifications screen's own list at once.
+  void _markRead(BuildContext context) {
+    context.read<NotificationCubit>().markAsRead(notification.id);
+    try {
+      context.read<NotificationFetchCubit>().markReadLocally(notification.id);
+    } catch (_) {
+      // Shown outside the notifications screen: nothing else to update.
+    }
   }
 
   @override
@@ -97,11 +109,7 @@ class ItemsNotification extends StatelessWidget {
                 ),
                 GestureDetector(
                   onTap: () {
-                    isRead
-                        ? null
-                        : context
-                            .read<NotificationCubit>()
-                            .markAsRead(notification.id);
+                    if (!isRead) _markRead(context);
                     push(RoutesKeys.kNotificationItemsDetails, context,
                         extra: notification);
                   },
@@ -129,11 +137,7 @@ class ItemsNotification extends StatelessWidget {
           ),
           GestureDetector(
             onTap: () {
-              isRead
-                  ? null
-                  : context
-                      .read<NotificationCubit>()
-                      .markAsRead(notification.id);
+              if (!isRead) _markRead(context);
 
               showDialog(
                 context: context,

@@ -68,6 +68,8 @@ class _SupportChatViewState extends State<SupportChatView>
   File? _image;
   List<String> _reactions = SupportThread.defaultReactions;
   int _voiceMax = 120;
+  bool _adminTyping = false;
+  DateTime _lastTypingPing = DateTime.fromMillisecondsSinceEpoch(0);
 
   static const _pollEvery = Duration(seconds: 4);
 
@@ -82,6 +84,20 @@ class _SupportChatViewState extends State<SupportChatView>
     _refresh(first: true);
     _poll = Timer.periodic(_pollEvery, (_) => _refresh());
     _scroll.addListener(_onScroll);
+    _controller.addListener(_onTextChanged);
+  }
+
+  /// Tells the team «يكتب الآن…», at most every 3 seconds while typing.
+  void _onTextChanged() {
+    if (_editing != null || _controller.text.trim().isEmpty) return;
+    final now = DateTime.now();
+    if (now.difference(_lastTypingPing) < const Duration(seconds: 3)) return;
+    _lastTypingPing = now;
+    _repo.typing().then((adminTyping) {
+      if (mounted && adminTyping != _adminTyping) {
+        setState(() => _adminTyping = adminTyping);
+      }
+    });
   }
 
   @override
@@ -145,6 +161,7 @@ class _SupportChatViewState extends State<SupportChatView>
       },
       (r) {
         final list = r.messages;
+        final typingStarted = r.adminTyping && !_adminTyping;
         setState(() {
           for (final m in list) {
             _byId[m.id] = m;
@@ -153,13 +170,14 @@ class _SupportChatViewState extends State<SupportChatView>
           _handoff = r.handoff;
           _reactions = r.reactions;
           _voiceMax = r.voiceMaxSeconds;
+          _adminTyping = r.adminTyping;
           _loading = false;
           _error = null;
         });
         final after = _byId.isEmpty ? 0 : _messages.last.id;
         if (first) {
           _toBottom(animate: false);
-        } else if (after > before && stick) {
+        } else if ((after > before || typingStarted) && stick) {
           _toBottom();
         }
       },
@@ -474,9 +492,11 @@ class _SupportChatViewState extends State<SupportChatView>
                       style:
                           TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
                   Text(
-                    _handoff
-                        ? 'تم تحويلك — سيرد عليك موظف قريبًا'
-                        : 'نحن هنا لمساعدتك',
+                    _adminTyping
+                        ? 'يكتب الآن…'
+                        : _handoff
+                            ? 'تم تحويلك — سيرد عليك موظف قريبًا'
+                            : 'نحن هنا لمساعدتك',
                     style: const TextStyle(fontSize: 12, color: Colors.white70),
                   ),
                 ],
@@ -551,6 +571,7 @@ class _SupportChatViewState extends State<SupportChatView>
     for (final p in _pending) {
       out.add(_PendingBubble(pending: p, onRetry: () => _deliver(p)));
     }
+    if (_adminTyping) out.add(const _TypingBubble());
     return out;
   }
 
@@ -1136,4 +1157,63 @@ class _EmojiButton extends StatelessWidget {
           ),
         ),
       );
+}
+
+/// «خدمة العملاء يكتب الآن…» with three breathing dots.
+class _TypingBubble extends StatefulWidget {
+  const _TypingBubble();
+
+  @override
+  State<_TypingBubble> createState() => _TypingBubbleState();
+}
+
+class _TypingBubbleState extends State<_TypingBubble>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _c = AnimationController(
+      vsync: this, duration: const Duration(milliseconds: 1200))
+    ..repeat();
+
+  @override
+  void dispose() {
+    _c.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final still = MediaQuery.of(context).disableAnimations;
+    return Align(
+      alignment: AlignmentDirectional.centerStart,
+      child: Container(
+        margin: const EdgeInsets.symmetric(vertical: 4),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(color: const Color(0xFFE2E9E1)),
+        ),
+        child: Row(mainAxisSize: MainAxisSize.min, children: [
+          Text('خدمة العملاء يكتب',
+              style: TextStyle(fontSize: 13, color: AppColors.primary)),
+          const SizedBox(width: 6),
+          for (var i = 0; i < 3; i++)
+            AnimatedBuilder(
+              animation: _c,
+              builder: (_, __) {
+                final t = still ? 1.0 : ((_c.value * 3 - i) % 3).clamp(0.0, 1.0);
+                return Container(
+                  margin: const EdgeInsets.symmetric(horizontal: 2),
+                  width: 6,
+                  height: 6,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: AppColors.primary.withValues(alpha: 0.35 + 0.65 * (1 - (t - 0.5).abs() * 2).clamp(0.0, 1.0)),
+                  ),
+                );
+              },
+            ),
+        ]),
+      ),
+    );
+  }
 }

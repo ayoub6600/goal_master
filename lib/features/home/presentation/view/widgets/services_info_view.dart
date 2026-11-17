@@ -11,6 +11,7 @@ import 'package:goal_master/core/styles/spaces.dart';
 import 'package:goal_master/features/home/data/model/service_model.dart';
 import 'package:goal_master/features/home/presentation/manager/get_services_info_cubit/get_services_info_cubit.dart';
 import 'package:goal_master/features/promotional_credit/presentation/marketing_offer_badge.dart';
+import 'package:goal_master/core/components/skeletons.dart';
 
 class ServicesInfoView extends StatelessWidget {
   const ServicesInfoView({super.key});
@@ -33,7 +34,7 @@ class ServicesInfoView extends StatelessWidget {
     return BlocBuilder<GetServicesInfoCubit, GetServicesInfoState>(
       builder: (context, state) {
         if (state is GetServicesInfoLoading) {
-          return const Center(child: CircularProgressIndicator());
+          return const SkeletonDetails(headerHeight: 220);
         } else if (state is GetServicesInfoError) {
           return CustomErrorWidget(
             message: state.errMessage,
@@ -97,12 +98,8 @@ class ServicesInfoView extends StatelessWidget {
                                 height: double.infinity,
                                 fit: BoxFit.cover,
                                 memCacheWidth: 600,
-                                placeholder: (context, url) => Container(
-                                  width: double.infinity,
-                                  color: Colors.grey[200],
-                                  child: const Center(
-                                      child: CircularProgressIndicator()),
-                                ),
+                                placeholder: (context, url) =>
+                                    const SkeletonFill(),
                                 errorWidget: (context, url, error) => Container(
                                   width: double.infinity,
                                   color: Colors.grey[300],

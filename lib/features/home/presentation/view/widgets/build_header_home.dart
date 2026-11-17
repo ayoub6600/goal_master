@@ -244,30 +244,20 @@ class BuildHeaderHome extends StatelessWidget {
         WidthSpace(10.w),
         loginState == "true"
             ? BlocConsumer<NotificationCubit, NotificationState>(
-                listener: (context, state) {
-                  print('[🔔 Listener] Notification state: $state');
-
-                  if (state is NotificationLoadSuccess) {
-                    print('[🔔 Listener] Unread count: ${state.unreadCount}');
-                  } else if (state is NotificationUnreadUpdated) {
-                    print(
-                        '[🔔 Listener] Updated unread count: ${state.unreadCount}');
-                  }
-                },
+                listener: (context, state) {},
                 builder: (context, state) {
                   print(
                       '[🔁 Builder] Notification state: $state'); // ✅ هيتطبع كل 15 ثانية لما يحصل poll
 
-                  int unreadCount = 0;
-                  print("------->unreadCount $unreadCount");
-
+                  // Any other state (marking, failure…) keeps the real
+                  // count instead of flashing the badge away.
+                  int unreadCount =
+                      context.read<NotificationCubit>().unreadCount;
                   if (state is NotificationLoadSuccess) {
                     unreadCount = state.unreadCount;
                   } else if (state is NotificationUnreadUpdated) {
                     unreadCount = state.unreadCount;
                   }
-                  print(
-                      "-----ss-->unreadCount $unreadCount"); // ✅ بعد تعيين القيمة الفعلية
 
                   final hasUnread = unreadCount > 0;
 
